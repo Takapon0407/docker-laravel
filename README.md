@@ -13,3 +13,11 @@ Docker で laravel 環境を実現する.
 | feature/...  | 新規機能開発用   |
 | refactor/... | リファクタ用     |
 | fix/...      | バグフィックス用 |
+
+# 環境構築
+
+```
+docker-compose up -d
+```
+
+上記でコンテナを立ち上げた後、`http://localhost:8000/`へアクセス
