@@ -1,2 +1,3 @@
 # docker-laravel
-Dockerでlaravel環境を実現する
+
+Docker で laravel 環境を実現する.
