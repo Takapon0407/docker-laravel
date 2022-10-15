@@ -16,6 +16,8 @@ Docker で laravel 環境を実現する.
 
 # 環境構築
 
+## laravel
+
 ```
 $ git clone git@github.com:Takapon0407/docker-laravel.git
 $ cd docker-laravel
@@ -28,3 +30,14 @@ $ docker-compose up -d
 ```
 
 上記でコンテナを立ち上げた後、`http://localhost:8000/`へアクセス
+
+## frontend(React)
+
+```
+$ pwd
+... docker-laravel/laravel
+$ npm install
+$ npm run dev
+```
+
+`http://localhost:8000/react/home`へアクセス
