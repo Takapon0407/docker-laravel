@@ -16,3 +16,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/react/{any}', function () {
+    return view('index');
+})->where('any', '.*');
