@@ -23,7 +23,7 @@ const images = [
             "https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC08950.jpg",
         thumbnail:
             "https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC08950.jpg",
-        description: "2022/10/31",
+        description: "2022/11/01",
     },
 ];
 
@@ -34,11 +34,11 @@ const Portfolio = () => (
         <ImageGallery
             items={images}
             showNav={false}
-            showBullets={false}
             autoPlay={true}
             showFullscreenButton={false}
             useBrowserFullscreen={false}
             showPlayButton={false}
+            showThumbnails={false}
         />
     </div>
 );
