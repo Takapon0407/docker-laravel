@@ -1,22 +1,29 @@
 import React from "react";
 import ImageGallery from "react-image-gallery";
 
-// TODO: 以下のデータはAWSのS3に配置したオブジェクトの情報で置き換える
+// TODO: 以下のデータはAWSのS3に配置したオブジェクトの情報で置き換えるので、以下形式のresponseを返すAPIを作る
 const images = [
     {
-        original: "https://picsum.photos/id/1018/1000/600/",
-        thumbnail: "https://picsum.photos/id/1018/250/150/",
+        // Example get photo from S3
+        original:
+            "https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC00909.jpg",
+        thumbnail:
+            "https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC00909.jpg",
         description: "2022/10/30", // 撮影日時をメタデータから取得して入れる
     },
     {
-        original: "https://picsum.photos/id/1015/1000/600/",
-        thumbnail: "https://picsum.photos/id/1015/250/150/",
+        original:
+            "https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC00348.jpg",
+        thumbnail:
+            "https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC00348.jpg",
         description: "2022/10/31",
     },
     {
-        original: "https://picsum.photos/id/1019/1000/600/",
-        thumbnail: "https://picsum.photos/id/1019/250/150/",
-        description: "2022/11/01",
+        original:
+            "https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC08950.jpg",
+        thumbnail:
+            "https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC08950.jpg",
+        description: "2022/10/31",
     },
 ];
 
