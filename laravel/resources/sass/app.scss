@@ -1,0 +1,41 @@
+// Fonts
+@import url("https://fonts.googleapis.com/css?family=Nunito");
+
+// Bootstrap
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+// --- ここから追加 ---
+.navbar-laravel {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+html {
+    font-family: sans-serif;
+    line-height: 1.15;
+}
+
+body {
+    font-size: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica Neue,
+        Hiragino Kaku Gothic ProN, "メイリオ", meiryo, sans-serif;
+    font-weight: 400;
+}
+
+nav {
+    background-color: #55c501 !important;
+    #Navber {
+        .navbar-nav {
+            .nav-item {
+                // 投稿するボタンの背景を深緑にする
+                #post-link {
+                    background-color: #367e00;
+                    border-radius: 5px;
+                    padding-left: 1rem;
+                    padding-right: 1rem;
+                }
+            }
+        }
+    }
+}
+// --- ここまで追加 ---
