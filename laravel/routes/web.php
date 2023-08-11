@@ -17,6 +17,10 @@ Route::get('/', function () {
     return view('top');
 });
 
+Route::get('/history', function () {
+    return view('history');
+});
+
 Route::prefix('games')->group(function () {
     Route::get('/tetris', function () {
         return view('games.tetris');
