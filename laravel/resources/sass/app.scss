@@ -5,13 +5,15 @@
 @import "../node_modules/bootstrap/scss/bootstrap";
 
 .navbar-laravel {
-    background-color: #fff;
+    background-color: #f5f6f6;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 html {
     font-family: sans-serif;
     line-height: 1.15;
+    background-color: #f5f6f6;
+    height: 100%;
 }
 
 body {
@@ -52,4 +54,54 @@ $maincolor: #55c501;
         $active-border: $maincolor,
         $active-color: darken($maincolor, 10%)
     );
+}
+
+// portfolio
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.content-box {
+    width: 70%;
+    height: 70vh;
+    background-color: #ffffff;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0.2, 0.2, 0.2, 0.2);
+    margin-top: 40px;
+    margin-bottom: 40px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    font-family: "Cherry Bomb One", sans-serif;
+}
+
+.content-box h2 {
+    margin: 0;
+    text-align: center;
+    width: 100%;
+}
+
+.sub-content {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.sub-content > div {
+    flex: 1;
+    text-align: left;
+}
+
+.sub-left-content {
+    height: 100%;
+}
+
+.sub-right-content {
+    height: 100%;
 }
