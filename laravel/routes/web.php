@@ -17,8 +17,8 @@ Route::get('/', function () {
     return view('top');
 });
 
-Route::get('/history', function () {
-    return view('history');
+Route::get('/portfolio', function () {
+    return view('portfolio');
 });
 
 Route::prefix('games')->group(function () {

@@ -19,7 +19,7 @@
     </ul>
     <ul class="navbar-nav ml-auto mr-5">
       <li class="nav-item ml-2">
-        <a class="nav-link text-white" id="history" href="/history">History</a>
+        <a class="nav-link text-white" id="portfolio" href="/portfolio">Portfolio</a>
       </li>
     </ul>
   </div>
