@@ -5,14 +5,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&display=swap" rel="stylesheet">
 <div class="container">
     <div class="content-box">
-        <h2>だれ？</h2>
+        <h2 class="font-cherry">だれ？</h2>
         <div class="sub-content">
-            <div class="sub-left-content">left</div>
+            <div class="sub-left-content">Webエンジニアをやっています。新しいこと・しょうもないことが大好物です。</div>
             <div class="sub-right-content">right</div>
         </div>
     </div>
     <div class="content-box">
-        <h2>どんなことができる？</h2>
+        <h2 class="font-cherry">どんなことができる？</h2>
     </div>
 </div>
 @endsection

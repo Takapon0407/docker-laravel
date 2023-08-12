@@ -78,7 +78,6 @@ $maincolor: #55c501;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    font-family: "Cherry Bomb One", sans-serif;
 }
 
 .content-box h2 {
@@ -104,4 +103,8 @@ $maincolor: #55c501;
 
 .sub-right-content {
     height: 100%;
+}
+
+.font-cherry {
+    font-family: "Cherry Bomb One", sans-serif;
 }
