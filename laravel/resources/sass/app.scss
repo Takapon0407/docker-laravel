@@ -37,3 +37,19 @@ nav {
         }
     }
 }
+
+// customized bootstrap button
+$maincolor: #55c501;
+.btn-primary {
+    @include button-variant(
+        $background: $maincolor,
+        $border: $maincolor,
+        $color: $white,
+        $hover-background: lighten($maincolor, 10%),
+        $hover-border: lighten($maincolor, 5%),
+        $hover-color: darken($maincolor, 10%),
+        $active-background: lighten($maincolor, 10%),
+        $active-border: $maincolor,
+        $active-color: darken($maincolor, 10%)
+    );
+}
