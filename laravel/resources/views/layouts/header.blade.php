@@ -10,22 +10,16 @@
           Dropdown
         </button>
         <ul class="dropdown-menu">
-          <li><button class="dropdown-item" type="button">Dropdown item</button></li>
-          <li><button class="dropdown-item" type="button">Dropdown item</button></li>
-          <li><button class="dropdown-item" type="button">Dropdown item</button></li>
+          <li><button class="dropdown-item" type="button">Dropdown item 1</button></li>
+          <li><button class="dropdown-item" type="button">Dropdown item 2</button></li>
+          <li><button class="dropdown-item" type="button">Dropdown item 3</button></li>
         </ul>
       </div>
       </li>
     </ul>
     <ul class="navbar-nav ml-auto mr-5">
       <li class="nav-item ml-2">
-        <a class="nav-link text-white" href="#">ストック一覧</a>
-      </li>
-      <li class="nav-item ml-2">
         <a class="nav-link text-white" id="history" href="/history">History</a>
-      </li>
-      <li class="nav-item ml-2">
-        <a class="nav-link text-white" id="register" href="/register">ユーザ登録</a>
       </li>
     </ul>
   </div>
