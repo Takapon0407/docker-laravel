@@ -18,7 +18,7 @@
             <div class="sub-right-content">
                 <div>名前: たかぽん</div>
                 <div id="age">年齢: 計算中...</div>
-                <div>趣味: カメラ, 将棋, ブログ...等</div>
+                <div>趣味: カメラ, 将棋, ブログ, アコギ等</div>
                 <div>TEL: 080-2710-3612</div>
                 <div>BLOG: <a href="https://tektektech.com/" target="_blank">てくてくテック</a></div>
             </div>
@@ -29,7 +29,7 @@
         <div class="sub-content">
             <div class="sub-left-content">
                 <ul>
-                    <li>1994年 4月: 熊本で誕生</li>
+                    <li>1994年 4月: 熊本県で誕生</li>
                     <li>2001年 4月: <a href="https://es.higo.ed.jp/kikuyoce/" target="_blank">菊陽中部小学校</a> 入学</li>
                     <li>2007年 4月: <a href="https://jh.higo.ed.jp/kikuyojh/" target="_blank">熊本県立菊陽中学校</a> 入学</li>
                     <li>2010年 3月: <a href="https://sh.higo.ed.jp/oozu/" target="_blank">熊本県立大津高等学校</a> 理数科 入学</li>
