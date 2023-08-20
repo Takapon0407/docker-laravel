@@ -68,5 +68,36 @@
             </div>
         </div>
     </div>
+    <div class="content-box">
+        <h2 class="font-cherry">すきるすたっく</h2>
+        <div class="sub-content">
+            <div class="sub-left-content">
+                <h3 class="font-cherry">げんご</h3>
+                <ul>
+                    <li>HTML</li>
+                    <li>PHP</li>
+                    <li>JS, TS</li>
+                    <li>Python</li>
+                    <li>Go</li>
+                    <li>C</li>
+                </ul>
+                <h3 class="font-cherry">クラウド</h3>
+                <ul>
+                    <li>AWS</li>
+                </ul>
+            </div>
+            <div class="sub-right-content">
+                <h3 class="font-cherry">ふれーむわーく</h3>
+                <ul>
+                    <li>Laravel</li>
+                    <li>Symfony</li>
+                    <li>CodeIgniter</li>
+                    <li>Zend</li>
+                    <li>React</li>
+                    <li>Vue</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
