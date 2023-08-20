@@ -14,9 +14,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('portfolio');
 });
 
+Route::get('/portfolio', function () {
+    return view('portfolio');
+});
 
 Route::prefix('games')->group(function () {
     Route::get('/tetris', function () {
@@ -25,7 +28,6 @@ Route::prefix('games')->group(function () {
     Route::get('/puyo', function () {
         return view('games.puyo');
     });
-
 });
 
 Route::get('/react/{any}', function () {
