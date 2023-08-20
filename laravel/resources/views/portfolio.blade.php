@@ -46,5 +46,27 @@
             </div>
         </div>
     </div>
+    <div class="content-box">
+        <h2 class="font-cherry">そのた</h2>
+        <div class="sub-content">
+            <div class="sub-left-content">
+                <h3 class="font-cherry">しかく</h3>
+                <ul>
+                    <li>2016年 11月: 基本情報技術者試験</li>
+                    <li>2018年  6月: 応用情報技術者試験</li>
+                    <li>2019年  5月: TOEIC L&R 805点</li>
+                    <li>2022年  8月: AWS Certified Cloud Practitioner</li>
+                    <li>2023年  7月: AWS Certified Solutions Architect - Associate</li>
+                </ul>
+            </div>
+            <div class="sub-right-content">
+                <h3 class="font-cherry">けいけん</h3>
+                <ul>
+                    <li>2018年  8月: <a href="https://fptsoftware.com/" target="_blank">FTPソフトウェア</a>にインターンシップ参加のため45日間ベトナムに滞在</li>
+                    <li>2018年 12月: <a href="https://www.ccny.cuny.edu/" target="_blank">CCNY</a>にて授業をうけるため一週間アメリカに滞在</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

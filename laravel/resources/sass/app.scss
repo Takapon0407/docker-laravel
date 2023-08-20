@@ -62,7 +62,7 @@ $maincolor: #55c501;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 1200px;
 }
 
 .content-box {
@@ -84,6 +84,13 @@ $maincolor: #55c501;
     margin: 0;
     text-align: center;
     width: 100%;
+    border-bottom: 2px solid #000;
+}
+.content-box h3 {
+    margin: 0;
+    text-align: center;
+    width: 100%;
+    // border-bottom: 2px solid #000;
 }
 
 .sub-content {
