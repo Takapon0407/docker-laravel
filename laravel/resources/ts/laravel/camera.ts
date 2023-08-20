@@ -1,19 +1,20 @@
 import Swiper from "swiper";
+import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-document.addEventListener("DOMContentLoaded", () => {
-    const swiper = new Swiper(".swiper-container", {
-        pagination: {
-            el: ".swiper-pagination",
-        },
-        navigation: {
-            nextEl: ".swiper-button-next",
-            prevEl: ".swiper-button-prev",
-        },
-    });
-    console.log(swiper);
-});
+// @see: https://swiperjs.com/get-started
+const swiper = new Swiper(".swiper", {
+    modules: [Navigation, Pagination],
+    loop: true,
+    pagination: {
+        el: ".swiper-pagination",
+    },
 
-console.log("hugo");
+    // Navigation arrows
+    navigation: {
+        nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
+    },
+});

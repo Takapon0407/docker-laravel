@@ -15,23 +15,21 @@
     <div class="content-box">
         <h2 class="font-cherry">とったやつ</h2>
         <div class="sub-content">
-            <div class="swiper swiper-container">
+            <div class="swiper">
                 <div class="swiper-wrapper">
                     <div class="swiper-slide">
-                        <img class="slide-photo" src="https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC00909.jpg" alt="Slide 1">
+                        <img class="slide-photo" src="https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC08950.jpg" alt="Slide 3">
                     </div>
                     <div class="swiper-slide">
                         <img class="slide-photo" src="https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC00348.jpg" alt="Slide 2">
                     </div>
                     <div class="swiper-slide">
-                        <img class="slide-photo" src="https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC08950.jpg" alt="Slide 3">
+                        <img class="slide-photo" src="https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC00909.jpg" alt="Slide 1">
                     </div>
                 </div>
-                <!-- Add Pagination -->
                 <div class="swiper-pagination"></div>
-                <!-- Add Navigation -->
-                <div class="swiper-button-next"></div>
                 <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
             </div>
         </div>
     </div>
