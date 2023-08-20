@@ -17,6 +17,7 @@
         <div class="sub-content">
             <div class="swiper">
                 <div class="swiper-wrapper">
+                    <!-- TODO: aws上の画像は後にAPIから取得した値で置き換える。 -->
                     <div class="swiper-slide">
                         <img class="slide-photo" src="https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC08950.jpg" alt="Slide 3">
                     </div>
