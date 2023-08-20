@@ -25,6 +25,10 @@ Route::get('/games', function () {
     return view('games');
 });
 
+Route::get('/camera', function () {
+    return view('camera');
+});
+
 Route::prefix('games')->group(function () {
     Route::get('/tetris', function () {
         return view('games.tetris');
