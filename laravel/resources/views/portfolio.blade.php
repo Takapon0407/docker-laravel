@@ -18,7 +18,7 @@
             <div class="sub-right-content">
                 <div>名前: たかぽん</div>
                 <div id="age">年齢: 計算中...</div>
-                <div>趣味: カメラ, 将棋, ブログ...等</div>
+                <div>趣味: カメラ, 将棋, ブログ, アコギ等</div>
                 <div>TEL: 080-2710-3612</div>
                 <div>BLOG: <a href="https://tektektech.com/" target="_blank">てくてくテック</a></div>
             </div>
@@ -64,6 +64,37 @@
                 <ul>
                     <li>2018年  8月: <a href="https://fptsoftware.com/" target="_blank">FTPソフトウェア</a>にインターンシップ参加のため45日間ベトナムに滞在</li>
                     <li>2018年 12月: <a href="https://www.ccny.cuny.edu/" target="_blank">CCNY</a>にて授業をうけるため一週間アメリカに滞在</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="content-box">
+        <h2 class="font-cherry">すきるすたっく</h2>
+        <div class="sub-content">
+            <div class="sub-left-content">
+                <h3 class="font-cherry">げんご</h3>
+                <ul>
+                    <li>HTML</li>
+                    <li>PHP</li>
+                    <li>JS, TS</li>
+                    <li>Python</li>
+                    <li>Go</li>
+                    <li>C</li>
+                </ul>
+                <h3 class="font-cherry">クラウド</h3>
+                <ul>
+                    <li>AWS</li>
+                </ul>
+            </div>
+            <div class="sub-right-content">
+                <h3 class="font-cherry">ふれーむわーく</h3>
+                <ul>
+                    <li>Laravel</li>
+                    <li>Symfony</li>
+                    <li>CodeIgniter</li>
+                    <li>Zend</li>
+                    <li>React</li>
+                    <li>Vue</li>
                 </ul>
             </div>
         </div>

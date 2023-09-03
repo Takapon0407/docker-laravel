@@ -60,14 +60,12 @@ $maincolor: #55c501;
 .container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    height: 1200px;
+    height: 100%;
 }
 
 .content-box {
     width: 70%;
-    height: 70vh;
     background-color: #ffffff;
     padding: 20px;
     box-shadow: 0 4px 8px rgba(0.2, 0.2, 0.2, 0.2);
@@ -116,4 +114,9 @@ $maincolor: #55c501;
 
 .font-cherry {
     font-family: "Cherry Bomb One", sans-serif;
+}
+
+.slide-photo {
+    height: 100%;
+    width: 100%;
 }
