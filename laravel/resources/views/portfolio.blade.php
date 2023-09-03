@@ -29,12 +29,12 @@
         <div class="sub-content">
             <div class="sub-left-content">
                 <ul>
-                    <li>1994年 4月: 熊本で誕生</li>
+                    <li>1994年 4月: 熊本県で誕生!</li>
                     <li>2001年 4月: <a href="https://es.higo.ed.jp/kikuyoce/" target="_blank">菊陽中部小学校</a> 入学</li>
                     <li>2007年 4月: <a href="https://jh.higo.ed.jp/kikuyojh/" target="_blank">熊本県立菊陽中学校</a> 入学</li>
-                    <li>2010年 3月: <a href="https://sh.higo.ed.jp/oozu/" target="_blank">熊本県立大津高等学校</a> 理数科 入学</li>
-                    <li>2013年 4月: <a href="https://www.iizuka.kyutech.ac.jp/" target="_blank">九州工業大学 情報工学部 知能情報工学科</a> 入学</li>
-                    <li>2013年 4月: <a href="https://www.kyutech.ac.jp/department/joho-kougakuhu.html" target="_blank">九州工業大学 情報工学府 先端情報工学科</a> 入学</li>
+                    <li>2010年 4月: <a href="https://sh.higo.ed.jp/oozu/" target="_blank">熊本県立大津高等学校</a> 理数科 入学</li>
+                    <li>2013年 4月: <a href="https://www.iizuka.kyutech.ac.jp/" target="_blank">九工大 情報工学部 知能情報工学科</a> 入学</li>
+                    <li>2013年 4月: <a href="https://www.kyutech.ac.jp/department/joho-kougakuhu.html" target="_blank">九工大 情報工学府 先端情報工学科</a> 入学</li>
                 </ul>
             </div>
             <div class="sub-right-content">
@@ -52,11 +52,11 @@
             <div class="sub-left-content">
                 <h3 class="font-cherry">しかく</h3>
                 <ul>
-                    <li>2016年 11月: 基本情報技術者試験</li>
-                    <li>2018年  6月: 応用情報技術者試験</li>
-                    <li>2019年  5月: TOEIC L&R 805点</li>
-                    <li>2022年  8月: AWS Certified Cloud Practitioner</li>
-                    <li>2023年  7月: AWS Certified Solutions Architect - Associate</li>
+                    <li>2016年 11月: <a href="https://www.ipa.go.jp/shiken/kubun/fe.html" target="_blank">基本情報技術者試験</a></li>
+                    <li>2018年  6月: <a href="https://www.ipa.go.jp/shiken/kubun/ap.html" target="_blank">応用情報技術者試験</a></li>
+                    <li>2019年  5月: <a href="https://www.iibc-global.org/toeic/test/lr.html" target="_blank">TOEIC L&R 805点</a></li>
+                    <li>2022年  8月: <a href="https://aws.amazon.com/jp/certification/certified-cloud-practitioner/" target="_blank">AWS Cloud Practitioner</a></li>
+                    <li>2023年  7月: <a href="https://aws.amazon.com/jp/certification/certified-solutions-architect-associate/" target="_blank">AWS SAA</a></li>
                 </ul>
             </div>
             <div class="sub-right-content">
