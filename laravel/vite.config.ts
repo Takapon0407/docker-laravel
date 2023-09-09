@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 import * as glob from "glob";
 
 // Laravel blade向けのtsファイルを取得
-const laravelEntries = glob.sync("resources/ts/laravel/*.ts");
+const laravelEntries = glob.sync("resources/ts/laravel/**/*.ts");
 
 export default defineConfig({
     plugins: [
