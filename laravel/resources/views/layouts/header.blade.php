@@ -27,19 +27,5 @@
         <a class="nav-link text-white" id="games" href="/games">Games</a>
       </li>
     </ul>
-    <ul class="navbar-nav">
-      <li class="nav-item ml-2 dropdown">
-      <div class="dropdown">
-        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-          Dropdown
-        </button>
-        <ul class="dropdown-menu">
-          <li><button class="dropdown-item" type="button">Dropdown item 1</button></li>
-          <li><button class="dropdown-item" type="button">Dropdown item 2</button></li>
-          <li><button class="dropdown-item" type="button">Dropdown item 3</button></li>
-        </ul>
-      </div>
-      </li>
-    </ul>
   </div>
 </nav>
