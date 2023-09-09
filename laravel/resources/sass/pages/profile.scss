@@ -1,0 +1,25 @@
+.logos {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
+.logos a,
+.logos a:hover {
+    text-decoration: none;
+}
+
+.logo {
+    margin-left: 0.1vw;
+}
+
+.x-logo {
+    width: 3vw;
+    height: auto;
+}
+
+.metamask-logo {
+    cursor: pointer;
+    width: 4vw;
+    height: auto;
+}
