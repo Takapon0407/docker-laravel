@@ -8,7 +8,7 @@
     color: white;
     border-radius: 5px;
     transition: bottom 0.5s;
-    animation-duration: 1s; // アニメーション時間を少し長くしてみました
+    animation-duration: 1s;
 }
 
 .notification-enter,
@@ -26,9 +26,9 @@
         transform: translateX(-50%) translateY(0);
     }
     40% {
-        transform: translateX(-50%) translateY(-15px); // -10pxから-30pxへ変更
+        transform: translateX(-50%) translateY(-15px);
     }
     60% {
-        transform: translateX(-50%) translateY(-10px); // -5pxから-15pxへ変更
+        transform: translateX(-50%) translateY(-10px);
     }
 }

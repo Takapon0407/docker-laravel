@@ -1,9 +1,9 @@
-// Bootstrap
 @import "../node_modules/bootstrap/scss/bootstrap";
 
+// css
 @import "./utli/header.scss";
 @import "./utli/notification.scss";
-@import "./profile.scss";
+@import "./pages/profile.scss";
 
 html {
     font-family: sans-serif;

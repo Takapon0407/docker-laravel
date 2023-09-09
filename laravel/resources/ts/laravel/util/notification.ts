@@ -14,7 +14,7 @@ export function showpopupNotification(message: string): void {
             notification.classList.add("notification-exit");
             setTimeout(() => {
                 notification.classList.remove("notification-exit");
-            }, 500); // 0.5s is the duration set for the transition in CSS
+            }, 500);
         }, 3000);
     }
 }
