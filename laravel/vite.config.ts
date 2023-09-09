@@ -5,7 +5,6 @@ import * as glob from "glob";
 
 // Laravel blade向けのtsファイルを取得
 const laravelEntries = glob.sync("resources/ts/laravel/*.ts");
-console.log(laravelEntries);
 
 export default defineConfig({
     plugins: [

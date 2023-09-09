@@ -1,13 +1,11 @@
-// Fonts
-@import url("https://fonts.googleapis.com/css?family=Nunito");
-
-// Bootstrap
 @import "../node_modules/bootstrap/scss/bootstrap";
 
-.navbar-laravel {
-    background-color: #f5f6f6;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-}
+// css
+@import "./utli/header.scss";
+@import "./utli/notification.scss";
+@import "./pages/util.scss";
+@import "./pages/profile.scss";
+@import "./pages/photograph.scss";
 
 html {
     font-family: sans-serif;
@@ -21,23 +19,6 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica Neue,
         Hiragino Kaku Gothic ProN, "メイリオ", meiryo, sans-serif;
     font-weight: 400;
-}
-
-nav {
-    background-color: #55c501 !important;
-    #Navber {
-        .navbar-nav {
-            .nav-item {
-                // 投稿するボタンの背景を深緑にする
-                #post-link {
-                    background-color: #367e00;
-                    border-radius: 5px;
-                    padding-left: 1rem;
-                    padding-right: 1rem;
-                }
-            }
-        }
-    }
 }
 
 // customized bootstrap button
@@ -54,69 +35,4 @@ $maincolor: #55c501;
         $active-border: $maincolor,
         $active-color: darken($maincolor, 10%)
     );
-}
-
-// portfolio
-.container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100%;
-}
-
-.content-box {
-    width: 70%;
-    background-color: #ffffff;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0.2, 0.2, 0.2, 0.2);
-    margin-top: 40px;
-    margin-bottom: 40px;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-}
-
-.content-box h2 {
-    margin: 0;
-    text-align: center;
-    width: 100%;
-    border-bottom: 2px solid #000;
-}
-.content-box h3 {
-    margin: 0;
-    text-align: center;
-    width: 100%;
-    // border-bottom: 2px solid #000;
-}
-
-.sub-content {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-top: 3%;
-}
-
-.sub-content > div {
-    flex: 1;
-    text-align: left;
-}
-
-.sub-left-content {
-    height: 100%;
-}
-
-.sub-right-content {
-    margin-left: 3%;
-    height: 100%;
-}
-
-.font-cherry {
-    font-family: "Cherry Bomb One", sans-serif;
-}
-
-.slide-photo {
-    height: 100%;
-    width: 100%;
 }

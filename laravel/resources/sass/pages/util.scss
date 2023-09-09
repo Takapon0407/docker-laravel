@@ -1,0 +1,80 @@
+// pagesで共通して利用するcss
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+
+.content-box {
+    width: 70%;
+    background-color: #ffffff;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0.2, 0.2, 0.2, 0.2);
+    margin-top: 40px;
+    margin-bottom: 40px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.content-box h2 {
+    margin: 0;
+    text-align: center;
+    width: 100%;
+    border-bottom: 2px solid #000;
+}
+.content-box h3 {
+    margin: 0;
+    text-align: center;
+    width: 100%;
+}
+
+.sub-content {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-top: 3%;
+}
+
+.sub-content > div {
+    flex: 1;
+    text-align: left;
+}
+
+.sub-left-content {
+    width: 100%;
+    height: 100%;
+}
+
+.sub-right-content {
+    position: relative;
+    width: 100%;
+    margin-left: 3%;
+}
+
+.font-cherry {
+    font-family: "Cherry Bomb One", sans-serif;
+}
+
+/* スマホ用のスタイル */
+@media (max-width: 768px) {
+    .sub-content {
+        flex-direction: column;
+    }
+    .sub-left-content,
+    .sub-right-content {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .sub-left-content,
+    .sub-right-content {
+        width: 100%;
+    }
+}

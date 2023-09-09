@@ -1,6 +1,6 @@
 @extends('layouts.common')
-@vite('resources/ts/laravel/camera.ts')
 @section('content')
+@vite('resources/ts/laravel/photograph.ts')
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&display=swap" rel="stylesheet">
@@ -18,9 +18,6 @@
             <div class="swiper">
                 <div class="swiper-wrapper">
                     <!-- TODO: aws上の画像は後にAPIから取得した値で置き換える。 -->
-                    <div class="swiper-slide">
-                        <img class="slide-photo" src="https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC08950.jpg" alt="Slide 3">
-                    </div>
                     <div class="swiper-slide">
                         <img class="slide-photo" src="https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC00348.jpg" alt="Slide 2">
                     </div>

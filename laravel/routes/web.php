@@ -14,19 +14,19 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('portfolio');
+    return view('profile');
 });
 
-Route::get('/portfolio', function () {
-    return view('portfolio');
+Route::get('/profile', function () {
+    return view('profile');
 });
 
 Route::get('/games', function () {
     return view('games');
 });
 
-Route::get('/camera', function () {
-    return view('camera');
+Route::get('/photograph', function () {
+    return view('photograph');
 });
 
 Route::prefix('games')->group(function () {
