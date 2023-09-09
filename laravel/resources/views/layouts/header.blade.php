@@ -1,7 +1,8 @@
 @vite('resources/ts/laravel/util/header.ts')
 
 <nav class="navbar navbar-expand-lg navbar-light pl-5 pr-5 pt-2 pb-2">
-  <a class="navbar-brand text-white ms-3" href="/">TektekTech</a>
+  <!-- TODO: 良いロゴができたら置き換える -->
+  <a class="navbar-brand text-white ms-3" href="/">てくてくてっく</a>
   <button 
     class="navbar-toggler"
     type="button"
