@@ -1,0 +1,51 @@
+// Fonts
+@import url("https://fonts.googleapis.com/css?family=Nunito");
+
+// Bootstrap
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+.navbar-laravel {
+    background-color: #f5f6f6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+nav {
+    background-color: #55c501 !important;
+    #Navber {
+        .navbar-nav {
+            .nav-item {
+                // 投稿するボタンの背景を深緑にする
+                #post-link {
+                    background-color: #367e00;
+                    border-radius: 5px;
+                    padding-left: 1rem;
+                    padding-right: 1rem;
+                }
+            }
+        }
+    }
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+.navbar-toggler {
+    border: none;
+}
+
+.navbar-collapse {
+    background-color: #52bd00; // ドロップダウンの背景色を黒に
+}
+
+.navbar-collapse .nav-link {
+    color: white; // ドロップダウン内のリンクの色を白に
+}
+
+.navbar-collapse .nav-link:hover {
+    color: #8cfb37; // ホバー時のリンクの色を明るい灰色に
+}
+
+.dropdown-menu {
+    width: 100%;
+}
