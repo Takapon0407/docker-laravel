@@ -1,4 +1,3 @@
-import "bootstrap";
 import moment from "moment";
 import { showpopupNotification } from "./util/notification";
 

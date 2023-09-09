@@ -1,4 +1,12 @@
-.slide-photo {
-    height: 100%;
+.swiper {
     width: 100%;
+}
+
+.swiper-slide {
+    width: 100%;
+}
+
+.slide-photo {
+    width: 100%;
+    object-fit: cover;
 }

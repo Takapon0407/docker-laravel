@@ -1,3 +1,5 @@
+@vite('resources/ts/laravel/util/header.ts')
+
 <nav class="navbar navbar-expand-lg navbar-light pl-5 pr-5 pt-2 pb-2">
   <a class="navbar-brand text-white ms-3" href="/">TektekTech</a>
   <button 

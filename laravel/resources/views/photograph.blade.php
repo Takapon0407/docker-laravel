@@ -1,6 +1,6 @@
 @extends('layouts.common')
-@vite('resources/ts/laravel/photograph.ts')
 @section('content')
+@vite('resources/ts/laravel/photograph.ts')
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&display=swap" rel="stylesheet">
