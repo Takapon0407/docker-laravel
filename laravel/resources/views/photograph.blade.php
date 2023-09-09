@@ -1,5 +1,5 @@
 @extends('layouts.common')
-@vite('resources/ts/laravel/camera.ts')
+@vite('resources/ts/laravel/photograph.ts')
 @section('content')
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

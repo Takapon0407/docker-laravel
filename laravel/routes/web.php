@@ -25,8 +25,8 @@ Route::get('/games', function () {
     return view('games');
 });
 
-Route::get('/camera', function () {
-    return view('camera');
+Route::get('/photograph', function () {
+    return view('photograph');
 });
 
 Route::prefix('games')->group(function () {
