@@ -1,5 +1,6 @@
 import "bootstrap";
 import moment from "moment";
+import { showpopupNotification } from "./util/notification";
 
 const currentDate = moment();
 const birthDate = moment("1994-04-07");
@@ -30,8 +31,6 @@ if (copyButton) {
         document.execCommand("copy");
         document.body.removeChild(textarea);
 
-        alert(
-            "たかぽんのMetamaskのアドレスがクリップボードへコピーされました!"
-        );
+        showpopupNotification("アドレスをクリップボードへコピーしました！");
     });
 }

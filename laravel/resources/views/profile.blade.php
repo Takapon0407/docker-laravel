@@ -4,6 +4,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&display=swap" rel="stylesheet">
+
+<div id="notification" class="notification"></div>
+
 <div class="container">
     <div class="content-box">
         <h2 class="font-cherry">だれ？</h2>
