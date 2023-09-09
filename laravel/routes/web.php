@@ -14,11 +14,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('portfolio');
+    return view('profile');
 });
 
-Route::get('/portfolio', function () {
-    return view('portfolio');
+Route::get('/profile', function () {
+    return view('profile');
 });
 
 Route::get('/games', function () {

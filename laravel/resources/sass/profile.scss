@@ -1,4 +1,3 @@
-// portfolio
 .container {
     display: flex;
     flex-direction: column;
@@ -52,9 +51,9 @@
 }
 
 .sub-right-content {
+    position: relative;
     width: 100%;
     margin-left: 3%;
-    height: 100%;
 }
 
 /* スマホ用のスタイル */
@@ -72,6 +71,32 @@
 .slide-photo {
     height: 100%;
     width: 100%;
+}
+
+.logos {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
+.logos a,
+.logos a:hover {
+    text-decoration: none;
+}
+
+.logo {
+    margin-left: 0.1vw;
+}
+
+.x-logo {
+    width: 3vw;
+    height: auto;
+}
+
+.metamask-logo {
+    cursor: pointer;
+    width: 4vw;
+    height: auto;
 }
 
 /* スマホ用のスタイル */

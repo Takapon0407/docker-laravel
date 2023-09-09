@@ -20,8 +20,13 @@
                 <div>名前: たかぽん</div>
                 <div id="age">年齢: 計算中...</div>
                 <div>趣味: カメラ, 将棋, ブログ, アコギ等</div>
-                <div>TEL: 080-2710-3612</div>
                 <div>BLOG: <a href="https://tektektech.com/" target="_blank">てくてくテック</a></div>
+                <div class="logos">
+                    <a href="https://twitter.com/TakaponEng">
+                        <img class="logo x-logo" src="{{ asset('assets/laravel/x-logo-black.png')}}" alt="x logo">
+                    </a>
+                    <img id="metamask-logo" class="logo metamask-logo" src="{{ asset('assets/laravel/metamask-logo.svg')}}" alt="metamask logo">
+                </div>
             </div>
         </div>
     </div>
