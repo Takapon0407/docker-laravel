@@ -61,7 +61,11 @@
 }
 
 /* スマホ用のスタイル */
+
 @media (max-width: 768px) {
+    .content-box {
+        width: 100%;
+    }
     .sub-content {
         flex-direction: column;
     }
@@ -69,12 +73,5 @@
     .sub-right-content {
         width: 100%;
         margin-left: 0;
-    }
-}
-
-@media (max-width: 768px) {
-    .sub-left-content,
-    .sub-right-content {
-        width: 100%;
     }
 }
