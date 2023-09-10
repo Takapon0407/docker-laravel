@@ -21,7 +21,6 @@ const copyButton = document.getElementById("metamask-logo");
 
 if (copyButton) {
     copyButton.addEventListener("click", function () {
-        // TODO : https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_APIに置き換える
         const textToCopy = "0x83C989e4Af7ACa81066f4F7E3a29f190d88fB14a";
         const textarea = document.createElement("textarea");
         textarea.value = textToCopy;
