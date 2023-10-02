@@ -9,20 +9,33 @@
         <div class="sub-content">
             <div class="sub-left-content">
                 <ul>
-                    <li><a href="https://genshin.hoyoverse.com/ja/" target="_blank">原神</a></li>
-                    <li><a href="https://www.arknights.jp/" target="_blank">アークナイツ</a></li>
-                    <li><a href="https://hsr.hoyoverse.com/ja-jp/home" target="_blank">崩壊スターレイル</a></li>
+                    <li class="item-tooltip">
+                        <a href="https://genshin.hoyoverse.com/ja/" target="_blank">原神
+                            <span class="item-tooltip-text">原神はオープンワールドアクションRPGです。</span>
+                        </a>
+                    </li>
+                    <li class="item-tooltip">
+                        <a href="https://www.arknights.jp/" target="_blank">崩壊スターレイル
+                            <span class="item-tooltip-text">崩壊スターレイルはターン制のRPGです。</span>
+                        </a>
+                    </li>
+                    <li class="item-tooltip">
+                        <a href="https://www.arknights.jp/" target="_blank">アークナイツ
+                            <span class="item-tooltip-text">アークナイツは戦略的タワーディフェンスゲームです。</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
     </div>
+
     <div class="content-box">
         <h2 class="font-cherry">やっていたげーむ</h2>
         <div class="sub-content">
             <div class="sub-left-content">
                 <h3 class="font-cherry">PS</h3>
                 <ul>
-                <li>がんばれゴエモン〜宇宙海賊アコギング〜</li>
+                    <li>がんばれゴエモン〜宇宙海賊アコギング〜</li>
                     <li>モンスターファーム</li>
                     <li>チョコボの不思議なダンジョン</li>
                     <li>クラッシュ・バンディクー1</li>
