@@ -85,7 +85,7 @@ li {
 }
 
 a {
-    position: relative; /* この行を追加 */
+    position: relative;
 }
 
 a:hover .item-tooltip-text {
@@ -118,7 +118,7 @@ li,
     pointer-events: none;
 }
 
-/* ツールチップが表示される位置の調整 */
+/* ツールチップが表示される位置調整 */
 .item-tooltip .item-tooltip-text::after {
     content: "";
     position: absolute;

@@ -96,8 +96,9 @@
                     <li>2016年 11月: <a href="https://www.ipa.go.jp/shiken/kubun/fe.html" target="_blank">基本情報技術者試験</a></li>
                     <li>2018年  6月: <a href="https://www.ipa.go.jp/shiken/kubun/ap.html" target="_blank">応用情報技術者試験</a></li>
                     <li>2019年  5月: <a href="https://www.iibc-global.org/toeic/test/lr.html" target="_blank">TOEIC L&R 805点</a></li>
-                    <li>2022年  8月: <a href="https://aws.amazon.com/jp/certification/certified-cloud-practitioner/" target="_blank">AWS Cloud Practitioner</a></li>
+                    <li>2022年  8月: <a href="https://aws.amazon.com/jp/certification/certified-cloud-practitioner/" target="_blank">AWS CLF</a></li>
                     <li>2023年  7月: <a href="https://aws.amazon.com/jp/certification/certified-solutions-architect-associate/" target="_blank">AWS SAA</a></li>
+                    <li>2023年  9月: <a href="https://aws.amazon.com/jp/certification/certified-developer-associate/" target="_blank">AWS DVA</a></li>
                 </ul>
             </div>
             <div class="sub-right-content">
