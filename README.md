@@ -1,8 +1,6 @@
 # docker-laravel
 
-Docker で laravel 環境を実現する.
-
-// TODO: 作るもの決めたら説明を追記
+ポートフォリオ用のサイト
 
 # branch 名の基本ルール
 
