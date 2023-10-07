@@ -12,7 +12,8 @@
         <h2 class="font-cherry">だれ？</h2>
         <div class="sub-content">
             <div class="sub-left-content">
-                <img src="https://tektektech.com/wp-content/uploads/2020/09/48579941.423B85AD1BAF42FC9C624A1F2D8422CE.19080902.jpg"
+                <img
+                    src="{{ asset('assets/laravel/profile.jpg')}}"
                     alt="profile img"
                     title="profile img"
                     width="100%"
@@ -30,6 +31,37 @@
                     </a>
                     <img id="metamask-logo" class="logo metamask-logo" src="{{ asset('assets/laravel/metamask-logo.svg')}}" alt="metamask logo">
                 </div>
+            </div>
+        </div>
+    </div>
+    <div class="content-box">
+        <h2 class="font-cherry">すきるすたっく</h2>
+        <div class="sub-content">
+            <div class="sub-left-content">
+                <h3 class="font-cherry">げんご</h3>
+                <ul>
+                    <li>HTML</li>
+                    <li>PHP</li>
+                    <li>JS, TS</li>
+                    <li>Python</li>
+                    <li>Go</li>
+                    <li>C</li>
+                </ul>
+                <h3 class="font-cherry">クラウド</h3>
+                <ul>
+                    <li>AWS</li>
+                </ul>
+            </div>
+            <div class="sub-right-content">
+                <h3 class="font-cherry">ふれーむわーく</h3>
+                <ul>
+                    <li>Laravel</li>
+                    <li>Symfony</li>
+                    <li>CodeIgniter</li>
+                    <li>Zend</li>
+                    <li>React</li>
+                    <li>Vue</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -64,8 +96,9 @@
                     <li>2016年 11月: <a href="https://www.ipa.go.jp/shiken/kubun/fe.html" target="_blank">基本情報技術者試験</a></li>
                     <li>2018年  6月: <a href="https://www.ipa.go.jp/shiken/kubun/ap.html" target="_blank">応用情報技術者試験</a></li>
                     <li>2019年  5月: <a href="https://www.iibc-global.org/toeic/test/lr.html" target="_blank">TOEIC L&R 805点</a></li>
-                    <li>2022年  8月: <a href="https://aws.amazon.com/jp/certification/certified-cloud-practitioner/" target="_blank">AWS Cloud Practitioner</a></li>
+                    <li>2022年  8月: <a href="https://aws.amazon.com/jp/certification/certified-cloud-practitioner/" target="_blank">AWS CLF</a></li>
                     <li>2023年  7月: <a href="https://aws.amazon.com/jp/certification/certified-solutions-architect-associate/" target="_blank">AWS SAA</a></li>
+                    <li>2023年  9月: <a href="https://aws.amazon.com/jp/certification/certified-developer-associate/" target="_blank">AWS DVA</a></li>
                 </ul>
             </div>
             <div class="sub-right-content">
@@ -73,37 +106,6 @@
                 <ul>
                     <li>2018年  8月: <a href="https://fptsoftware.com/" target="_blank">FTPソフトウェア</a>にインターンシップ参加のため45日間ベトナムに滞在</li>
                     <li>2018年 12月: <a href="https://www.ccny.cuny.edu/" target="_blank">CCNY</a>にて授業をうけるため一週間アメリカに滞在</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <div class="content-box">
-        <h2 class="font-cherry">すきるすたっく</h2>
-        <div class="sub-content">
-            <div class="sub-left-content">
-                <h3 class="font-cherry">げんご</h3>
-                <ul>
-                    <li>HTML</li>
-                    <li>PHP</li>
-                    <li>JS, TS</li>
-                    <li>Python</li>
-                    <li>Go</li>
-                    <li>C</li>
-                </ul>
-                <h3 class="font-cherry">クラウド</h3>
-                <ul>
-                    <li>AWS</li>
-                </ul>
-            </div>
-            <div class="sub-right-content">
-                <h3 class="font-cherry">ふれーむわーく</h3>
-                <ul>
-                    <li>Laravel</li>
-                    <li>Symfony</li>
-                    <li>CodeIgniter</li>
-                    <li>Zend</li>
-                    <li>React</li>
-                    <li>Vue</li>
                 </ul>
             </div>
         </div>

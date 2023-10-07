@@ -75,3 +75,56 @@
         margin-left: 0;
     }
 }
+
+ul {
+    padding-left: 20px;
+}
+
+li {
+    width: 100%;
+}
+
+a {
+    position: relative;
+}
+
+a:hover .item-tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+li,
+.item-tooltip {
+    width: 100%;
+}
+
+/* ツールチップテキスト（初期状態では非表示） */
+.item-tooltip .item-tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 9999;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+/* ツールチップが表示される位置調整 */
+.item-tooltip .item-tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
