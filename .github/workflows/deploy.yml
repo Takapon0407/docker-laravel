@@ -36,7 +36,6 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          cd docker-laravel
           docker build -t tektektech-webapp -f Dockerfile .
 
       - name: Configure AWS credentials
