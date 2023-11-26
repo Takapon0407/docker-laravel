@@ -1,10 +1,10 @@
 name: Deploy to EC2
 
-# on: [push]
-on:
-  push:
-    branches:
-      - main
+on: [push]
+# on:
+#   push:
+#     branches:
+#       - main
 
 jobs:
   build-and-deploy:
@@ -16,13 +16,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "20.5.0" # Node.jsのバージョンを20.5.0に設定
+          node-version: "20.5.0"
 
       - name: Install Dependencies
         run: npm install
 
       - name: Build React App
-        run: npm run build # Viteを使用してビルドする
+        run: npm run build
 
       - name: Build Docker Image
         run: docker build -t myapp .
