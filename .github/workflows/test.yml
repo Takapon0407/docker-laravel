@@ -18,6 +18,9 @@ jobs:
         with:
           php-version: "8.1"
 
+      - name: Change to the Laravel Directory
+        run: cd laravel
+
       - name: Install Dependencies
         run: composer install --no-progress
 
