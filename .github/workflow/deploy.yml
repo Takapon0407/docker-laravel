@@ -1,0 +1,10 @@
+name: "Deploy code to AWS"
+
+on: [push]
+
+jobs:
+  sample:
+    name: Hello World Job
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "test"
