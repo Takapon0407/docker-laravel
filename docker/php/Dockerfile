@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     vim \
   && docker-php-ext-install zip pdo_mysql opcache
 # Laravelアプリケーションのソースコードをコピー
-COPY . /var/www/laravel
+COPY ../../laravel /var/www/laravel
 WORKDIR /var/www
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER 1 
