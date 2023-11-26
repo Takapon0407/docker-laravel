@@ -35,7 +35,7 @@ jobs:
           composer install --no-progress
 
       - name: Build Docker Image
-        run: docker build -t tektektech .
+        run: docker build -t tektektech -f docker/Dockerfile .
 
       - name: Push to ECR
         run: |
