@@ -18,11 +18,21 @@ jobs:
         with:
           node-version: "20.5.0"
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Install Node.js dependencies and build React App
+        run: |
+          cd laravel
+          npm install
+          npm run build
 
-      - name: Build React App
-        run: npm run build
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+
+      - name: Install PHP dependencies
+        run: |
+          cd laravel
+          composer install --no-progress
 
       - name: Build Docker Image
         run: docker build -t tektektech .
