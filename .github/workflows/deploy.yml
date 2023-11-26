@@ -1,10 +1,46 @@
-name: "Deploy code to AWS"
+name: Deploy to EC2
 
-on: [push]
+# on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
-  sample:
-    name: Hello World Job
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "test"
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20.5.0" # Node.jsのバージョンを20.5.0に設定
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build React App
+        run: npm run build # Viteを使用してビルドする
+
+      - name: Build Docker Image
+        run: docker build -t myapp .
+
+      - name: Push to ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          docker tag myapp:latest ${{ secrets.AWS_ACCOUNT }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/myapp:latest
+          docker push ${{ secrets.AWS_ACCOUNT }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/myapp:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.AWS_ACCOUNT }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/myapp:latest
+            docker stop myapp || true
+            docker rm myapp || true
+            docker run -d --name myapp -p 80:80 ${{ secrets.AWS_ACCOUNT }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/myapp:latest

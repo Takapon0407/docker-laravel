@@ -24,6 +24,9 @@ jobs:
       - name: Check current dir
         run: pwd
 
+      - name: Check current dir
+        run: ls
+
       - name: Install Dependencies
         run: composer install --no-progress
 
