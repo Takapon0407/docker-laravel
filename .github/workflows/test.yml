@@ -21,6 +21,9 @@ jobs:
       - name: Change to the Laravel Directory
         run: cd laravel
 
+      - name: Check current dir
+        run: pwd
+
       - name: Install Dependencies
         run: composer install --no-progress
 
