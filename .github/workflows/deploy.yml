@@ -51,32 +51,41 @@ jobs:
           docker tag tektektech-webapp:latest ${{ secrets.AWS_ACCOUNT }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/tektektech-webapp:latest
           docker push ${{ secrets.AWS_ACCOUNT }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/tektektech-webapp:latest
 
-      - name: Transfer docker-compose.yml to EC2
+      # - name: Transfer docker-compose.yml to EC2
+      #   uses: appleboy/scp-action@master
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ${{ secrets.EC2_USER }}
+      #     key: ${{ secrets.EC2_SSH_KEY }}
+      #     source: "./docker-compose.yml"
+      #     target: "/home/ec2-user/tektektech"
+
+      - name: Transfer root files to EC2
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "./docker-compose.yml"
+          source: "."
           target: "/home/ec2-user/tektektech"
 
-      - name: Transfer Dockerfile to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "./Dockerfile"
-          target: "/home/ec2-user/tektektech"
+      # - name: Transfer Dockerfile to EC2
+      #   uses: appleboy/scp-action@master
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ${{ secrets.EC2_USER }}
+      #     key: ${{ secrets.EC2_SSH_KEY }}
+      #     source: "./Dockerfile"
+      #     target: "/home/ec2-user/tektektech"
 
-      - name: Transfer docker files to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "./docker"
-          target: "/home/ec2-user/tektektech"
+      # - name: Transfer docker files to EC2
+      #   uses: appleboy/scp-action@master
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ${{ secrets.EC2_USER }}
+      #     key: ${{ secrets.EC2_SSH_KEY }}
+      #     source: "./docker"
+      #     target: "/home/ec2-user/tektektech"
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
