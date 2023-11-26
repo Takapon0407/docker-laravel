@@ -18,6 +18,10 @@ jobs:
         with:
           php-version: "8.1"
 
+      # LaravelのAPP_KEYを設定
+      - name: Set Laravel APP_KEY
+        run: echo "APP_KEY=${{ secrets.APP_KEY }}" >> $GITHUB_ENV
+
       - name: Install Dependencies and Run Tests
         run: |
           cd laravel
