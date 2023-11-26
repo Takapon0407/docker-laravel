@@ -52,7 +52,7 @@
             <div class="sub-left-content">
                 <h3 class="font-cherry">ゲームボーイ・アドバンス</h3>
                 <ul>
-                    <li>思い出し中...</li>
+                    <li>思い出し中...です！</li>
                 </ul>
             </div>
         </div>
