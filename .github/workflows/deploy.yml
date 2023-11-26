@@ -36,8 +36,8 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          cd docker/php
-          docker build -t tektektech-webapp -f Dockerfile .
+          cd laravel
+          docker build -t tektektech-webapp -f ../docker/php/Dockerfile .
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
