@@ -81,5 +81,5 @@ jobs:
             docker pull ${{ secrets.AWS_ACCOUNT }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/tektektech-webapp:latest
             docker stop tektektech || true
             docker rm tektektech || true
-            cd /home/ec2-user/tektektech/docker-compose.yml
+            cd /home/ec2-user/tektektech
             docker-compose up -d
