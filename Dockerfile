@@ -13,7 +13,3 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV COMPOSER_HOME /composer
 ENV PATH $PATH:/composer/vendor/bin
 RUN composer global require "laravel/installer"
-# パーミッションの設定
-RUN mkdir -p laravel/storage
-RUN chown -R 1000:1000 laravel/storage \
-    && chmod -R 755 laravel/storage
