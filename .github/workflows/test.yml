@@ -1,10 +1,24 @@
-name: "Test code before deploy"
+name: Run PHPUnit Tests
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
-  sample:
-    name: Hello World Job
+  phpunit-test:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "test"
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+
+      - name: Install Dependencies
+        run: composer install --no-progress
+
+      - name: Run PHPUnit Tests
+        run: php artisan test
