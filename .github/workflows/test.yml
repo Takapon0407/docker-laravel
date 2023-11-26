@@ -18,17 +18,8 @@ jobs:
         with:
           php-version: "8.1"
 
-      - name: Change to the Laravel Directory
-        run: cd laravel
-
-      - name: Check current dir
-        run: pwd
-
-      - name: Check current dir
-        run: ls
-
-      - name: Install Dependencies
-        run: composer install --no-progress
-
-      - name: Run PHPUnit Tests
-        run: php artisan test
+      - name: Install Dependencies and Run Tests
+        run: |
+          cd laravel
+          composer install --no-progress
+          php artisan test
