@@ -1,5 +1,5 @@
 FROM php:8.1-fpm 
-COPY php.ini /usr/local/etc/php/
+COPY ../docker/php.ini /usr/local/etc/php/
 RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     libzip-dev \
