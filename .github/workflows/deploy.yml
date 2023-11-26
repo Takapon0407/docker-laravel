@@ -43,6 +43,11 @@ jobs:
           source: "."
           target: "/home/ec2-user/tektektech"
 
+      - name: Decrypt .env file
+        run: |
+          cd laravel
+          openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env -k ${{ secrets.ENCRYPTION_SECRET }}
+
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
