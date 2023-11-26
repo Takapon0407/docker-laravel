@@ -52,6 +52,7 @@ jobs:
           docker tag tektektech-webapp:latest ${{ secrets.AWS_ACCOUNT }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/tektektech-webapp:latest
           docker push ${{ secrets.AWS_ACCOUNT }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/tektektech-webapp:latest
 
+      # to check
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
