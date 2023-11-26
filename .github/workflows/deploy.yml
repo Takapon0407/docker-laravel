@@ -56,5 +56,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ec2-user/tektektech
+            openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env -k ${{ secrets.ENCRYPTION_SECRET }}
             docker build -t tektektech-webapp -f Dockerfile .
             docker-compose up -d
