@@ -1,12 +1,12 @@
 FROM php:8.1-fpm 
-COPY ../docker/php.ini /usr/local/etc/php/
+COPY ./docker/php/php.ini /usr/local/etc/php/
 RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     libzip-dev \
     vim \
   && docker-php-ext-install zip pdo_mysql opcache
 # Laravelアプリケーションのソースコードをコピー
-COPY . /var/www/laravel
+COPY ./laravel /var/www/laravel
 WORKDIR /var/www
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER 1 
