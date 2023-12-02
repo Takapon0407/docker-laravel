@@ -58,4 +58,4 @@ jobs:
             cd /home/ec2-user/tektektech/laravel
             openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env -k ${{ secrets.ENCRYPTION_SECRET }}
             cd /home/ec2-user/tektektech
-            docker-compose down && docker-compose build && docker-compose up -d
+            docker-compose up -d --build
