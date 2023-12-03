@@ -35,7 +35,7 @@
             <div class="sub-left-content">
                 <h3 class="font-cherry">PS</h3>
                 <ul>
-                    <li>がんばれゴエモン〜宇宙海賊アコギング〜</li>
+                    <li><a href="https://ja.wikipedia.org/wiki/%E3%81%8C%E3%82%93%E3%81%B0%E3%82%8C%E3%82%B4%E3%82%A8%E3%83%A2%E3%83%B3%E3%80%9C%E5%AE%87%E5%AE%99%E6%B5%B7%E8%B3%8A%E3%82%A2%E3%82%B3%E3%82%AE%E3%83%B3%E3%82%B0%E3%80%9C" target="_blank">がんばれゴエモン〜宇宙海賊アコギング〜</a></li>
                     <li>モンスターファーム</li>
                     <li>チョコボの不思議なダンジョン</li>
                     <li>クラッシュ・バンディクー1</li>

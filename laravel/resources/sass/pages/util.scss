@@ -88,6 +88,7 @@ a {
     position: relative;
 }
 
+// aタグ内にて <span class="item-tooltip-text">testです。</span>といった形で利用
 a:hover .item-tooltip-text {
     visibility: visible;
     opacity: 1;
