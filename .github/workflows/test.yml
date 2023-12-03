@@ -1,0 +1,43 @@
+name: Run PHPUnit Tests
+
+# on: [push]
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  phpunit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20.5.0"
+
+      - name: Install Node.js dependencies and build
+        run: |
+          cd laravel
+          npm install
+          npm run build
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+
+      - name: Set Laravel APP_KEY
+        run: echo "APP_KEY=${{ secrets.APP_KEY }}" >> $GITHUB_ENV
+
+      - name: Install PHP dependencies
+        run: |
+          cd laravel
+          composer install --no-progress
+
+      - name: Run PHPUnit Tests
+        run: |
+          cd laravel
+          php artisan test

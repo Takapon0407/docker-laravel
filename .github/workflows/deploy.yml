@@ -1,0 +1,60 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20.5.0"
+
+      - name: Install Node.js dependencies and build React App
+        run: |
+          cd laravel
+          npm install
+          npm run build
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+
+      - name: Install PHP dependencies
+        run: |
+          cd laravel
+          composer install --no-progress
+
+      - name: Transfer root files to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "."
+          target: "/home/ec2-user/tektektech"
+
+      - name: Decrypt .env file
+        run: |
+          cd laravel
+          openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env -k ${{ secrets.ENCRYPTION_SECRET }}
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ec2-user/tektektech/laravel
+            openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env -k ${{ secrets.ENCRYPTION_SECRET }}
+            cd /home/ec2-user/tektektech
+            docker-compose up -d --build
