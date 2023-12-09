@@ -75,7 +75,7 @@
                     <li>2007年 4月: <a href="https://jh.higo.ed.jp/kikuyojh/" target="_blank">熊本県立菊陽中学校</a> 入学</li>
                     <li>2010年 4月: <a href="https://sh.higo.ed.jp/oozu/" target="_blank">熊本県立大津高等学校</a> 理数科 入学</li>
                     <li>2013年 4月: <a href="https://www.iizuka.kyutech.ac.jp/" target="_blank">九工大 情報工学部 知能情報工学科</a> 入学</li>
-                    <li>2013年 4月: <a href="https://www.kyutech.ac.jp/department/joho-kougakuhu.html" target="_blank">九工大 情報工学府 先端情報工学科</a> 入学</li>
+                    <li>2017年 4月: <a href="https://www.kyutech.ac.jp/department/joho-kougakuhu.html" target="_blank">九工大 情報工学府 先端情報工学科</a> 入学</li>
                 </ul>
             </div>
             <div class="sub-right-content">
