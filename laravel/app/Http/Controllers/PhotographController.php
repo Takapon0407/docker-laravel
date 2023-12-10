@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Log;
+use Aws\S3\S3Client;
 
 class PhotographController extends Controller
 {
@@ -14,29 +15,53 @@ class PhotographController extends Controller
      */
     public function show(): View
     {
+        $s3Client = new S3Client([
+            'version' => 'latest',
+            'region'  => env('AWS_DEFAULT_REGION'),
+            'credentials' => [
+                'key'    => env('AWS_ACCESS_KEY_ID'),
+                'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            ],
+        ]);
+
         $disk = Storage::disk('s3');
         $allFiles = $disk->files('');
         $filesWithUrls = [];
 
         foreach ($allFiles as $file) {
-            $imageContent = $disk->get($file);
+            $url = $disk->url($file);
+            $meta = $s3Client->headObject([
+                'Bucket' => env('AWS_BUCKET'),
+                'Key'    => $file,
+            ]);
 
-            // 一時的にlocalへ保存し、縦横の解像度を取得
-            $tempPath = tempnam(sys_get_temp_dir(), 'image');
-            file_put_contents($tempPath, $imageContent);
-            [$width, $height] = getimagesize($tempPath);
-            unlink($tempPath);
-
-            // 縦構図か横構図か判定
-            $orientation = $width > $height ? 'landscape' : 'portrait';
+            $width = $meta['Metadata']['width'] ?? null;
+            $height = $meta['Metadata']['height'] ?? null;
+            $orientation = $this->getImageOrientation($width, $height);
 
             $filesWithUrls[] = [
-                'url' => $disk->url($file),
+                'url' => $url,
                 'filename' => basename($file),
                 'orientation' => $orientation
             ];
         }
 
         return view('photograph', ['files' => $filesWithUrls]);
+    }
+
+    private function getImageOrientation($width, $height)
+    {
+        // metaデータが付いていない場合は表示をしないためnullを文字列として返す
+        if ($width === null || $height === null) {
+            return 'null';
+        }
+
+        if ($width > $height) {
+            return 'landscape';
+        } elseif ($height > $width) {
+            return 'portrait';
+        } else {
+            return 'square';
+        }
     }
 }
