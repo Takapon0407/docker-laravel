@@ -36,7 +36,7 @@ class PhotographController extends Controller
                 'orientation' => $orientation
             ];
         }
-        
+
         return view('photograph', ['files' => $filesWithUrls]);
     }
 }
