@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PhotographController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,9 +26,7 @@ Route::get('/games', function () {
     return view('games');
 });
 
-Route::get('/photograph', function () {
-    return view('photograph');
-});
+Route::get('/photograph', [PhotographController::class, 'show']);
 
 Route::prefix('games')->group(function () {
     Route::get('/tetris', function () {

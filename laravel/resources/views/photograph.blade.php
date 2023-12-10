@@ -13,17 +13,37 @@
 
 <div class="container">
     <div class="content-box">
-        <h2 class="font-cherry">とったやつ</h2>
+        <h2 class="font-cherry">よこのしゃしん</h2>
         <div class="sub-content">
             <div class="swiper">
                 <div class="swiper-wrapper">
-                    <!-- TODO: aws上の画像は後にAPIから取得した値で置き換える。 -->
-                    <div class="swiper-slide">
-                        <img class="slide-photo" src="https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC00348.jpg" alt="Slide 2">
-                    </div>
-                    <div class="swiper-slide">
-                        <img class="slide-photo" src="https://photographs-qa.s3.ap-northeast-1.amazonaws.com/DSC00909.jpg" alt="Slide 1">
-                    </div>
+                @foreach ($files as $file)
+                    @if ($file['orientation'] == 'landscape')
+                        <div class="swiper-slide">
+                            <img class="slide-photo" src="{{ $file['url'] }}" alt="{{ $file['filename'] }}">
+                        </div>
+                    @endif
+                @endforeach
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="content-box">
+        <h2 class="font-cherry">たてのしゃしん</h2>
+        <div class="sub-content">
+            <div class="swiper">
+                <div class="swiper-wrapper">
+                @foreach ($files as $file)
+                    @if ($file['orientation'] == 'portrait')
+                        <div class="swiper-slide">
+                            <img class="slide-photo" src="{{ $file['url'] }}" alt="{{ $file['filename'] }}">
+                        </div>
+                    @endif
+                @endforeach
                 </div>
                 <div class="swiper-pagination"></div>
                 <div class="swiper-button-prev"></div>
