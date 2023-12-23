@@ -17,10 +17,10 @@
         <div class="sub-content">
             <div class="swiper">
                 <div class="swiper-wrapper">
-                @foreach ($files as $file)
-                    @if ($file['orientation'] == 'landscape')
+                @foreach ($photos as $photo)
+                    @if ($photo['orientation'] == 'landscape')
                         <div class="swiper-slide">
-                            <img class="slide-photo" src="{{ $file['url'] }}" alt="{{ $file['filename'] }}">
+                            <img class="slide-photo" src="{{ $photo['url'] }}" alt="{{ $photo['filename'] }}">
                         </div>
                     @endif
                 @endforeach
@@ -37,10 +37,10 @@
         <div class="sub-content">
             <div class="swiper">
                 <div class="swiper-wrapper">
-                @foreach ($files as $file)
-                    @if ($file['orientation'] == 'portrait')
+                @foreach ($photos as $photo)
+                    @if ($photo['orientation'] == 'portrait')
                         <div class="swiper-slide">
-                            <img class="slide-photo" src="{{ $file['url'] }}" alt="{{ $file['filename'] }}">
+                            <img class="slide-photo" src="{{ $photo['url'] }}" alt="{{ $photo['filename'] }}">
                         </div>
                     @endif
                 @endforeach

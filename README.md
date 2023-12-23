@@ -29,6 +29,17 @@ $ docker-compose up -d
 
 上記でコンテナを立ち上げた後、`http://localhost:8000/`へアクセス
 
+### php stan での静的分析を local で叩く
+
+pr をマージする際、actions で静的分析が行われる。
+local で php stan を動かすには以下手順を参考。
+
+```
+$ pwd
+/Users/taka/Practice/Laravel/docker-laravel/docker-laravel/laravel
+$ ./vendor/bin/phpstan analyse
+```
+
 ## frontend(React)
 
 ```
