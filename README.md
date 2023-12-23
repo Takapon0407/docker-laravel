@@ -29,6 +29,14 @@ $ docker-compose up -d
 
 上記でコンテナを立ち上げた後、`http://localhost:8000/`へアクセス
 
+### php stan での静的分析を local で叩く
+
+```
+taka@Taka laravel % pwd
+/Users/taka/Practice/Laravel/docker-laravel/docker-laravel/laravel
+taka@Taka laravel % ./vendor/bin/phpstan analyse
+```
+
 ## frontend(React)
 
 ```
