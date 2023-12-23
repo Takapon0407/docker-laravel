@@ -37,6 +37,8 @@ jobs:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
+      - name: Change to Laravel project directory
+        run: cd docker-laravel/laravel
       - name: Install Composer dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
       - name: Check with PHPStan
