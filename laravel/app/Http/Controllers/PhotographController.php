@@ -6,23 +6,29 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Log;
-use Aws\Laravel\AwsFacade as AWS;
+use Aws\S3\S3Client;
 
 class PhotographController extends Controller
 {
+    private S3Client $s3Client;
+
+    public function __construct(S3Client $s3Client)
+    {
+        $this->s3Client = $s3Client;
+    }
+
     /**
      * S3から写真リストを取得し、photographページへ遷移
      */
     public function show(): View
     {
-        $s3Client = AWS::createClient('s3');
         $disk = Storage::disk('s3');
         $allPhotoObjectKeys = $disk->files('');
         $photosWithUrls = [];
 
         foreach ($allPhotoObjectKeys as $photoObjectKey) {
             $url = $disk->url($photoObjectKey);
-            $meta = $s3Client->headObject([
+            $meta = $this->s3Client->headObject([
                 'Bucket' => env('AWS_BUCKET'),
                 'Key'    => $photoObjectKey,
             ]);
