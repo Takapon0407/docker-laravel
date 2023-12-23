@@ -31,10 +31,13 @@ $ docker-compose up -d
 
 ### php stan での静的分析を local で叩く
 
+pr をマージする際、actions で静的分析が行われる。
+local で php stan を動かすには以下手順を参考。
+
 ```
-taka@Taka laravel % pwd
+$ pwd
 /Users/taka/Practice/Laravel/docker-laravel/docker-laravel/laravel
-taka@Taka laravel % ./vendor/bin/phpstan analyse
+$ ./vendor/bin/phpstan analyse
 ```
 
 ## frontend(React)
