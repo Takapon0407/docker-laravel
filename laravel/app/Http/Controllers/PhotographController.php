@@ -18,30 +18,38 @@ class PhotographController extends Controller
     {
         $s3Client = AWS::createClient('s3');
         $disk = Storage::disk('s3');
-        $allFiles = $disk->files('');
-        $filesWithUrls = [];
+        $allPhotoObjectKeys = $disk->files('');
+        $photosWithUrls = [];
 
-        foreach ($allFiles as $file) {
-            $url = $disk->url($file);
+        foreach ($allPhotoObjectKeys as $photoObjectKey) {
+            $url = $disk->url($photoObjectKey);
             $meta = $s3Client->headObject([
                 'Bucket' => env('AWS_BUCKET'),
-                'Key'    => $file,
+                'Key'    => $photoObjectKey,
             ]);
 
             $width = $meta['Metadata']['width'] ?? null;
             $height = $meta['Metadata']['height'] ?? null;
             $orientation = $this->getImageOrientation($width, $height);
 
-            $filesWithUrls[] = [
+            $photosWithUrls[] = [
                 'url' => $url,
-                'filename' => basename($file),
+                'filename' => basename($photoObjectKey),
                 'orientation' => $orientation
             ];
         }
 
-        return view('photograph', ['files' => $filesWithUrls]);
+        return view('photograph', ['photos' => $photosWithUrls]);
     }
 
+    /**
+    * 解像度から画像の構図を判別して返す
+    *
+    * @param string $width  横の解像度
+    * @param string $height 縦の解像度
+    * 
+    * @return string 構図情報
+    */
     private function getImageOrientation(string $width, string $height)
     {
         // metaデータが付いていない場合は表示をしないためnullを文字列として返す
