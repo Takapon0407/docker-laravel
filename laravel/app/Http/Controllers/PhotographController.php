@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Log;
-use Aws\S3\S3Client;
 use Aws\Laravel\AwsFacade as AWS;
 
 class PhotographController extends Controller
