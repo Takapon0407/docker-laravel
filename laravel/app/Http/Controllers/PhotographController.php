@@ -44,18 +44,21 @@ class PhotographController extends Controller
     /**
     * 解像度から画像の構図を判別して返す
     *
-    * @param string $width  横の解像度
-    * @param string $height 縦の解像度
+    * @param string|null $width  横の解像度
+    * @param string|null $height 縦の解像度
     * 
     * @return string 構図情報
     */
-    private function getImageOrientation(string $width, string $height)
+    private function getImageOrientation(?string $width, ?string $height)
     {
         // metaデータが付いていない場合は表示をしないためnullを文字列として返す
         if ($width === null || $height === null) {
             return 'null';
         }
-
+    
+        $width = (int)$width;
+        $height = (int)$height;
+    
         if ($width > $height) {
             return 'landscape';
         } elseif ($height > $width) {
@@ -64,4 +67,5 @@ class PhotographController extends Controller
             return 'square';
         }
     }
+    
 }
