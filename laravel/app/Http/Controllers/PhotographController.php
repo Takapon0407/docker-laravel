@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Log;
 use Aws\S3\S3Client;
+use Aws\Laravel\AwsFacade as AWS;
 
 class PhotographController extends Controller
 {
@@ -15,15 +16,7 @@ class PhotographController extends Controller
      */
     public function show(): View
     {
-        $s3Client = new S3Client([
-            'version' => 'latest',
-            'region'  => env('AWS_DEFAULT_REGION'),
-            'credentials' => [
-                'key'    => env('AWS_ACCESS_KEY_ID'),
-                'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            ],
-        ]);
-
+        $s3Client = AWS::createClient('s3');
         $disk = Storage::disk('s3');
         $allFiles = $disk->files('');
         $filesWithUrls = [];
@@ -49,7 +42,7 @@ class PhotographController extends Controller
         return view('photograph', ['files' => $filesWithUrls]);
     }
 
-    private function getImageOrientation($width, $height)
+    private function getImageOrientation(string $width, string $height)
     {
         // metaデータが付いていない場合は表示をしないためnullを文字列として返す
         if ($width === null || $height === null) {
