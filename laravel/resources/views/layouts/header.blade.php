@@ -30,5 +30,10 @@
         <a class="nav-link text-white" id="games" href="/games">Games</a>
       </li>
     </ul>
+    <ul class="navbar-nav ml-auto mr-5">
+      <li class="nav-item ml-2">
+        <a class="nav-link text-white" id="music" href="/music">Music</a>
+      </li>
+    </ul>
   </div>
 </nav>

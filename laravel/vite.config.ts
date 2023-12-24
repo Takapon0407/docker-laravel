@@ -12,7 +12,6 @@ export default defineConfig({
             input: [
                 ...laravelEntries,
                 "resources/ts/app.tsx",
-                "resources/css/app.css",
                 "resources/sass/app.scss",
             ],
             refresh: true,
