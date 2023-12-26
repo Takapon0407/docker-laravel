@@ -8,6 +8,11 @@
 <div id="notification" class="notification"></div>
 
 <div class="container">
+
+    <div class="content-box">
+        <h2 class="font-cherry">本ページは現在工事中です！！！</h2>
+    </div>
+
     <div class="content-box">
         <h2 class="font-cherry">れんしゅうちゅう</h2>
         <div class="sub-content">
