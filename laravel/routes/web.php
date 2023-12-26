@@ -26,6 +26,10 @@ Route::get('/games', function () {
     return view('games');
 });
 
+Route::get('/music', function () {
+    return view('music');
+});
+
 Route::get('/photograph', [PhotographController::class, 'show']);
 
 Route::prefix('games')->group(function () {
