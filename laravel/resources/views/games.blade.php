@@ -15,7 +15,7 @@
                         </a>
                     </li>
                     <li class="item-tooltip">
-                        <a href="https://www.arknights.jp/" target="_blank">崩壊スターレイル
+                        <a href="https://hsr.hoyoverse.com/ja-jp/home" target="_blank">崩壊スターレイル
                             <span class="item-tooltip-text">崩壊スターレイルはターン制のRPGです。</span>
                         </a>
                     </li>
