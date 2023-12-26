@@ -63,3 +63,16 @@ openssl aes-256-cbc -salt -pbkdf2 -iter 10000 -in .env -out .env.production.enc 
 // 複合化(.env.productionとして書き出し)
 openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env.production -k <ENCRYPTION_SECRET>
 ```
+
+
+## 画像の追加について
+
+画像追加時の基本フローは一旦は以下の通り。
+adobe light room classicにて、下記設定で画像書き出し。
+- 1280 × 853で書き出し。（縦構図は逆）
+- Maxは150KB
+
+上記の形で書き出したファイル群をS3へPUT。
+PUT後、lambdaでメタデータに解像度が付加されるので、あとは本番の画面等で問題なく表示されていることを確認。
+
+※後々ファイル追加もフロント経由でできるといいかも（ただし、認証等入れる必要も出てきてそこまでする？感はあるので、いったんは別の見せ物優先で）
