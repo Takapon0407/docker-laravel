@@ -3,6 +3,8 @@ services:
   app:
     container_name: app
     build: .
+    volumes:
+      - ./laravel:/var/www/laravel
   nginx:
     image: nginx
     container_name: nginx
