@@ -56,7 +56,45 @@
             <div class="sub-left-content">
                 <h3 class="font-cherry">ゲームボーイ(むじるし・カラー・アドバンス)</h3>
                 <ul>
-                    <li>思い出し中...</li>
+                    <li><a href="https://www.nintendo.co.jp/n02/dmg/tra/index.html" target="_blank">テトリス</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=XFldh_i8dG0" target="_blank">らんま1/2</a></li>
+                    <li><a href="https://kirby.fandom.com/ja/wiki/%E6%98%9F%E3%81%AE%E3%82%AB%E3%83%BC%E3%83%93%E3%82%A3" target="_blank">星のカービィ</a></li>
+                    <li><a href="https://www.nintendo.co.jp/character/mario/history/land2/index.html" target="_blank">スーパーマリオランド2 6つの金貨</a></li>
+                    <li><a href="https://www.nintendo.co.jp/n02/dmg/k9j/index.html" target="_blank">カービィのピンボール</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=pKcKz9IY6rU" target="_blank">ドンキーコング</a></li>
+                    <li><a href="https://www.nintendo.co.jp/n02/dmg/akbj/index.html" target="_blank">星のカービィ2</a></li>
+                    <li><a href="https://www.nintendo.co.jp/n02/dmg/ytj/index.html" target="_blank">ドンキーコングGB</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=srGVWjGZVAo" target="_blank">ミニ四駆GB レッツ&ゴー!!</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=12jNWH2RaBw" target="_blank">もんすたあ★レース</a></li>
+                    <li><a href="https://www.nintendo.co.jp/n02/dmg/apsj/index.html" target="_blank">ポケットモンスター ピカチュウ</a></li>
+                    <li><a href="https://store-jp.nintendo.com/list/software/70010000019662.html" target="_blank">DQM テリーのワンダーランド</a></li>
+                    <li><a href="https://www.nintendo.co.jp/n02/dmg/acxj/index.html" target="_blank">ポケモンカードGB</a></li>
+                    <li><a href="https://www.pokemon.co.jp/game/other/gbc-pp/?inc=other" target="_blank">ポケモンピンボール</a></li>
+                    <li><a href="https://www.pokemon.co.jp/game/other/gbc-gs/" target="_blank">ポケットモンスター 金・銀</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=1cldsE1PSTE" target="_blank">真・女神転生デビルチルドレン 〜黒の書〜</a></li>
+                    <li><a href="https://store-jp.nintendo.com/list/software/70010000016287.html" target="_blank">ぷよぷよ通</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=pUJCqTo-Ea8&list=PL9FpUm5FSLluWho4HkfEtdM_Aaq9tOFqV&index=7" target="_blank">大工の源さん カチカチのトンカチがカチ</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=ymfXj4Fesko&list=PLPZxDfhvP5jbgoZFLZ_fHNy3cKi4YsYVH" target="_blank">DQM2 イルとルカの大冒険</a></li>
+                    <li><a href="https://www.nintendo.co.jp/n02/dmg/kkkj/index.html" target="_blank">コロコロカービィ</a></li>
+                    <li><a href="https://www.nintendo.co.jp/n02/dmg/bm8j/index.html" target="_blank">マリオテニスGB</a></li>
+                    <li><a href="https://www.pokemon.co.jp/game/other/gbc-crystal/" target="_blank">ポケットモンスター クリスタルバージョン</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=ebXI4ckhEpE&list=PLO_RLBK_tVgo0xOn8Z83qZEkQZowYpiV9&index=1" target="_blank">シルバニアファミリー2 〜色づく森のファンタジー〜</a></li>
+                    <li><a href="https://www.nintendo.co.jp/n02/dmg/b86j/index.html" target="_blank">とっとこハム太郎2 ハムちゃんず大集合でちゅ</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=0Jt3B70ufaI" target="_blank">ハムスター倶楽部</a></li>
+                    <li><a href="https://www.nintendo.co.jp/n08/amaj/index.html" target="_blank">スーパーマリオアドバンスシリーズ</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=szJHizb6FT0&list=PLV_adm-nIk-eixejlsyQJmjr7IM0bI58G&index=2" target="_blank">ハリーポッターと賢者の石 GBA</a></li>
+                    <li><a href="https://www.pokemon.co.jp/game/gba/rs/" target="_blank">ポケットモンスター ルビー・サファイア・エメラルド</a></li>
+                    <li><a href="https://www.jp.square-enix.com/game/detail/chocoboland/" target="_blank">チョコボランド</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=TB-D0VE8fCo" target="_blank">ことばのパズル もじぴったん アドバンス</a></li>
+                    <li><a href="https://www.nintendo.co.jp/n08/kirby/index.html" target="_blank">星のカービィ 夢の泉デラックス</a></li>
+                    <li><a href="https://www.jp.square-enix.com/dragonquest/ch/top.html" target="_blank">ドラゴンクエストモンスターズ キャラバンハート</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=ixx4zdVog6M" target="_blank">デュエル・マスターズ</a></li>
+                    <li><a href="https://www.jp.square-enix.com/game/detail/smdq/" target="_blank">スライムもりもりドラゴンクエスト 衝撃のしっぽ団</a></li>
+                    <li><a href="https://www.nintendo.co.jp/character/mario/history/mr_rpg/index.html" target="_blank">マリオ&ルイージRPG</a></li>
+                    <li><a href="https://www.nintendo.co.jp/n08/rzwj/index.html" target="_blank">まわるメイドインワリオ</a></li>
+                    <li><a href="https://www.nintendo.co.jp/n08/bk8j/index.html" target="_blank">星のカービィ 鏡の大迷宮</a></li>
+                    <li><a href="https://www.pokemon.co.jp/game/ds/dungeon/" target="_blank">ポケモン不思議のダンジョン 赤の救助隊</a></li>
+                    <li><a href="https://www.nintendo.co.jp/n08/brij/index.html" target="_blank">リズム天国</a></li>
                 </ul>
             </div>
         </div>
@@ -85,6 +123,7 @@
                     <li><a href="https://www.nintendo.co.jp/n01/n64/software/nus_p_npdj/index.html" target="_blank">ポケモンスタジアム金銀</a></li>
                     <li><a href="https://www.nintendo.co.jp/n01/n64/software/nus_p_nmvj/index.html" target="_blank">マリオパーティ3</a></li>
                     <li><a href="https://www.nicovideo.jp/watch/sm4900873" target="_blank">ウッチャンナンチャンの炎のチャレンジャー 電流イライラ棒 64</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=COAsmgc7PoE" target="_blank">ハムスター物語64</a></li>
                 </ul>
             </div>
             <div class="sub-left-content">
@@ -133,7 +172,12 @@
             <div class="sub-left-content">
                 <h3 class="font-cherry">PC</h3>
                 <ul>
-                    <li>思い出し中...</li>
+                    <li><a href="https://maplestory.nexon.co.jp/" target="_blank">メイプルストーリー(ビッグバン前まで)</a></li>
+                    <li><a href="https://talesweaver.nexon.co.jp/" target="_blank">テイルズウィーバー</a></li>
+                    <li><a href="https://genshin.moonrabi.jp/" target="_blank">幻想神域</a></li>
+                    <li><a href="https://www.x-legend.com/jp/ashtale/" target="_blank">Ash Tale</a></li>
+                    <li><a href="https://phantasystar.sega.jp/history/" target="_blank">ファンタシースターオンライン2</a></li>
+                    <li><a href="https://store.steampowered.com/app/571740/Golf_It/?l=japanese" target="_blank">Golf It!</a></li>
                 </ul>
             </div>
         </div>
