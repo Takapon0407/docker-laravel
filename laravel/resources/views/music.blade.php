@@ -10,7 +10,7 @@
 <div class="container">
 
     <div class="content-box">
-        <h2 class="font-cherry">本ページは現在工事中です！！！</h2>
+        <h2 class="font-cherry">このページはこうじちゅうです！！！</h2>
     </div>
 
     <div class="content-box">
