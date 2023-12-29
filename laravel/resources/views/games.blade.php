@@ -39,14 +39,14 @@
                     <li><a href="https://www.gamecity.ne.jp/mf1" target="_blank">モンスターファーム</a></li>
                     <li>
                         チョコボの不思議なダンジョン(
-                            <a href="https://ja.wikipedia.org/wiki/%E3%83%81%E3%83%A7%E3%82%B3%E3%83%9C%E3%81%AE%E4%B8%8D%E6%80%9D%E8%AD%B0%E3%81%AA%E3%83%80%E3%83%B3%E3%82%B8%E3%83%A7%E3%83%B3" target="_blank">1</a>,
-                            <a href="https://ja.wikipedia.org/wiki/%E3%83%81%E3%83%A7%E3%82%B3%E3%83%9C%E3%81%AE%E4%B8%8D%E6%80%9D%E8%AD%B0%E3%81%AA%E3%83%80%E3%83%B3%E3%82%B8%E3%83%A7%E3%83%B32" target="_blank">2</a>
+                        <a href="https://ja.wikipedia.org/wiki/%E3%83%81%E3%83%A7%E3%82%B3%E3%83%9C%E3%81%AE%E4%B8%8D%E6%80%9D%E8%AD%B0%E3%81%AA%E3%83%80%E3%83%B3%E3%82%B8%E3%83%A7%E3%83%B3" target="_blank">1</a>,
+                        <a href="https://ja.wikipedia.org/wiki/%E3%83%81%E3%83%A7%E3%82%B3%E3%83%9C%E3%81%AE%E4%B8%8D%E6%80%9D%E8%AD%B0%E3%81%AA%E3%83%80%E3%83%B3%E3%82%B8%E3%83%A7%E3%83%B32" target="_blank">2</a>
                         )
                     </li>
                     <li><a href="https://ja.wikipedia.org/wiki/%E3%82%AF%E3%83%A9%E3%83%83%E3%82%B7%E3%83%A5%E3%83%BB%E3%83%90%E3%83%B3%E3%83%87%E3%82%A3%E3%82%AF%E3%83%BC_(%E3%82%B2%E3%83%BC%E3%83%A0)" target="_blank">クラッシュ・バンディクー1</a></li>
                     <li><a href="https://ja.wikipedia.org/wiki/ONE_PIECE_%E3%82%B0%E3%83%A9%E3%83%B3%E3%83%89%E3%83%90%E3%83%88%E3%83%AB!" target="_blank">ONE PIECE グランドバトル!</a></li>
                     <li><a href="https://www.amazon.co.jp/NICE-PRICE-%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA-Vol-2-%E6%9C%AC%E6%A0%BC%E5%B0%86%E6%A3%8B%E6%8C%87%E5%8D%97/dp/B00005QHMT" target="_brank">PRICEシリーズVol.2 本格将棋指南</a></li>
-                    <li><a href="https://www.amazon.co.jp/%E3%82%A8%E3%83%8B%E3%83%83%E3%82%AF%E3%82%B9-%E3%83%89%E3%83%A9%E3%82%B4%E3%83%B3%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BA1%E3%83%BB2-%E6%98%9F%E9%99%8D%E3%82%8A%E3%81%AE%E5%8B%87%E8%80%85%E3%81%A8%E7%89%A7%E5%A0%B4%E3%81%AE%E4%BB%B2%E9%96%93%E3%81%9F%E3%81%A1/dp/B000063DJK/ref=sr_1_1?__mk_ja_JP=%E3%82%AB%E3%82%BF%E3%82%AB%E3%83%8A&crid=D8U37FNIR2H8&keywords=%E3%83%89%E3%83%A9%E3%82%B4%E3%83%B3%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BA1%E3%83%BB2+%E6%98%9F%E9%99%8D%E3%82%8A%E3%81%AE%E5%8B%87%E8%80%85%E3%81%A8%E7%89%A7%E5%A0%B4%E3%81%AE%E4%BB%B2%E9%96%93%E3%81%9F%E3%81%A1&qid=1701603876&s=videogames&sprefix=%E3%83%89%E3%83%A9%E3%82%B4%E3%83%B3%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BA1+2+%E6%98%9F%E9%99%8D%E3%82%8A%E3%81%AE%E5%8B%87%E8%80%85%E3%81%A8%E7%89%A7%E5%A0%B4%E3%81%AE%E4%BB%B2%E9%96%93%E3%81%9F%E3%81%A1%2Cvideogames%2C244&sr=1-1" >ドラゴンクエストモンスターズ1・2 星降りの勇者と牧場の仲間たち</a></li>
+                    <li><a href="https://www.jp.square-enix.com/dragonquest/psdqm12/top.html">ドラゴンクエストモンスターズ1・2 星降りの勇者と牧場の仲間たち</a></li>
                     <li><a href="https://www.youtube.com/watch?v=Q33_nTN4cqU" target="_blank">名探偵コナン</a></li>
                     <li><a href="https://www.konami.com/mg/archive/mgs/" target="_blank">メタルギアソリッド</a></li>
                     <li><a href="https://www.playstation.com/ja-jp/games/ape-escape/" target="_blank">サルゲッチュ</a></li>
@@ -54,7 +54,7 @@
                 </ul>
             </div>
             <div class="sub-left-content">
-                <h3 class="font-cherry">ゲームボーイ(むじるし・カラー・アドバンス)</h3>
+                <h3 class="font-cherry">ゲームボーイ(むじるし)</h3>
                 <ul>
                     <li><a href="https://www.nintendo.co.jp/n02/dmg/tra/index.html" target="_blank">テトリス</a></li>
                     <li><a href="https://www.youtube.com/watch?v=XFldh_i8dG0" target="_blank">らんま1/2</a></li>
@@ -70,6 +70,14 @@
                     <li><a href="https://store-jp.nintendo.com/list/software/70010000019662.html" target="_blank">DQM テリーのワンダーランド</a></li>
                     <li><a href="https://www.nintendo.co.jp/n02/dmg/acxj/index.html" target="_blank">ポケモンカードGB</a></li>
                     <li><a href="https://www.pokemon.co.jp/game/other/gbc-pp/?inc=other" target="_blank">ポケモンピンボール</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="sub-content">
+            <div class="sub-left-content">
+                <h3 class="font-cherry">ゲームボーイカラー</h3>
+                <ul>
                     <li><a href="https://www.pokemon.co.jp/game/other/gbc-gs/" target="_blank">ポケットモンスター 金・銀</a></li>
                     <li><a href="https://www.youtube.com/watch?v=1cldsE1PSTE" target="_blank">真・女神転生デビルチルドレン 〜黒の書〜</a></li>
                     <li><a href="https://store-jp.nintendo.com/list/software/70010000016287.html" target="_blank">ぷよぷよ通</a></li>
@@ -81,6 +89,11 @@
                     <li><a href="https://www.youtube.com/watch?v=ebXI4ckhEpE&list=PLO_RLBK_tVgo0xOn8Z83qZEkQZowYpiV9&index=1" target="_blank">シルバニアファミリー2 〜色づく森のファンタジー〜</a></li>
                     <li><a href="https://www.nintendo.co.jp/n02/dmg/b86j/index.html" target="_blank">とっとこハム太郎2 ハムちゃんず大集合でちゅ</a></li>
                     <li><a href="https://www.youtube.com/watch?v=0Jt3B70ufaI" target="_blank">ハムスター倶楽部</a></li>
+                </ul>
+            </div>
+            <div class="sub-left-content">
+                <h3 class="font-cherry">ゲームボーイアドバンス</h3>
+                <ul>
                     <li><a href="https://www.nintendo.co.jp/n08/amaj/index.html" target="_blank">スーパーマリオアドバンスシリーズ</a></li>
                     <li><a href="https://www.youtube.com/watch?v=szJHizb6FT0&list=PLV_adm-nIk-eixejlsyQJmjr7IM0bI58G&index=2" target="_blank">ハリーポッターと賢者の石 GBA</a></li>
                     <li><a href="https://www.pokemon.co.jp/game/gba/rs/" target="_blank">ポケットモンスター ルビー・サファイア・エメラルド</a></li>
@@ -98,6 +111,7 @@
                 </ul>
             </div>
         </div>
+
         <div class="sub-content">
             <div class="sub-left-content">
                 <h3 class="font-cherry">NINTENDO 64</h3>
@@ -130,14 +144,14 @@
                 <h3 class="font-cherry">PS2</h3>
                 <ul>
                     <li><a href="https://www.famitsu.com/news/202108/03229085.html" target="_blank">真・三國無双1</a></li>
-                    <li><a href="https://www.jp.square-enix.com/kingdom/timeline/index.html" target="_blank">キングダム ハーツ シリーズ</a> (無印・2・ファイナルミックス)</li>
+                    <li><a href="https://www.jp.square-enix.com/kingdom/timeline/index.html" target="_blank">キングダム ハーツ シリーズ</a></li>
                     <li><a href="https://www.youtube.com/watch?v=sBBH11LDhYE&list=PLDm909D4IX2IBgQcSDxCtWpQwstcW81Gg" target="_blank">ぼくのなつやすみ2 海の冒険篇</a></li>
                     <li><a href="https://www.youtube.com/watch?v=em4Bl46s55Y" target="_blank">ドラゴンクエストキャラクターズ トルネコの大冒険3 不思議のダンジョン</a></li>
                     <li><a href="https://www.youtube.com/watch?v=FB666ctDjGo" target="_blank">ラチェット&クランク1~4</a></li>
                     <li>ファイナルファンタジー (<a href="https://www.jp.square-enix.com/ffx_x-2HD/#introduction" target="_blank">X-2</a>,<a href="https://www.jp.square-enix.com/ff12_tza/" target="_blank">Ⅻ</a>)</li>
                     <li><a href="http://www.tecmo.co.jp/product/mf4/" target="_blank">モンスターファーム4</a></li>
                     <li><a href="https://www.youtube.com/watch?v=kNEBIV-jkiQ&t=96s" target="_blank">NARUTO -ナルト- ナルティメットヒーローシリーズ 1~3</a></li>
-                    <li>ドラゴンクエスト<a href="https://www.jp.square-enix.com/game/detail/dq5/" target="_blank">V</a>, <a hter="https://www.jp.square-enix.com/game/detail/dq8/" target="_blank">VIII</a></li>
+                    <li>ドラゴンクエスト<a href="https://www.jp.square-enix.com/game/detail/dq5/" target="_blank">V</a>, <a href="https://www.jp.square-enix.com/game/detail/dq8/" target="_blank">VIII</a></li>
                     <li><a href="https://www.youtube.com/watch?v=GNGagTajxF0" target="_blank">金色のガッシュベル!! 友情タッグバトル</a></li>
                     <li><a href="http://www.gust.co.jp/products/a6/" target="_blank">イリスのアトリエ エターナルマナ</a></li>
                     <li><a href="https://www.jp.square-enix.com/game/detail/itastsp/" target="_blank">ドラゴンクエスト&ファイナルファンタジー in いただきストリートSpecial</a></li>
@@ -153,10 +167,10 @@
                 <ul>
                     <li>モンスターハンター
                         (
-                            <a href="https://www.capcom-games.com/product/ja-jp/monsterhunterportable/" target="_brank">ポータブル</a>,
-                            <a href="https://www.capcom-games.com/product/ja-jp/monsterhunterportable2nd/" target="_brank">2</a>,
-                            <a href="https://www.capcom-games.com/product/ja-jp/monsterhunterportable2ndg/" target="_brank">2G</a>,
-                            <a href="https://www.capcom-games.com/product/ja-jp/monsterhunterportable3rd/" target="_brank">3</a>
+                        <a href="https://www.capcom-games.com/product/ja-jp/monsterhunterportable/" target="_brank">ポータブル</a>,
+                        <a href="https://www.capcom-games.com/product/ja-jp/monsterhunterportable2nd/" target="_brank">2</a>,
+                        <a href="https://www.capcom-games.com/product/ja-jp/monsterhunterportable2ndg/" target="_brank">2G</a>,
+                        <a href="https://www.capcom-games.com/product/ja-jp/monsterhunterportable3rd/" target="_brank">3</a>
                         )
                     </li>
                     <li><a href="https://store.playstation.com/ja-jp/product/JP9000-CUSA37872_00-UCJS100210000000" target="_blank">ブレイドダンサー</a></li>
