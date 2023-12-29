@@ -14,5 +14,4 @@ ENV COMPOSER_HOME /composer
 ENV PATH $PATH:/composer/vendor/bin
 RUN composer global require "laravel/installer"
 # パーミッションの設定
-RUN chown -R www-data:www-data laravel/storage \
-    && chmod -R 755 laravel/storage
+RUN chmod -R 777 laravel/storage
