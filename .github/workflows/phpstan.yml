@@ -3,13 +3,9 @@ on:
   push:
     branches:
       - main
-      - master
-      - develop
   pull_request:
     types:
       - opened
-      - synchronize
-      - reopened
 jobs:
   phpunit:
     name: PHPStan (PHP ${{ matrix.php-versions }} on ${{ matrix.operating-system }})
@@ -21,7 +17,7 @@ jobs:
         php-versions: ["8.1"]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
