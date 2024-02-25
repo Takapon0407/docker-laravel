@@ -27,7 +27,7 @@ $ cd ..
 $ docker-compose up -d
 ```
 
-上記でコンテナを立ち上げた後、`http://localhost:8000/`へアクセス
+上記でコンテナを立ち上げた後、`http://localhost/`へアクセス
 
 ### php stan での静的分析を local で叩く
 
