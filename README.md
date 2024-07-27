@@ -36,7 +36,7 @@ local で php stan を動かすには以下手順を参考。
 
 ```
 $ pwd
-/Users/taka/Practice/Laravel/docker-laravel/docker-laravel/laravel
+docker-laravel/laravel
 $ ./vendor/bin/phpstan analyse
 ```
 
