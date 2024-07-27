@@ -54,7 +54,7 @@ $ npm run dev
 ## env ファイルの更新手順について
 
 local にて以下を実行。
-(ENCRYPTION_SECRET は置き換える)
+(ENCRYPTION_SECRET は公開厳禁, 手元の値で置き換える)
 
 ```
 // 暗号化
