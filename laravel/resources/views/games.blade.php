@@ -45,7 +45,7 @@
                     </li>
                     <li><a href="https://ja.wikipedia.org/wiki/%E3%82%AF%E3%83%A9%E3%83%83%E3%82%B7%E3%83%A5%E3%83%BB%E3%83%90%E3%83%B3%E3%83%87%E3%82%A3%E3%82%AF%E3%83%BC_(%E3%82%B2%E3%83%BC%E3%83%A0)" target="_blank">クラッシュ・バンディクー1</a></li>
                     <li><a href="https://ja.wikipedia.org/wiki/ONE_PIECE_%E3%82%B0%E3%83%A9%E3%83%B3%E3%83%89%E3%83%90%E3%83%88%E3%83%AB!" target="_blank">ONE PIECE グランドバトル!</a></li>
-                    <li><a href="https://www.amazon.co.jp/NICE-PRICE-%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA-Vol-2-%E6%9C%AC%E6%A0%BC%E5%B0%86%E6%A3%8B%E6%8C%87%E5%8D%97/dp/B00005QHMT" target="_brank">PRICEシリーズVol.2 本格将棋指南</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=GlAQyzbC7WI" target="_brank">THE 将棋 SIMPLE 1500シリーズ</a></li>
                     <li><a href="https://www.jp.square-enix.com/dragonquest/psdqm12/top.html">ドラゴンクエストモンスターズ1・2 星降りの勇者と牧場の仲間たち</a></li>
                     <li><a href="https://www.youtube.com/watch?v=Q33_nTN4cqU" target="_blank">名探偵コナン</a></li>
                     <li><a href="https://www.konami.com/mg/archive/mgs/" target="_blank">メタルギアソリッド</a></li>
@@ -108,6 +108,8 @@
                     <li><a href="https://www.nintendo.co.jp/n08/bk8j/index.html" target="_blank">星のカービィ 鏡の大迷宮</a></li>
                     <li><a href="https://www.pokemon.co.jp/game/ds/dungeon/" target="_blank">ポケモン不思議のダンジョン 赤の救助隊</a></li>
                     <li><a href="https://www.nintendo.co.jp/n08/brij/index.html" target="_blank">リズム天国</a></li>
+                    <li><a href="https://onepiece-yume.gorillawiki.jp/" target="_blank">ONE PIECE 夢のルフィ海賊段誕生</a></li>
+                    <li><a href="https://www.youtube.com/watch?v=1OWwUx46mZQ" target="_blank">ONE PIECE 幻のグランドライン冒険紀</a></li>
                 </ul>
             </div>
         </div>
