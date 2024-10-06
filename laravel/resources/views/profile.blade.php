@@ -94,6 +94,7 @@
                     <li>2023年 7月: <a href="https://aws.amazon.com/jp/certification/certified-solutions-architect-associate/" target="_blank">AWS SAA</a></li>
                     <li>2023年 9月: <a href="https://aws.amazon.com/jp/certification/certified-developer-associate/" target="_blank">AWS DVA</a></li>
                     <li>2024年 2月: <a href="https://aws.amazon.com/jp/certification/certified-sysops-admin-associate/" target="_blank">AWS SOA</a></li>
+                    <li>2024年 9月: <a href="https://aws.amazon.com/jp/certification/certified-solutions-architect-professional" target="_blank">AWS SAP</a></li>
                 </ul>
             </div>
             <div class="sub-right-content">
