@@ -26,7 +26,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.1"
+          php-version: "8.2"
 
       - name: Set Laravel APP_KEY
         run: echo "APP_KEY=${{ secrets.APP_KEY }}" >> $GITHUB_ENV
