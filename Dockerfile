@@ -1,4 +1,4 @@
-FROM php:8.1-fpm 
+FROM php:8.2-fpm
 COPY ./docker/php/php.ini /usr/local/etc/php/
 RUN apt-get update && apt-get install -y \
     zlib1g-dev \

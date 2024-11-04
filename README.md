@@ -38,6 +38,10 @@ local で php stan を動かすには以下手順を参考。
 $ pwd
 docker-laravel/laravel
 $ ./vendor/bin/phpstan analyse
+
+// localでメモリリミットのエラーが起きる場合
+php vendor/bin/phpstan analyse app --memory-limit=1G
+
 ```
 
 ## frontend(React)
