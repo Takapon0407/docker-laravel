@@ -62,7 +62,7 @@ local にて以下を実行。
 
 ```
 // 暗号化
-openssl aes-256-cbc -salt -pbkdf2 -iter 10000 -in .env -out .env.production.enc -k <ENCRYPTION_SECRET>
+openssl aes-256-cbc -salt -pbkdf2 -iter 10000 -in .env.production -out .env.production.enc -k <ENCRYPTION_SECRET>
 
 // 複合化(.env.productionとして書き出し)
 openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env.production -k <ENCRYPTION_SECRET>
