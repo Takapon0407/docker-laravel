@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Aws\S3\S3Client;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\App;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,6 +35,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        if (App::environment('production', 'staging')) {
+            URL::forceScheme('https');
+        }
     }
 }
