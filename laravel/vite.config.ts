@@ -23,7 +23,4 @@ export default defineConfig({
             "@": "/resources/ts",
         },
     },
-    server: {
-        https: true,
-    },
 });
