@@ -6,9 +6,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&display=swap" rel="stylesheet">
 
 <link
-  rel="stylesheet"
-  href="https://unpkg.com/swiper@7/swiper-bundle.min.css"
-/>
+    rel="stylesheet"
+    href="https://unpkg.com/swiper@7/swiper-bundle.min.css" />
+
 <script src="https://unpkg.com/swiper@7/swiper-bundle.min.js"></script>
 
 <div class="container">
@@ -17,13 +17,13 @@
         <div class="sub-content">
             <div class="swiper">
                 <div class="swiper-wrapper">
-                @foreach ($photos as $photo)
+                    @foreach ($photos as $photo)
                     @if ($photo['orientation'] == 'landscape')
-                        <div class="swiper-slide">
-                            <img class="slide-photo" src="{{ $photo['url'] }}" alt="{{ $photo['filename'] }}">
-                        </div>
+                    <div class="swiper-slide">
+                        <img class="slide-photo" src="{{ $photo['url'] }}" alt="{{ $photo['filename'] }}">
+                    </div>
                     @endif
-                @endforeach
+                    @endforeach
                 </div>
                 <div class="swiper-pagination"></div>
                 <div class="swiper-button-prev"></div>
@@ -31,19 +31,19 @@
             </div>
         </div>
     </div>
-    
+
     <div class="content-box">
         <h2 class="font-cherry">たてのしゃしん</h2>
         <div class="sub-content">
             <div class="swiper">
                 <div class="swiper-wrapper">
-                @foreach ($photos as $photo)
+                    @foreach ($photos as $photo)
                     @if ($photo['orientation'] == 'portrait')
-                        <div class="swiper-slide">
-                            <img class="slide-photo" src="{{ $photo['url'] }}" alt="{{ $photo['filename'] }}">
-                        </div>
+                    <div class="swiper-slide">
+                        <img class="slide-photo" src="{{ $photo['url'] }}" alt="{{ $photo['filename'] }}">
+                    </div>
                     @endif
-                @endforeach
+                    @endforeach
                 </div>
                 <div class="swiper-pagination"></div>
                 <div class="swiper-button-prev"></div>
