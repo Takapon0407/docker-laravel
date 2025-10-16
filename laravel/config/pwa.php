@@ -19,15 +19,15 @@ return [
     */
 
     'manifest' => [
-        'name' => 'Laravel PWA',
-        'short_name' => 'LPT',
-        'background_color' => '#6777ef',
+        'name' => 'てくてくテック ポートフォリオ',
+        'short_name' => 'tektektech',
+        'background_color' => '#55c501',
         'display' => 'fullscreen',
-        'description' => 'A Progressive Web Application setup for Laravel projects.',
-        'theme_color' => '#6777ef',
+        'description' => 'A portfolio site for TekTekTech, showcasing projects and skills in web development and technology.',
+        'theme_color' => '#55c501',
         'icons' => [
             [
-                'src' => 'logo.png',
+                'src' => 'tektektech.jpg',
                 'sizes' => '512x512',
                 'type' => 'image/png',
             ],
