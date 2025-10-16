@@ -1,14 +1,14 @@
 {
-    "name": "Laravel PWA",
-    "short_name": "LPT",
+    "name": "てくてくテック ポートフォリオ",
+    "short_name": "tektektech",
     "start_url": "/",
-    "background_color": "#000000",
-    "description": "A Progressive Web Application setup for Laravel projects.",
+    "background_color": "#55c501",
     "display": "fullscreen",
-    "theme_color": "#000000",
+    "description": "A portfolio site for TekTekTech, showcasing projects and skills in web development and technology.",
+    "theme_color": "#55c501",
     "icons": [
         {
-            "src": "logo.png",
+            "src": "tektektech.jpg",
             "sizes": "512x512",
             "type": "image/png"
         }
