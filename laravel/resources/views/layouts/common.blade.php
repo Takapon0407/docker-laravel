@@ -7,6 +7,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- responsiveにするために追加 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWAに対応するために追加 -->
+    @PwaHead
     <title>てくてくテック</title>
     <!-- cssをインポート -->
     @vite('resources/sass/app.scss')
