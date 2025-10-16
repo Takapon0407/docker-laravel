@@ -11,6 +11,7 @@
         "php": "^8.2.0",
         "aws/aws-sdk-php": "^3.293",
         "aws/aws-sdk-php-laravel": "^3.8",
+        "erag/laravel-pwa": "^1.9",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",
