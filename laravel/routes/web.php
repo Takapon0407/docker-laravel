@@ -44,3 +44,7 @@ Route::prefix('games')->group(function () {
 Route::get('/react/{any}', function () {
     return view('index');
 })->where('any', '.*');
+
+Route::get('/hello-world', function () {
+    return view('top');
+});
