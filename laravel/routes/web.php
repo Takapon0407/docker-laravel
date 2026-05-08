@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PhotographController;
+use App\Http\Controllers\HobbiesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,15 +22,7 @@ Route::get('/profile', function () {
     return view('profile');
 });
 
-Route::get('/games', function () {
-    return view('games');
-});
-
-Route::get('/music', function () {
-    return view('music');
-});
-
-Route::get('/photograph', [PhotographController::class, 'show']);
+Route::get('/hobbies', [HobbiesController::class, 'show']);
 
 Route::prefix('games')->group(function () {
     Route::get('/tetris', function () {
