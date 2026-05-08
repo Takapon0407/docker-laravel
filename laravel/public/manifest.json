@@ -1,11 +1,11 @@
 {
-    "name": "てくてくテック ポートフォリオ",
+    "name": "\u3066\u304f\u3066\u304f\u30c6\u30c3\u30af \u30dd\u30fc\u30c8\u30d5\u30a9\u30ea\u30aa",
     "short_name": "tektektech",
-    "start_url": "/",
     "background_color": "#55c501",
     "display": "fullscreen",
     "description": "A portfolio site for TekTekTech, showcasing projects and skills in web development and technology.",
     "theme_color": "#55c501",
+    "start_url": "/",
     "icons": [
         {
             "src": "tektektech.jpg",
