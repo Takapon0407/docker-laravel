@@ -19,10 +19,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(S3Client::class, function ($app) {
             return new S3Client([
                 'version' => 'latest',
-                'region'  => env('AWS_DEFAULT_REGION'),
+                'region'  => config('filesystems.disks.s3.region'),
                 'credentials' => [
-                    'key'    => env('AWS_ACCESS_KEY_ID'),
-                    'secret' => env('AWS_SECRET_ACCESS_KEY'),
+                    'key'    => config('filesystems.disks.s3.key'),
+                    'secret' => config('filesystems.disks.s3.secret'),
                 ],
             ]);
         });
