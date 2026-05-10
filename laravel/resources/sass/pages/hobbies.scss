@@ -162,8 +162,8 @@
     }
 }
 
-// ゲームリンクのツールチップ
-.item-tooltip {
+// ゲームリンクのツールチップ（hobbies内スコープ）
+.hobbies-container .item-tooltip {
     position: relative;
     list-style: disc;
 
