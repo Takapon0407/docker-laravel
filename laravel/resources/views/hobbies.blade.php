@@ -12,21 +12,24 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link active font-cherry" id="tab-photo-btn"
                 data-bs-toggle="tab" data-bs-target="#tab-photo"
-                type="button" role="tab">
+                type="button" role="tab"
+                aria-controls="tab-photo" aria-selected="true">
                 📸 写真
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link font-cherry" id="tab-music-btn"
                 data-bs-toggle="tab" data-bs-target="#tab-music"
-                type="button" role="tab">
+                type="button" role="tab"
+                aria-controls="tab-music" aria-selected="false">
                 🎵 音楽
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link font-cherry" id="tab-games-btn"
                 data-bs-toggle="tab" data-bs-target="#tab-games"
-                type="button" role="tab">
+                type="button" role="tab"
+                aria-controls="tab-games" aria-selected="false">
                 🎮 ゲーム
             </button>
         </li>
@@ -35,7 +38,7 @@
     <div class="tab-content" id="hobbyTabContent">
 
         {{-- ========== 写真タブ ========== --}}
-        <div class="tab-pane fade show active" id="tab-photo" role="tabpanel">
+        <div class="tab-pane fade show active" id="tab-photo" role="tabpanel" aria-labelledby="tab-photo-btn">
 
             <div class="content-box">
                 <h2 class="font-cherry">よこのしゃしん</h2>
@@ -100,7 +103,7 @@
         </div>{{-- /tab-photo --}}
 
         {{-- ========== 音楽タブ ========== --}}
-        <div class="tab-pane fade" id="tab-music" role="tabpanel">
+        <div class="tab-pane fade" id="tab-music" role="tabpanel" aria-labelledby="tab-music-btn">
 
             <div class="content-box">
                 <h2 class="font-cherry">がっき</h2>
@@ -127,7 +130,7 @@
         </div>{{-- /tab-music --}}
 
         {{-- ========== ゲームタブ ========== --}}
-        <div class="tab-pane fade" id="tab-games" role="tabpanel">
+        <div class="tab-pane fade" id="tab-games" role="tabpanel" aria-labelledby="tab-games-btn">
 
             {{-- 今やっているゲーム --}}
             <div class="content-box">
@@ -172,8 +175,11 @@
                     ] as $id => $label)
                         <li class="nav-item" role="presentation">
                             <button class="nav-link {{ $id === 'ps' ? 'active' : '' }} font-cherry"
+                                id="platform-{{ $id }}-btn"
                                 data-bs-toggle="pill" data-bs-target="#platform-{{ $id }}"
-                                type="button" role="tab">
+                                type="button" role="tab"
+                                aria-controls="platform-{{ $id }}"
+                                aria-selected="{{ $id === 'ps' ? 'true' : 'false' }}">
                                 {{ $label }}
                             </button>
                         </li>
@@ -182,7 +188,7 @@
 
                 <div class="tab-content platform-tab-content">
 
-                    <div class="tab-pane fade show active" id="platform-ps" role="tabpanel">
+                    <div class="tab-pane fade show active" id="platform-ps" role="tabpanel" aria-labelledby="platform-ps-btn">
                         <ul>
                             <li><a href="https://ja.wikipedia.org/wiki/%E3%81%8C%E3%82%93%E3%81%B0%E3%82%8C%E3%82%B4%E3%82%A8%E3%83%A2%E3%83%B3%E3%80%9C%E5%AE%87%E5%AE%99%E6%B5%B7%E8%B3%8A%E3%82%A2%E3%82%B3%E3%82%AE%E3%83%B3%E3%82%B0%E3%80%9C" target="_blank" rel="noopener noreferrer">がんばれゴエモン〜宇宙海賊アコギング〜</a></li>
                             <li><a href="https://www.gamecity.ne.jp/mf1" target="_blank" rel="noopener noreferrer">モンスターファーム</a></li>
@@ -198,7 +204,7 @@
                         </ul>
                     </div>
 
-                    <div class="tab-pane fade" id="platform-gb" role="tabpanel">
+                    <div class="tab-pane fade" id="platform-gb" role="tabpanel" aria-labelledby="platform-gb-btn">
                         <ul>
                             <li><a href="https://www.nintendo.co.jp/n02/dmg/tra/index.html" target="_blank" rel="noopener noreferrer">テトリス</a></li>
                             <li><a href="https://www.youtube.com/watch?v=XFldh_i8dG0" target="_blank" rel="noopener noreferrer">らんま1/2</a></li>
@@ -217,7 +223,7 @@
                         </ul>
                     </div>
 
-                    <div class="tab-pane fade" id="platform-gbc" role="tabpanel">
+                    <div class="tab-pane fade" id="platform-gbc" role="tabpanel" aria-labelledby="platform-gbc-btn">
                         <ul>
                             <li><a href="https://www.pokemon.co.jp/game/other/gbc-gs/" target="_blank" rel="noopener noreferrer">ポケットモンスター 金・銀</a></li>
                             <li><a href="https://www.youtube.com/watch?v=1cldsE1PSTE" target="_blank" rel="noopener noreferrer">真・女神転生デビルチルドレン 〜黒の書〜</a></li>
@@ -233,7 +239,7 @@
                         </ul>
                     </div>
 
-                    <div class="tab-pane fade" id="platform-gba" role="tabpanel">
+                    <div class="tab-pane fade" id="platform-gba" role="tabpanel" aria-labelledby="platform-gba-btn">
                         <ul>
                             <li><a href="https://www.nintendo.co.jp/n08/amaj/index.html" target="_blank" rel="noopener noreferrer">スーパーマリオアドバンスシリーズ</a></li>
                             <li><a href="https://www.youtube.com/watch?v=szJHizb6FT0&list=PLV_adm-nIk-eixejlsyQJmjr7IM0bI58G&index=2" target="_blank" rel="noopener noreferrer">ハリーポッターと賢者の石 GBA</a></li>
@@ -254,7 +260,7 @@
                         </ul>
                     </div>
 
-                    <div class="tab-pane fade" id="platform-n64" role="tabpanel">
+                    <div class="tab-pane fade" id="platform-n64" role="tabpanel" aria-labelledby="platform-n64-btn">
                         <ul>
                             <li><a href="https://www.nintendo.co.jp/n01/n64/software/nus_p_nsmj/index.html" target="_blank" rel="noopener noreferrer">スーパーマリオ６４</a></li>
                             <li><a href="https://www.nintendo.co.jp/n01/n64/software/nus_p_nmkj/index.html" target="_blank" rel="noopener noreferrer">マリオカート６４</a></li>
@@ -279,7 +285,7 @@
                         </ul>
                     </div>
 
-                    <div class="tab-pane fade" id="platform-ps2" role="tabpanel">
+                    <div class="tab-pane fade" id="platform-ps2" role="tabpanel" aria-labelledby="platform-ps2-btn">
                         <ul>
                             <li><a href="https://www.famitsu.com/news/202108/03229085.html" target="_blank" rel="noopener noreferrer">真・三國無双1</a></li>
                             <li><a href="https://www.jp.square-enix.com/kingdom/timeline/index.html" target="_blank" rel="noopener noreferrer">キングダム ハーツ シリーズ</a></li>
@@ -299,7 +305,7 @@
                         </ul>
                     </div>
 
-                    <div class="tab-pane fade" id="platform-psp" role="tabpanel">
+                    <div class="tab-pane fade" id="platform-psp" role="tabpanel" aria-labelledby="platform-psp-btn">
                         <ul>
                             <li>モンスターハンター (<a href="https://www.capcom-games.com/product/ja-jp/monsterhunterportable/" target="_blank" rel="noopener noreferrer">P</a>, <a href="https://www.capcom-games.com/product/ja-jp/monsterhunterportable2nd/" target="_blank" rel="noopener noreferrer">2</a>, <a href="https://www.capcom-games.com/product/ja-jp/monsterhunterportable2ndg/" target="_blank" rel="noopener noreferrer">2G</a>, <a href="https://www.capcom-games.com/product/ja-jp/monsterhunterportable3rd/" target="_blank" rel="noopener noreferrer">3</a>)</li>
                             <li><a href="https://store.playstation.com/ja-jp/product/JP9000-CUSA37872_00-UCJS100210000000" target="_blank" rel="noopener noreferrer">ブレイドダンサー</a></li>
@@ -313,7 +319,7 @@
                         </ul>
                     </div>
 
-                    <div class="tab-pane fade" id="platform-pc" role="tabpanel">
+                    <div class="tab-pane fade" id="platform-pc" role="tabpanel" aria-labelledby="platform-pc-btn">
                         <ul>
                             <li><a href="https://maplestory.nexon.co.jp/" target="_blank" rel="noopener noreferrer">メイプルストーリー（ビッグバン前まで）</a></li>
                             <li><a href="https://talesweaver.nexon.co.jp/" target="_blank" rel="noopener noreferrer">テイルズウィーバー</a></li>
