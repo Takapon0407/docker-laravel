@@ -68,17 +68,22 @@
     }
 }
 
-// サブコンテンツ
-.sub-content {
-    display: flex;
-    gap: 2rem;
-    flex-wrap: wrap;
-}
+// サブコンテンツ（hobbies内スコープ）
+.hobbies-container {
+    .sub-content {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin-top: 0;
+    }
 
-.sub-left-content,
-.sub-right-content {
-    flex: 1;
-    min-width: 200px;
+    .sub-left-content,
+    .sub-right-content {
+        flex: 1;
+        min-width: 200px;
+        width: auto;
+        margin-left: 0;
+    }
 }
 
 // 趣味リスト（音楽など）
