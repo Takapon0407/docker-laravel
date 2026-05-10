@@ -45,16 +45,6 @@ php artisan test
 php artisan test --filter=テストメソッド名
 ```
 
-### コードレビュー（ローカル）
-
-```bash
-# リポジトリルートから実行。develop との差分を Claude Code にレビューさせる
-make review
-
-# ベースブランチを指定する場合
-make review BASE_BRANCH=main
-```
-
 ## アーキテクチャ
 
 ### 全体構成
