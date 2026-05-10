@@ -29,6 +29,21 @@ $ docker-compose up -d
 
 上記でコンテナを立ち上げた後、`http://localhost/`へアクセス
 
+### Claude Code によるコードレビューを local で叩く
+
+PR 前に差分をローカルで Claude Code にレビューさせることができる。
+
+```
+$ pwd
+docker-laravel (=リポジトリのルート)
+
+# develop との差分をレビュー（デフォルト）
+$ make review
+
+# ベースブランチを指定する場合
+$ make review BASE_BRANCH=main
+```
+
 ### php stan での静的分析を local で叩く
 
 pr をマージする際、actions で静的分析が行われる。
