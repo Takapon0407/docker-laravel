@@ -1,0 +1,165 @@
+// util.scss の .container override をリセット
+.hobbies-container {
+    display: block;
+    flex-direction: initial;
+    align-items: initial;
+    height: auto;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+// メインタブ（util.scss の li { width: 100% } をリセット）
+.hobby-main-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    border-bottom: 2px solid #dee2e6;
+
+    .nav-item {
+        width: auto;
+    }
+
+    .nav-link {
+        font-size: 1.1rem;
+        padding: 0.6rem 1.4rem;
+        white-space: nowrap;
+        color: #555;
+
+        &.active {
+            font-weight: bold;
+            color: #55c501;
+            border-bottom: 3px solid #55c501;
+        }
+    }
+}
+
+// コンテンツボックス（util.scss の align-items: center をリセット）
+.hobbies-container .content-box {
+    display: block;
+    align-items: initial;
+    justify-content: initial;
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-top: 0;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1.2rem;
+        color: #333;
+    }
+
+    h3 {
+        font-size: 1.1rem;
+        color: #555;
+        margin-bottom: 0.6rem;
+    }
+
+    ul:not(.nav) {
+        padding-left: 1.2rem;
+        margin-bottom: 0;
+
+        li {
+            padding: 0.2rem 0;
+        }
+    }
+}
+
+// サブコンテンツ（hobbies内スコープ）
+.hobbies-container {
+    .sub-content {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin-top: 0;
+    }
+
+    .sub-left-content,
+    .sub-right-content {
+        flex: 1;
+        min-width: 200px;
+        width: auto;
+        margin-left: 0;
+    }
+}
+
+// 趣味リスト（音楽など）
+.hobby-list {
+    list-style: none;
+    padding: 0;
+
+    li {
+        padding: 0.4rem 0;
+        font-size: 1.05rem;
+        border-bottom: 1px solid #f0f0f0;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+}
+
+// Swiper（写真）
+.swiper {
+    width: 100%;
+}
+
+.swiper-slide {
+    width: 100%;
+}
+
+.photo-swiper {
+    width: 100%;
+    max-height: 480px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #1a1a1a;
+}
+
+.slide-photo {
+    width: 100%;
+    max-height: 480px;
+    object-fit: contain;
+    display: block;
+}
+
+// プラットフォームタブ（util.scss の li { width: 100% } をリセット）
+.platform-tabs {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    width: 100%;
+
+    .nav-item {
+        width: auto;
+    }
+
+    .nav-link {
+        display: inline-block;
+        font-size: 0.85rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        color: #555;
+        border: 1px solid #ccc;
+
+        &.active {
+            background-color: #55c501;
+            border-color: #55c501;
+            color: #fff;
+        }
+    }
+}
+
+.platform-tab-content {
+    margin-top: 1rem;
+    width: 100%;
+
+    .tab-pane {
+        width: 100%;
+    }
+}
+
