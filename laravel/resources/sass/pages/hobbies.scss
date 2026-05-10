@@ -162,30 +162,3 @@
     }
 }
 
-// ゲームリンクのツールチップ（hobbies内スコープ）
-.hobbies-container .item-tooltip {
-    position: relative;
-    list-style: disc;
-
-    .item-tooltip-text {
-        visibility: hidden;
-        background-color: #333;
-        color: #fff;
-        text-align: center;
-        border-radius: 6px;
-        padding: 4px 10px;
-        position: absolute;
-        z-index: 10;
-        left: 100%;
-        top: 50%;
-        transform: translateY(-50%);
-        white-space: nowrap;
-        font-size: 0.8rem;
-        margin-left: 10px;
-        pointer-events: none;
-    }
-
-    &:hover .item-tooltip-text {
-        visibility: visible;
-    }
-}

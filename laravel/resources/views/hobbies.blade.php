@@ -138,21 +138,9 @@
                 <div class="sub-content">
                     <div class="sub-left-content">
                         <ul>
-                            <li class="item-tooltip">
-                                <a href="https://genshin.hoyoverse.com/ja/" target="_blank" rel="noopener noreferrer">原神
-                                    <span class="item-tooltip-text">オープンワールドアクションRPG!</span>
-                                </a>
-                            </li>
-                            <li class="item-tooltip">
-                                <a href="https://hsr.hoyoverse.com/ja-jp/home" target="_blank" rel="noopener noreferrer">崩壊スターレイル
-                                    <span class="item-tooltip-text">ターン制のRPG!</span>
-                                </a>
-                            </li>
-                            <li class="item-tooltip">
-                                <a href="https://www.arknights.jp/" target="_blank" rel="noopener noreferrer">アークナイツ
-                                    <span class="item-tooltip-text">戦略的タワーディフェンスゲーム!</span>
-                                </a>
-                            </li>
+                            <li><a href="https://genshin.hoyoverse.com/ja/" target="_blank" rel="noopener noreferrer">原神</a></li>
+                            <li><a href="https://hsr.hoyoverse.com/ja-jp/home" target="_blank" rel="noopener noreferrer">崩壊スターレイル</a></li>
+                            <li><a href="https://www.arknights.jp/" target="_blank" rel="noopener noreferrer">アークナイツ</a></li>
                         </ul>
                     </div>
                 </div>
