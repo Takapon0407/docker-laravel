@@ -58,15 +58,16 @@ $ npm run dev
 
 ## env ファイルの更新手順について
 
-local にて以下を実行。
-(ENCRYPTION_SECRET は公開厳禁, 手元の値で置き換える)
+local の `laravel/` ディレクトリにて以下を実行。
+パスフレーズ（GitHub Secrets の `ENCRYPTION_SECRET` と同じ値）は `~/.config/tektektech/enc_pass` に保存しておく（公開厳禁、`.env.production` には書かない）。
+コマンド引数に直接書くとシェル履歴やプロセス一覧に残るため、`-pass file:` で読み込む。
 
 ```
 // 暗号化
-openssl aes-256-cbc -salt -pbkdf2 -iter 10000 -in .env.production -out .env.production.enc -k <ENCRYPTION_SECRET>
+openssl aes-256-cbc -salt -pbkdf2 -iter 10000 -in .env.production -out .env.production.enc -pass file:$HOME/.config/tektektech/enc_pass
 
 // 復号化(.env.productionとして書き出し)
-openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env.production -k <ENCRYPTION_SECRET>
+openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env.production -pass file:$HOME/.config/tektektech/enc_pass
 ```
 
 ## 画像の追加について
