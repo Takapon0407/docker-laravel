@@ -8,10 +8,9 @@ RUN apt-get update && apt-get install -y \
 # Laravelアプリケーションのソースコードをコピー
 COPY ./laravel /var/www/laravel
 WORKDIR /var/www
-COPY --from=composer /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER 1 
 ENV COMPOSER_HOME /composer
 ENV PATH $PATH:/composer/vendor/bin
-RUN composer global require "laravel/installer"
 # パーミッションの設定
 RUN chmod -R 777 laravel/storage
