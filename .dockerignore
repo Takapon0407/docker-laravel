@@ -1,0 +1,9 @@
+# 秘密情報・不要物をイメージに含めない（実行時は ./laravel をバインドマウントする）
+.git
+.github
+.claude
+security-audit
+docker/db
+laravel/.env
+laravel/.env.*
+laravel/node_modules
