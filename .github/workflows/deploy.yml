@@ -5,36 +5,42 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
+      # サードパーティ製を含むアクションはすべてコミットSHAで固定（タグ/ブランチの書き換えによる改ざん対策）
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "20.5.0"
 
       - name: Install Node.js dependencies and build React App
         run: |
           cd laravel
-          npm install
+          npm ci
           npm run build
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: "8.4"
 
       - name: Install PHP dependencies
         run: |
           cd laravel
-          composer install --no-progress
+          composer install --no-dev --optimize-autoloader --no-progress
 
       - name: Transfer root files to EC2
-        uses: appleboy/scp-action@master
+        uses: appleboy/scp-action@ff85246acaad7bdce478db94a363cd2bf7c90345 # v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
@@ -42,21 +48,23 @@ jobs:
           source: "."
           target: "/home/ec2-user/tektektech"
 
-      - name: Decrypt .env file
-        run: |
-          cd laravel
-          openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env -k ${{ secrets.ENCRYPTION_SECRET }}
-
+      # .env の復号はEC2上でのみ行う（runner上に平文の.envを残さない）
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+        env:
+          ENCRYPTION_SECRET: ${{ secrets.ENCRYPTION_SECRET }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          envs: ENCRYPTION_SECRET
           script: |
+            set -e
             cd /home/ec2-user/tektektech/laravel
             sudo chmod -R 777 storage
-            openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env -k ${{ secrets.ENCRYPTION_SECRET }}
+            # パスフレーズはコマンド引数ではなく環境変数で渡す（ps等に表示させない）
+            openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env -pass env:ENCRYPTION_SECRET
             cd /home/ec2-user/tektektech
-            docker-compose up -d --build
+            docker-compose up -d --build --remove-orphans
+            docker-compose exec -T app php laravel/artisan config:cache
             docker image prune -f

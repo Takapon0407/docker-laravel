@@ -14,6 +14,7 @@ class Kernel extends HttpKernel
      * @var array<int, class-string|string>
      */
     protected $middleware = [
+        // CloudFront経由ではオリジンに渡るHostが設定次第で変わるため無効のまま（URL生成はAppServiceProviderでAPP_URLに固定）
         // \App\Http\Middleware\TrustHosts::class,
         \App\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\HandleCors::class,
