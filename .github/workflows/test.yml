@@ -39,6 +39,8 @@ jobs:
         run: |
           cd laravel
           composer install --no-progress
+          # .env が無いとテスト時に読み込み警告が出るため雛形をコピー（APP_KEY は上の環境変数が優先される）
+          cp .env.example .env
 
       - name: Run PHPUnit Tests
         run: |
