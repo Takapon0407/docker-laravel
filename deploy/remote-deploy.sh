@@ -22,7 +22,9 @@ cp -a "$RELEASE_DIR/." "$BASE/"
 # （storage 内は php-fpm(www-data) が作ったファイルで、Blade のコンパイル済みビューは
 #   所有者でないと touch() で更新日時を設定できず 500 になるため、所有者を変えない）
 find "$BASE" -path "$BASE/laravel/storage" -prune -o -exec chown -h ec2-user:ec2-user {} +
-chmod -R 777 storage
+# storage と bootstrap/cache は php-fpm（www-data, uid/gid 33）だけが書き込めるようにする（777 にしない）
+chown -R 33:33 storage bootstrap/cache
+chmod -R u=rwX,g=rX,o= storage bootstrap/cache
 
 # .env の復号。パスフレーズは EC2 の IAM ロールで Parameter Store から取得し、環境変数で openssl に渡す
 # （コマンド引数・SSM のコマンド履歴・ログには値を出さない）
@@ -31,16 +33,19 @@ ENCRYPTION_SECRET="$(aws ssm get-parameter --region "$AWS_REGION" --name "$ENC_K
 export ENCRYPTION_SECRET
 openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env -pass env:ENCRYPTION_SECRET
 unset ENCRYPTION_SECRET
-chown ec2-user:ec2-user .env
+# .env は ec2-user と www-data グループだけが読めるようにする
+chown ec2-user:33 .env
+chmod 640 .env
 
 cd "$BASE"
 # ベースイメージ（php / nginx）は毎回最新のパッチ版を取得してからビルド・起動する
 docker compose build --pull
 docker compose pull --ignore-buildable
 docker compose up -d --remove-orphans
-docker compose exec -T app php laravel/artisan config:cache
-# 前のリリースのコンパイル済みビューを消す（次のアクセス時に php-fpm が自分の所有で作り直す）
-docker compose exec -T app php laravel/artisan view:clear
+# artisan は www-data で実行し、生成されるキャッシュ・ログの所有者を php-fpm と揃える
+docker compose exec -T -u www-data app php laravel/artisan config:cache
+# 前のリリースのコンパイル済みビューを消す
+docker compose exec -T -u www-data app php laravel/artisan view:clear
 docker image prune -f
 
 # 動作確認：トップページが 200 を返さなければデプロイ失敗として扱う（GitHub Actions のジョブも失敗になる）
