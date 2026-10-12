@@ -28,14 +28,19 @@ chmod -R u=rwX,g=rX,o= storage bootstrap/cache
 
 # .env の復号。パスフレーズは EC2 の IAM ロールで Parameter Store から取得し、環境変数で openssl に渡す
 # （コマンド引数・SSM のコマンド履歴・ログには値を出さない）
+# 一時ファイル（umask 077 で本人以外読めない）に復号し、所有者と権限を整えてから置き換える
+# （復号に失敗しても既存の .env を壊さない／作成直後に他ユーザーから読める瞬間を作らない）
 ENCRYPTION_SECRET="$(aws ssm get-parameter --region "$AWS_REGION" --name "$ENC_KEY_PARAM" \
     --with-decryption --query Parameter.Value --output text)"
 export ENCRYPTION_SECRET
-openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env -pass env:ENCRYPTION_SECRET
+ENV_TMP="$(umask 077 && mktemp .env.XXXXXX)"
+trap 'rm -f "$ENV_TMP"' EXIT
+openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out "$ENV_TMP" -pass env:ENCRYPTION_SECRET
 unset ENCRYPTION_SECRET
 # .env は ec2-user と www-data グループだけが読めるようにする
-chown ec2-user:33 .env
-chmod 640 .env
+chown ec2-user:33 "$ENV_TMP"
+chmod 640 "$ENV_TMP"
+mv -f "$ENV_TMP" .env
 
 cd "$BASE"
 # ベースイメージ（php / nginx）は毎回最新のパッチ版を取得してからビルド・起動する

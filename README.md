@@ -59,7 +59,7 @@ $ npm run dev
 ## env ファイルの更新手順について
 
 local の `laravel/` ディレクトリにて以下を実行。
-パスフレーズ（GitHub Secrets の `ENCRYPTION_SECRET` と同じ値）は 1Password（`op://selfdevelopment/tektektech-portfolio/env-enc-key`）で管理している（公開厳禁、`.env.production` には書かない）。
+パスフレーズは 1Password（`op://selfdevelopment/tektektech-portfolio/env-enc-key`）と、本番 EC2 が読み取る AWS Systems Manager Parameter Store（`/tektektech/prod/env-enc-key`、SecureString）で管理している（公開厳禁、`.env.production` や GitHub Secrets には置かない）。パスフレーズを変更するときは両方を更新する。
 1Password CLI（`brew install 1password-cli`、アプリの「設定 → 開発者 → 1Password CLI と連携」をオン）で取り出し、`-pass file:<(...)` で渡す。
 コマンド引数に直接書くとシェル履歴やプロセス一覧に残るため、`-k` や `-pass pass:` は使わない。
 

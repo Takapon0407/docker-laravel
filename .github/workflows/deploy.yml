@@ -7,8 +7,6 @@ on:
 
 permissions:
   contents: read
-  # GitHub OIDC で AWS の IAM ロールを引き受けるために必要（アクセスキーは使わない）
-  id-token: write
 
 # デプロイが同時に走らないようにする
 concurrency:
@@ -22,8 +20,11 @@ env:
   INSTANCE_ID: i-0006d1df01ceb7dc0
 
 jobs:
-  build-and-deploy:
+  # ビルド（npm / composer のスクリプトが動く）は AWS の権限を持たないジョブで行う
+  build:
     runs-on: ubuntu-latest
+    outputs:
+      sha256: ${{ steps.package.outputs.sha256 }}
     steps:
       # サードパーティ製を含むアクションはすべてコミットSHAで固定（タグ/ブランチの書き換えによる改ざん対策）
       - name: Checkout
@@ -53,12 +54,41 @@ jobs:
           composer install --no-dev --optimize-autoloader --no-progress
 
       - name: Package release
+        id: package
         run: |
           tar czf "$RUNNER_TEMP/release.tar.gz" \
             --exclude=./.git \
             --exclude=./laravel/node_modules \
             --exclude=./laravel/storage \
             .
+          echo "sha256=$(sha256sum "$RUNNER_TEMP/release.tar.gz" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release
+          path: ${{ runner.temp }}/release.tar.gz
+          retention-days: 1
+
+  # デプロイは OIDC で AWS の権限を持つが、パッケージ管理のコード（npm / composer）は一切実行しない
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # GitHub OIDC で AWS の IAM ロールを引き受けるために必要（アクセスキーは使わない）
+      id-token: write
+    env:
+      RELEASE_SHA256: ${{ needs.build.outputs.sha256 }}
+    steps:
+      - name: Download release artifact
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release
+          path: ${{ runner.temp }}
+
+      - name: Verify release checksum
+        run: echo "$RELEASE_SHA256  $RUNNER_TEMP/release.tar.gz" | sha256sum -c -
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
@@ -71,6 +101,7 @@ jobs:
           aws s3 cp "$RUNNER_TEMP/release.tar.gz" "s3://$ARTIFACT_BUCKET/releases/$GITHUB_SHA.tar.gz" --only-show-errors
 
       # SSH を使わず、SSM Run Command で EC2 上のデプロイスクリプトを実行する
+      # EC2 側でも sha256 を照合してから展開する（S3 上で差し替えられたファイルは実行しない）
       - name: Deploy to EC2 via SSM
         run: |
           cat > "$RUNNER_TEMP/params.json" <<EOF
@@ -80,6 +111,7 @@ jobs:
               "TMP=\$(mktemp -d)",
               "trap 'rm -rf \"\$TMP\"' EXIT",
               "aws s3 cp s3://$ARTIFACT_BUCKET/releases/$GITHUB_SHA.tar.gz \"\$TMP/release.tar.gz\" --region $AWS_REGION --only-show-errors",
+              "echo \"$RELEASE_SHA256  \$TMP/release.tar.gz\" | sha256sum -c -",
               "mkdir \"\$TMP/release\"",
               "tar xzf \"\$TMP/release.tar.gz\" -C \"\$TMP/release\"",
               "bash \"\$TMP/release/deploy/remote-deploy.sh\" \"\$TMP/release\""
@@ -95,13 +127,20 @@ jobs:
             --query Command.CommandId --output text)
           echo "SSM command: $COMMAND_ID"
 
-          # 完了を待ち、成否にかかわらず実行ログを表示してから結果を判定する
-          set +e
-          aws ssm wait command-executed --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID"
-          set -e
+          # 終了状態になるまで待つ（aws ssm wait は約100秒で打ち切られ、遅いビルドでジョブだけ失敗するため自前で待つ）
+          STATUS=Pending
+          for i in $(seq 1 100); do
+            sleep 10
+            STATUS=$(aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" \
+              --query Status --output text 2>/dev/null || echo Pending)
+            case "$STATUS" in
+              Pending|InProgress|Delayed) ;;
+              *) break ;;
+            esac
+          done
+
           RESULT=$(aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID")
           echo "::group::stdout"; echo "$RESULT" | jq -r .StandardOutputContent; echo "::endgroup::"
           echo "::group::stderr"; echo "$RESULT" | jq -r .StandardErrorContent; echo "::endgroup::"
-          STATUS=$(echo "$RESULT" | jq -r .Status)
           echo "Status: $STATUS"
           test "$STATUS" = "Success"
