@@ -4,5 +4,3 @@ COPY ./docker/php/php.ini /usr/local/etc/php/
 # （composer install / npm run build は GitHub Actions 側で実施済みのため、イメージには composer 等を入れない）
 COPY ./laravel /var/www/laravel
 WORKDIR /var/www
-# パーミッションの設定
-RUN chmod -R 777 laravel/storage
