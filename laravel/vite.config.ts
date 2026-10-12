@@ -1,9 +1,9 @@
+import { globSync } from "node:fs";
 import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
-import * as glob from "glob";
 
 // Laravel blade向けのtsファイルを取得
-const laravelEntries = glob.sync("resources/ts/laravel/**/*.ts");
+const laravelEntries = globSync("resources/ts/laravel/**/*.ts");
 
 export default defineConfig({
     plugins: [
@@ -17,8 +17,12 @@ export default defineConfig({
     ],
     css: {
         preprocessorOptions: {
-            // bootstrap(node_modules)側の Sass 非推奨警告を抑制
-            scss: { quietDeps: true },
+            scss: {
+                // bootstrap(node_modules)側の Sass 非推奨警告を抑制
+                quietDeps: true,
+                // Bootstrap 5 は @use に未対応のため、@import の非推奨警告のみ抑制
+                silenceDeprecations: ["import"],
+            },
         },
     },
     resolve: {
