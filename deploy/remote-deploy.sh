@@ -18,7 +18,10 @@ cd "$BASE/laravel"
 rm -rf app bootstrap config database lang resources routes vendor public/build
 
 cp -a "$RELEASE_DIR/." "$BASE/"
-chown -R ec2-user:ec2-user "$BASE"
+# storage は除外して所有者を ec2-user に戻す
+# （storage 内は php-fpm(www-data) が作ったファイルで、Blade のコンパイル済みビューは
+#   所有者でないと touch() で更新日時を設定できず 500 になるため、所有者を変えない）
+find "$BASE" -path "$BASE/laravel/storage" -prune -o -exec chown -h ec2-user:ec2-user {} +
 chmod -R 777 storage
 
 # .env の復号。パスフレーズは EC2 の IAM ロールで Parameter Store から取得し、環境変数で openssl に渡す
@@ -36,4 +39,17 @@ docker compose build --pull
 docker compose pull --ignore-buildable
 docker compose up -d --remove-orphans
 docker compose exec -T app php laravel/artisan config:cache
+# 前のリリースのコンパイル済みビューを消す（次のアクセス時に php-fpm が自分の所有で作り直す）
+docker compose exec -T app php laravel/artisan view:clear
 docker image prune -f
+
+# 動作確認：トップページが 200 を返さなければデプロイ失敗として扱う（GitHub Actions のジョブも失敗になる）
+for i in 1 2 3 4 5; do
+    if curl -fsS -o /dev/null http://localhost/; then
+        echo "Smoke test passed"
+        exit 0
+    fi
+    sleep 3
+done
+echo "Smoke test failed: http://localhost/ did not return 2xx" >&2
+exit 1
