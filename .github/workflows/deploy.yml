@@ -39,6 +39,19 @@ jobs:
           cd laravel
           composer install --no-dev --optimize-autoloader --no-progress
 
+      # scp は上書きのみで、リポジトリから消したファイル（設定・パッケージ等）がEC2に残り続けるため、
+      # リポジトリ/ビルドから毎回再生成されるディレクトリだけ事前に削除する（storage と .env は残す）
+      - name: Remove old app code on EC2
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            cd /home/ec2-user/tektektech/laravel || exit 0
+            sudo rm -rf app bootstrap config database lang resources routes vendor public/build
+
       - name: Transfer root files to EC2
         uses: appleboy/scp-action@ff85246acaad7bdce478db94a363cd2bf7c90345 # v1.0.0
         with:
@@ -64,8 +77,6 @@ jobs:
             sudo chmod -R 777 storage
             # パスフレーズはコマンド引数ではなく環境変数で渡す（ps等に表示させない）
             openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env -pass env:ENCRYPTION_SECRET
-            # 前回デプロイ時のキャッシュが残ると、削除したパッケージのプロバイダを読み込んで起動に失敗するため消してから作り直す
-            sudo rm -f bootstrap/cache/config.php bootstrap/cache/services.php bootstrap/cache/events.php bootstrap/cache/routes-*.php
             cd /home/ec2-user/tektektech
             docker-compose up -d --build --remove-orphans
             docker-compose exec -T app php laravel/artisan config:cache
