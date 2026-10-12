@@ -45,7 +45,9 @@ php vendor/bin/phpstan analyse app --memory-limit=1G
 
 ```
 
-## frontend(React)
+## frontend(Vite)
+
+Blade 用の TypeScript / Sass を Vite でビルドする。
 
 ```
 $ pwd
@@ -53,8 +55,6 @@ $ pwd
 $ npm install
 $ npm run dev
 ```
-
-`http://localhost/react/home`へアクセス
 
 ## env ファイルの更新手順について
 
