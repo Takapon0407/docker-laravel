@@ -1,13 +1,15 @@
-version: "3.7"
 services:
   app:
     container_name: app
     build: .
+    # サーバー再起動時にも自動で起動する
+    restart: unless-stopped
     volumes:
       - ./laravel:/var/www/laravel
   nginx:
-    image: nginx
+    image: nginx:stable
     container_name: nginx
+    restart: unless-stopped
     ports:
       - 80:80
     volumes:
