@@ -7,6 +7,19 @@ on:
 
 permissions:
   contents: read
+  # GitHub OIDC で AWS の IAM ロールを引き受けるために必要（アクセスキーは使わない）
+  id-token: write
+
+# デプロイが同時に走らないようにする
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ap-northeast-1
+  DEPLOY_ROLE_ARN: arn:aws:iam::945611748417:role/github-actions-deploy-tektektech
+  ARTIFACT_BUCKET: tektektech-deploy-artifacts
+  INSTANCE_ID: i-0006d1df01ceb7dc0
 
 jobs:
   build-and-deploy:
@@ -23,7 +36,7 @@ jobs:
         with:
           node-version: "26"
 
-      - name: Install Node.js dependencies and build React App
+      - name: Install Node.js dependencies and build assets
         run: |
           cd laravel
           npm ci
@@ -39,48 +52,56 @@ jobs:
           cd laravel
           composer install --no-dev --optimize-autoloader --no-progress
 
-      # scp は上書きのみで、リポジトリから消したファイル（設定・パッケージ等）がEC2に残り続けるため、
-      # リポジトリ/ビルドから毎回再生成されるディレクトリだけ事前に削除する（storage と .env は残す）
-      - name: Remove old app code on EC2
-        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            set -e
-            cd /home/ec2-user/tektektech/laravel || exit 0
-            sudo rm -rf app bootstrap config database lang resources routes vendor public/build
+      - name: Package release
+        run: |
+          tar czf "$RUNNER_TEMP/release.tar.gz" \
+            --exclude=./.git \
+            --exclude=./laravel/node_modules \
+            --exclude=./laravel/storage \
+            .
 
-      - name: Transfer root files to EC2
-        uses: appleboy/scp-action@ff85246acaad7bdce478db94a363cd2bf7c90345 # v1.0.0
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "."
-          target: "/home/ec2-user/tektektech"
+          role-to-assume: ${{ env.DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      # .env の復号はEC2上でのみ行う（runner上に平文の.envを残さない）
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
-        env:
-          ENCRYPTION_SECRET: ${{ secrets.ENCRYPTION_SECRET }}
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          envs: ENCRYPTION_SECRET
-          script: |
-            set -e
-            cd /home/ec2-user/tektektech/laravel
-            sudo chmod -R 777 storage
-            # パスフレーズはコマンド引数ではなく環境変数で渡す（ps等に表示させない）
-            openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env -pass env:ENCRYPTION_SECRET
-            cd /home/ec2-user/tektektech
-            # ベースイメージ（php / nginx）は毎回最新のパッチ版を取得してからビルド・起動する
-            docker compose build --pull
-            docker compose pull --ignore-buildable
-            docker compose up -d --remove-orphans
-            docker compose exec -T app php laravel/artisan config:cache
-            docker image prune -f
+      - name: Upload release to S3
+        run: |
+          aws s3 cp "$RUNNER_TEMP/release.tar.gz" "s3://$ARTIFACT_BUCKET/releases/$GITHUB_SHA.tar.gz" --only-show-errors
+
+      # SSH を使わず、SSM Run Command で EC2 上のデプロイスクリプトを実行する
+      - name: Deploy to EC2 via SSM
+        run: |
+          cat > "$RUNNER_TEMP/params.json" <<EOF
+          {
+            "commands": [
+              "set -euo pipefail",
+              "TMP=\$(mktemp -d)",
+              "trap 'rm -rf \"\$TMP\"' EXIT",
+              "aws s3 cp s3://$ARTIFACT_BUCKET/releases/$GITHUB_SHA.tar.gz \"\$TMP/release.tar.gz\" --region $AWS_REGION --only-show-errors",
+              "mkdir \"\$TMP/release\"",
+              "tar xzf \"\$TMP/release.tar.gz\" -C \"\$TMP/release\"",
+              "bash \"\$TMP/release/deploy/remote-deploy.sh\" \"\$TMP/release\""
+            ],
+            "executionTimeout": ["900"]
+          }
+          EOF
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "deploy $GITHUB_SHA" \
+            --parameters "file://$RUNNER_TEMP/params.json" \
+            --query Command.CommandId --output text)
+          echo "SSM command: $COMMAND_ID"
+
+          # 完了を待ち、成否にかかわらず実行ログを表示してから結果を判定する
+          set +e
+          aws ssm wait command-executed --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID"
+          set -e
+          RESULT=$(aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID")
+          echo "::group::stdout"; echo "$RESULT" | jq -r .StandardOutputContent; echo "::endgroup::"
+          echo "::group::stderr"; echo "$RESULT" | jq -r .StandardErrorContent; echo "::endgroup::"
+          STATUS=$(echo "$RESULT" | jq -r .Status)
+          echo "Status: $STATUS"
+          test "$STATUS" = "Success"
