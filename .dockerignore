@@ -7,3 +7,6 @@ docker/db
 laravel/.env
 laravel/.env.*
 laravel/node_modules
+# 実行時はバインドマウントで上書きされるため、前回リリースのキャッシュ（APP_KEY を含む設定キャッシュ）やログ・セッションをイメージに含めない
+laravel/storage
+laravel/bootstrap/cache
