@@ -59,15 +59,16 @@ $ npm run dev
 ## env ファイルの更新手順について
 
 local の `laravel/` ディレクトリにて以下を実行。
-パスフレーズ（GitHub Secrets の `ENCRYPTION_SECRET` と同じ値）は `~/.config/tektektech/enc_pass` に保存しておく（公開厳禁、`.env.production` には書かない）。
-コマンド引数に直接書くとシェル履歴やプロセス一覧に残るため、`-pass file:` で読み込む。
+パスフレーズ（GitHub Secrets の `ENCRYPTION_SECRET` と同じ値）は 1Password（`op://selfdevelopment/tektektech-portfolio/env-enc-key`）で管理している（公開厳禁、`.env.production` には書かない）。
+1Password CLI（`brew install 1password-cli`、アプリの「設定 → 開発者 → 1Password CLI と連携」をオン）で取り出し、`-pass file:<(...)` で渡す。
+コマンド引数に直接書くとシェル履歴やプロセス一覧に残るため、`-k` や `-pass pass:` は使わない。
 
 ```
 // 暗号化
-openssl aes-256-cbc -salt -pbkdf2 -iter 10000 -in .env.production -out .env.production.enc -pass file:$HOME/.config/tektektech/enc_pass
+openssl aes-256-cbc -salt -pbkdf2 -iter 10000 -in .env.production -out .env.production.enc -pass file:<(op read --no-newline "op://selfdevelopment/tektektech-portfolio/env-enc-key")
 
 // 復号化(.env.productionとして書き出し)
-openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env.production -pass file:$HOME/.config/tektektech/enc_pass
+openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env.production -pass file:<(op read --no-newline "op://selfdevelopment/tektektech-portfolio/env-enc-key")
 ```
 
 ## 画像の追加について
