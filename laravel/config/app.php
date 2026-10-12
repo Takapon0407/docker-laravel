@@ -195,9 +195,6 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
-        // For AWS
-        Aws\Laravel\AwsServiceProvider::class,
-
     ],
 
     /*
@@ -211,8 +208,6 @@ return [
     |
     */
 
-    'aliases' => Facade::defaultAliases()->merge([
-        'AWS' => Aws\Laravel\AwsFacade::class,
-    ])->toArray(),
+    'aliases' => Facade::defaultAliases()->toArray(),
 
 ];
