@@ -32,15 +32,14 @@ jobs:
         with:
           php-version: "8.5"
 
-      - name: Set Laravel APP_KEY
-        run: echo "APP_KEY=${{ secrets.APP_KEY }}" >> $GITHUB_ENV
-
       - name: Install PHP dependencies
         run: |
           cd laravel
           composer install --no-progress
-          # .env が無いとテスト時に読み込み警告が出るため雛形をコピー（APP_KEY は上の環境変数が優先される）
+          # .env が無いとテスト時に読み込み警告が出るため雛形をコピーし、
+          # テスト専用の使い捨て APP_KEY を生成する（本番の鍵や GitHub Secrets は使わない）
           cp .env.example .env
+          php artisan key:generate --no-interaction
 
       - name: Run PHPUnit Tests
         run: |
