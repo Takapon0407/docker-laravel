@@ -10,21 +10,21 @@ use Aws\S3\S3Client;
 
 class HobbiesController extends Controller
 {
-    private S3Client $s3Client;
-
-    public function __construct(S3Client $s3Client)
-    {
-        $this->s3Client = $s3Client;
-    }
-
     // S3への問い合わせはアクセスごとではなく、この間隔で1回だけ行う
-    private const PHOTOS_CACHE_TTL_SECONDS = 3600;
+    private const PHOTOS_CACHE_FRESH_SECONDS = 3600;
+    // 期限切れ後もこの時間までは古い結果を返し、更新はレスポンス後にバックグラウンドで1回だけ行う
+    // （期限切れの瞬間に複数のリクエストが同時にS3を呼ぶのを防ぐ。S3障害時も古い結果で表示を続ける）
+    private const PHOTOS_CACHE_STALE_SECONDS = 86400;
+
+    public function __construct(private S3Client $s3Client)
+    {
+    }
 
     public function show(): View
     {
-        $photosWithUrls = Cache::remember(
+        $photosWithUrls = Cache::flexible(
             'hobbies.photos',
-            self::PHOTOS_CACHE_TTL_SECONDS,
+            [self::PHOTOS_CACHE_FRESH_SECONDS, self::PHOTOS_CACHE_STALE_SECONDS],
             fn (): array => $this->fetchPhotos()
         );
 
@@ -73,15 +73,10 @@ class HobbiesController extends Controller
             return 'null';
         }
 
-        $width  = (int) $width;
-        $height = (int) $height;
-
-        if ($width > $height) {
-            return 'landscape';
-        } elseif ($height > $width) {
-            return 'portrait';
-        } else {
-            return 'square';
-        }
+        return match ((int) $width <=> (int) $height) {
+            1  => 'landscape',
+            -1 => 'portrait',
+            0  => 'square',
+        };
     }
 }

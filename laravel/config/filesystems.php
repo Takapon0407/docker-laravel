@@ -57,6 +57,11 @@ return [
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            // S3 が応答しないときに php-fpm のワーカーを長時間占有しないようにする
+            'http' => [
+                'connect_timeout' => 3,
+                'timeout' => 10,
+            ],
             'throw' => false,
             'report' => false,
         ],

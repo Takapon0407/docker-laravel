@@ -1,0 +1,29 @@
+# 依存関係の更新を毎週まとめて PR にする（セキュリティ更新は Dependabot alerts から随時）
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: composer
+    directory: /laravel
+    target-branch: develop
+    schedule:
+      interval: weekly
+    groups:
+      composer:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /laravel
+    target-branch: develop
+    schedule:
+      interval: weekly
+    groups:
+      npm:
+        update-types: [minor, patch]
