@@ -25,7 +25,7 @@ $ pwd
 $ cd laravel
 $ composer install
 $ cd ..
-$ docker-compose up -d
+$ docker compose up -d
 ```
 
 上記でコンテナを立ち上げた後、`http://localhost/`へアクセス

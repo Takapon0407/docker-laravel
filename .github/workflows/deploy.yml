@@ -78,6 +78,9 @@ jobs:
             # パスフレーズはコマンド引数ではなく環境変数で渡す（ps等に表示させない）
             openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env -pass env:ENCRYPTION_SECRET
             cd /home/ec2-user/tektektech
-            docker-compose up -d --build --remove-orphans
-            docker-compose exec -T app php laravel/artisan config:cache
+            # ベースイメージ（php / nginx）は毎回最新のパッチ版を取得してからビルド・起動する
+            docker compose build --pull
+            docker compose pull --ignore-buildable
+            docker compose up -d --remove-orphans
+            docker compose exec -T app php laravel/artisan config:cache
             docker image prune -f
