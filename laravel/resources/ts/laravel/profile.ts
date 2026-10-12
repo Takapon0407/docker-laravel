@@ -1,15 +1,22 @@
-import moment from "moment";
 import { showpopupNotification } from "./util/notification";
 
-const currentDate = moment();
-const birthDate = moment("1994-04-07");
-const ageYears = currentDate.diff(birthDate, "years");
-birthDate.add(ageYears, "years");
+// 生年月日からの経過を「x歳 xヶ月 x日」で計算
+const birthDate = new Date(1994, 3, 7);
+const currentDate = new Date();
 
-const ageMonths = currentDate.diff(birthDate, "months");
-birthDate.add(ageMonths, "months");
+let ageYears = currentDate.getFullYear() - birthDate.getFullYear();
+let ageMonths = currentDate.getMonth() - birthDate.getMonth();
+let ageDays = currentDate.getDate() - birthDate.getDate();
 
-const ageDays = currentDate.diff(birthDate, "days");
+if (ageDays < 0) {
+    ageMonths--;
+    // 前月の日数で繰り下げる
+    ageDays += new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
+}
+if (ageMonths < 0) {
+    ageYears--;
+    ageMonths += 12;
+}
 
 const ageElement = document.getElementById("age");
 if (ageElement) {
@@ -22,13 +29,8 @@ const copyButton = document.getElementById("metamask-logo");
 if (copyButton) {
     copyButton.addEventListener("click", function () {
         const textToCopy = "0x83C989e4Af7ACa81066f4F7E3a29f190d88fB14a";
-        const textarea = document.createElement("textarea");
-        textarea.value = textToCopy;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-
-        showpopupNotification("アドレスをクリップボードへコピーしました！");
+        navigator.clipboard
+            .writeText(textToCopy)
+            .then(() => showpopupNotification("アドレスをクリップボードへコピーしました！"));
     });
 }
