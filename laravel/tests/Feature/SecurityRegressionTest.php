@@ -55,7 +55,7 @@ class SecurityRegressionTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertDontSee('evil.example');
-        $response->assertSee(rtrim(config('app.url'), '/'), false);
+        $response->assertSee('https://'.parse_url(config('app.url'), PHP_URL_HOST).'/', false);
     }
 
     /**
