@@ -60,6 +60,8 @@ docker compose exec -T -u www-data app php laravel/artisan config:cache
 # 前のリリースのコンパイル済みビューを消す
 docker compose exec -T -u www-data app php laravel/artisan view:clear
 docker image prune -f
+# 実際に動いている PHP のバージョンをデプロイのログに残す
+docker compose exec -T app php -r 'echo "PHP ", PHP_VERSION, PHP_EOL;'
 
 # 動作確認：トップページが 200 を返さなければデプロイ失敗として扱う（GitHub Actions のジョブも失敗になる）
 for i in 1 2 3 4 5; do
