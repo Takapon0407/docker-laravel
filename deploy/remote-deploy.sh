@@ -52,11 +52,16 @@ cd "$BASE"
 docker compose build --pull
 docker compose pull --ignore-buildable
 docker compose up -d --remove-orphans
+# nginx の設定ファイルはマウントしているだけなので、コンテナが作り直されない場合に備えて読み込み直す
+docker compose exec -T nginx nginx -t
+docker compose exec -T nginx nginx -s reload
 # artisan は www-data で実行し、生成されるキャッシュ・ログの所有者を php-fpm と揃える
 docker compose exec -T -u www-data app php laravel/artisan config:cache
 # 前のリリースのコンパイル済みビューを消す
 docker compose exec -T -u www-data app php laravel/artisan view:clear
 docker image prune -f
+# 実際に動いている PHP のバージョンをデプロイのログに残す
+docker compose exec -T app php -r 'echo "PHP ", PHP_VERSION, PHP_EOL;'
 
 # 動作確認：トップページが 200 を返さなければデプロイ失敗として扱う（GitHub Actions のジョブも失敗になる）
 for i in 1 2 3 4 5; do
