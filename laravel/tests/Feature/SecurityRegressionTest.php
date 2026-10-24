@@ -59,6 +59,20 @@ class SecurityRegressionTest extends TestCase
     }
 
     /**
+     * 閲覧専用サイトのため、セッションや CSRF トークンの Cookie を発行しないこと
+     * （来訪者ごとのセッションファイル作成を防ぎ、CloudFront でキャッシュできるようにする）
+     *
+     * @return void
+     */
+    public function test_pages_do_not_set_cookies()
+    {
+        $response = $this->get('/');
+
+        $response->assertStatus(200);
+        $this->assertSame([], $response->headers->getCookies());
+    }
+
+    /**
      * /hobbies は写真の縦横をメタデータから判定し、メタデータが取れない写真でもページを表示すること
      *
      * @return void
