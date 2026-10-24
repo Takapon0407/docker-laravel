@@ -70,6 +70,7 @@ jobs:
             --exclude=./.github \
             --exclude=./.gitignore \
             --exclude=./README.md \
+            --exclude=./CLAUDE.md \
             --exclude=./infra \
             --exclude=./laravel/node_modules \
             --exclude=./laravel/storage \
