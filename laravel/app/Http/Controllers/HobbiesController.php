@@ -12,17 +12,18 @@ use Illuminate\View\View;
 class HobbiesController extends Controller
 {
     private const PHOTOS_CACHE_KEY = 'hobbies.photos';
+
     // S3への問い合わせはアクセスごとではなく、この間隔で1回だけ行う
     private const PHOTOS_CACHE_FRESH_SECONDS = 3600;
+
     // 期限切れ後もこの時間までは古い結果を返し、更新はレスポンス後にバックグラウンドで1回だけ行う
     // （期限切れの瞬間に複数のリクエストが同時にS3を呼ぶのを防ぐ。S3障害時も古い結果で表示を続ける）
     private const PHOTOS_CACHE_STALE_SECONDS = 86400;
+
     // バケットに画像以外のファイルが置かれても表示しない
     private const PHOTO_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 
-    public function __construct(private S3Client $s3Client)
-    {
-    }
+    public function __construct(private S3Client $s3Client) {}
 
     public function show(): View
     {
@@ -54,7 +55,7 @@ class HobbiesController extends Controller
     private function fetchPhotos(): array
     {
         $disk = Storage::disk('s3');
-        $bucket = (string) config('filesystems.disks.s3.bucket');
+        $bucket = config()->string('filesystems.disks.s3.bucket');
         $keys = array_filter(
             $disk->files(''),
             fn (string $key): bool => in_array(strtolower(pathinfo($key, PATHINFO_EXTENSION)), self::PHOTO_EXTENSIONS, true)
@@ -63,8 +64,8 @@ class HobbiesController extends Controller
         $photos = [];
         foreach ($keys as $key) {
             $photos[] = [
-                'url'         => $disk->url($key),
-                'filename'    => basename($key),
+                'url' => $disk->url($key),
+                'filename' => basename($key),
                 'orientation' => $this->detectOrientation($bucket, $key)?->value,
             ];
         }
@@ -84,9 +85,10 @@ class HobbiesController extends Controller
         }
 
         // 幅・高さは S3 への PUT 時に Lambda がメタデータとして付加している
-        $width = $meta['Metadata']['width'] ?? null;
-        $height = $meta['Metadata']['height'] ?? null;
-        if ($width === null || $height === null) {
+        $metadata = $meta['Metadata'] ?? null;
+        $width = is_array($metadata) ? $metadata['width'] ?? null : null;
+        $height = is_array($metadata) ? $metadata['height'] ?? null : null;
+        if (! is_numeric($width) || ! is_numeric($height)) {
             return null;
         }
 

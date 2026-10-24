@@ -24,12 +24,12 @@ jobs:
   test:
     uses: ./.github/workflows/test.yml
 
-  phpstan:
-    uses: ./.github/workflows/phpstan.yml
+  lint:
+    uses: ./.github/workflows/lint.yml
 
   # ビルド（npm / composer のスクリプトが動く）は AWS の権限を持たないジョブで行う
   build:
-    needs: [test, phpstan]
+    needs: [test, lint]
     runs-on: ubuntu-latest
     outputs:
       sha256: ${{ steps.package.outputs.sha256 }}
