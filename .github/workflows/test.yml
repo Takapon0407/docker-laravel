@@ -14,15 +14,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "26"
+          cache: npm
+          cache-dependency-path: laravel/package-lock.json
 
+      # テストで描画するビューが Vite のビルド結果（manifest）を参照するため、ビルドも行う
+      # （Dependabot の npm 更新でビルドが壊れていないかの確認も兼ねる）
       - name: Install Node.js dependencies and build
+        working-directory: laravel
         run: |
-          cd laravel
           npm ci
           npm run build
 
@@ -30,17 +36,28 @@ jobs:
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: "8.5"
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache composer dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('laravel/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
 
       - name: Install PHP dependencies
+        working-directory: laravel
         run: |
-          cd laravel
-          composer install --no-progress
+          composer install --no-progress --prefer-dist
           # .env が無いとテスト時に読み込み警告が出るため雛形をコピーし、
           # テスト専用の使い捨て APP_KEY を生成する（本番の鍵や GitHub Secrets は使わない）
           cp .env.example .env
           php artisan key:generate --no-interaction
 
       - name: Run PHPUnit Tests
-        run: |
-          cd laravel
-          php artisan test
+        working-directory: laravel
+        run: php artisan test
