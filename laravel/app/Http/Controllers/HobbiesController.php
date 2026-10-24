@@ -28,7 +28,11 @@ class HobbiesController extends Controller
             fn (): array => $this->fetchPhotos()
         );
 
-        return view('hobbies', ['photos' => $photosWithUrls]);
+        return view('hobbies', [
+            'photos' => $photosWithUrls,
+            'playingGames' => config('hobbies.playing_games'),
+            'pastGames' => config('hobbies.past_games'),
+        ]);
     }
 
     /**
