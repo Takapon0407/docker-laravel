@@ -15,7 +15,8 @@ cd "$BASE/laravel"
 
 # リポジトリ/ビルドから毎回再生成されるディレクトリは消してから配置する
 # （上書きだけだと、リポジトリから削除したファイルがEC2に残り続けるため。storage と .env は残す）
-rm -rf app bootstrap config database lang resources routes vendor
+# tests はリリースに含めなくなったため、以前のリリースで置かれたものを消す
+rm -rf app bootstrap config database lang resources routes tests vendor
 # public は nginx コンテナにバインドマウントしているため、ディレクトリ自体は残して中身だけ消す
 # （ディレクトリごと作り直すと、起動中の nginx は削除前のディレクトリを見続けてしまう）
 if [ -d public ]; then
