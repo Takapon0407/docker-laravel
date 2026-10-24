@@ -5,7 +5,7 @@
     padding: 2rem 1.5rem;
 }
 
-// メインタブ（util.scss の li { width: 100% } をリセット）
+// メインタブ（base/_common.scss の li { width: 100% } をリセット）
 .hobby-main-tabs {
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -23,13 +23,13 @@
 
         &.active {
             font-weight: bold;
-            color: #55c501;
-            border-bottom: 3px solid #55c501;
+            color: $main-color;
+            border-bottom: 3px solid $main-color;
         }
     }
 }
 
-// コンテンツボックス（util.scss の align-items: center をリセット）
+// コンテンツボックス（base/_common.scss の align-items: center をリセット）
 .hobbies-container .content-box {
     display: block;
     align-items: initial;
@@ -121,7 +121,7 @@
     display: block;
 }
 
-// プラットフォームタブ（util.scss の li { width: 100% } をリセット）
+// プラットフォームタブ（base/_common.scss の li { width: 100% } をリセット）
 .platform-tabs {
     display: flex;
     flex-direction: row;
@@ -142,8 +142,8 @@
         border: 1px solid #ccc;
 
         &.active {
-            background-color: #55c501;
-            border-color: #55c501;
+            background-color: $main-color;
+            border-color: $main-color;
             color: #fff;
         }
     }

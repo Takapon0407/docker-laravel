@@ -1,4 +1,4 @@
-// pagesで共通して利用するcss
+// ページで共通して利用する css
 // ページ全体の入れ物（Bootstrap の .container とあわせて使う。.container 自体は上書きしない）
 .page-container {
     display: flex;
@@ -9,7 +9,7 @@
 .content-box {
     background-color: #ffffff;
     padding: 20px;
-    box-shadow: 0 4px 8px rgba(0.2, 0.2, 0.2, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     margin-top: 40px;
     margin-bottom: 40px;
 

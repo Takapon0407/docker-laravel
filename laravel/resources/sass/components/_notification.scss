@@ -11,8 +11,8 @@
     animation-duration: 1s;
 }
 
-.notification-enter,
-.notification-exit {
+// 表示中は画面下からせり上がり、軽く弾む
+.notification.is-visible {
     bottom: 20px;
     animation-name: bounce;
 }
