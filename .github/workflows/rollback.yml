@@ -63,4 +63,4 @@ jobs:
             "executionTimeout": ["600"]
           }
           EOF
-          .github/scripts/run-on-ec2.sh "rollback to $RELEASE_SHA" "$RUNNER_TEMP/params.json"
+          bash .github/scripts/run-on-ec2.sh "rollback to $RELEASE_SHA" "$RUNNER_TEMP/params.json"
