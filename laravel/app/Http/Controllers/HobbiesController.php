@@ -12,17 +12,18 @@ use Illuminate\View\View;
 class HobbiesController extends Controller
 {
     private const PHOTOS_CACHE_KEY = 'hobbies.photos';
+
     // S3への問い合わせはアクセスごとではなく、この間隔で1回だけ行う
     private const PHOTOS_CACHE_FRESH_SECONDS = 3600;
+
     // 期限切れ後もこの時間までは古い結果を返し、更新はレスポンス後にバックグラウンドで1回だけ行う
     // （期限切れの瞬間に複数のリクエストが同時にS3を呼ぶのを防ぐ。S3障害時も古い結果で表示を続ける）
     private const PHOTOS_CACHE_STALE_SECONDS = 86400;
+
     // バケットに画像以外のファイルが置かれても表示しない
     private const PHOTO_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 
-    public function __construct(private S3Client $s3Client)
-    {
-    }
+    public function __construct(private S3Client $s3Client) {}
 
     public function show(): View
     {
@@ -63,8 +64,8 @@ class HobbiesController extends Controller
         $photos = [];
         foreach ($keys as $key) {
             $photos[] = [
-                'url'         => $disk->url($key),
-                'filename'    => basename($key),
+                'url' => $disk->url($key),
+                'filename' => basename($key),
                 'orientation' => $this->detectOrientation($bucket, $key)?->value,
             ];
         }
