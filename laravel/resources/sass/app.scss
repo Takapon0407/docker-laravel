@@ -1,11 +1,17 @@
 @import "bootstrap/scss/bootstrap";
 
-// css
-@import "./utli/header.scss";
-@import "./utli/notification.scss";
-@import "./pages/util.scss";
-@import "./pages/profile.scss";
-@import "./pages/hobbies.scss";
+@import "./variables";
+
+// 共通の部品
+@import "./components/header";
+@import "./components/notification";
+
+// ページ共通の土台
+@import "./base/common";
+
+// ページごと
+@import "./pages/profile";
+@import "./pages/hobbies";
 
 html {
     font-family: sans-serif;

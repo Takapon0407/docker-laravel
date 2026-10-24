@@ -126,7 +126,7 @@ return [
                 ['title' => 'イリスのアトリエ エターナルマナ', 'url' => 'http://www.gust.co.jp/products/a6/'],
                 ['title' => 'ドラクエ&FF in いただきストリートSpecial', 'url' => 'https://www.jp.square-enix.com/game/detail/itastsp/'],
                 ['title' => 'モンスターハンター', 'links' => [['G', 'https://www.capcom-games.com/product/ja-jp/monsterhunterg/'], ['2', 'https://www.capcom-games.com/product/ja-jp/monsterhunter2/']]],
-                ['title' => 'テイルズ オブ ジ アビス', 'url' => 'http://www.tv-toa.jp/'],
+                ['title' => 'テイルズ オブ ジ アビス', 'url' => 'https://www.tv-toa.jp/'],
                 ['title' => 'ドラゴンクエスト 少年ヤンガスと不思議のダンジョン', 'url' => 'https://www.jp.square-enix.com/game/detail/yangus/'],
             ],
         ],

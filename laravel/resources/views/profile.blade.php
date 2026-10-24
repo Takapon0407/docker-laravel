@@ -12,7 +12,7 @@
         <h2 class="font-cherry">だれ？</h2>
         <div class="sub-content">
             <div class="sub-left-content">
-                <img src="{{ asset('assets/laravel/profile.jpg')}}" alt="profile img" title="profile img" width="100%" height="100%">
+                <img class="profile-photo" src="{{ asset('assets/laravel/profile.jpg') }}" alt="たかぽんのプロフィール写真">
             </div>
             <div class="sub-right-content">
                 <div>名前: たかぽん</div>
@@ -20,10 +20,12 @@
                 <div>趣味: カメラ, 将棋, ブログ, アコギ等</div>
                 <div>BLOG: <a href="https://tektektech.com/" target="_blank" rel="noopener noreferrer">てくてくテック</a></div>
                 <div class="logos">
-                    <a href="https://twitter.com/TakaponEng">
-                        <img class="logo x-logo" src="{{ asset('assets/laravel/x-logo-black.png')}}" alt="x logo">
+                    <a href="https://x.com/TakaponEng" target="_blank" rel="noopener noreferrer">
+                        <img class="logo x-logo" src="{{ asset('assets/laravel/x-logo-black.png') }}" alt="X（@TakaponEng）">
                     </a>
-                    <img id="metamask-logo" class="logo metamask-logo" src="{{ asset('assets/laravel/metamask-logo.svg')}}" alt="metamask logo">
+                    <button type="button" id="metamask-button" class="logo-button" aria-label="MetaMask のアドレスをクリップボードにコピーする">
+                        <img class="logo metamask-logo" src="{{ asset('assets/laravel/metamask-logo.svg') }}" alt="">
+                    </button>
                 </div>
             </div>
         </div>
