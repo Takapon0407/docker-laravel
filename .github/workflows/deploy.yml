@@ -64,10 +64,27 @@ jobs:
       - name: Package release
         id: package
         run: |
+          # 本番の実行に使わないもの（テスト・TS / SCSS のソース・開発用の設定・CI・ドキュメント）は含めない
           tar czf "$RUNNER_TEMP/release.tar.gz" \
             --exclude=./.git \
+            --exclude=./.github \
+            --exclude=./.gitignore \
+            --exclude=./README.md \
+            --exclude=./infra \
             --exclude=./laravel/node_modules \
             --exclude=./laravel/storage \
+            --exclude=./laravel/tests \
+            --exclude=./laravel/resources/ts \
+            --exclude=./laravel/resources/sass \
+            --exclude=./laravel/.editorconfig \
+            --exclude=./laravel/.env.example \
+            --exclude=./laravel/.gitattributes \
+            --exclude=./laravel/Makefile \
+            --exclude=./laravel/package.json \
+            --exclude=./laravel/package-lock.json \
+            --exclude=./laravel/phpstan.neon \
+            --exclude=./laravel/phpunit.xml \
+            --exclude=./laravel/vite.config.ts \
             .
           echo "sha256=$(sha256sum "$RUNNER_TEMP/release.tar.gz" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
