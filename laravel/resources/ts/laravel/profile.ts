@@ -1,4 +1,4 @@
-import { showpopupNotification } from "./util/notification";
+import { showPopupNotification } from "./util/notification";
 
 // 生年月日からの経過を「x歳 xヶ月 x日」で計算
 const birthDate = new Date(1994, 3, 7);
@@ -23,14 +23,14 @@ if (ageElement) {
     ageElement.innerText = `年齢: ${ageYears}歳 ${ageMonths}ヶ月 ${ageDays}日`;
 }
 
-// metamaskのaddressをクリップボードへコピー
-const copyButton = document.getElementById("metamask-logo");
+// MetaMask のアドレスをクリップボードへコピー
+const METAMASK_ADDRESS = "0x83C989e4Af7ACa81066f4F7E3a29f190d88fB14a";
+const metamaskButton = document.getElementById("metamask-button");
 
-if (copyButton) {
-    copyButton.addEventListener("click", function () {
-        const textToCopy = "0x83C989e4Af7ACa81066f4F7E3a29f190d88fB14a";
-        navigator.clipboard
-            .writeText(textToCopy)
-            .then(() => showpopupNotification("アドレスをクリップボードへコピーしました！"));
-    });
-}
+metamaskButton?.addEventListener("click", () => {
+    navigator.clipboard
+        .writeText(METAMASK_ADDRESS)
+        .then(() => showPopupNotification("アドレスをクリップボードへコピーしました！"))
+        // http での表示やブラウザの権限設定によってはコピーできないため、黙って失敗させない
+        .catch(() => showPopupNotification("アドレスをコピーできませんでした"));
+});
