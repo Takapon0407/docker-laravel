@@ -1,3 +1,10 @@
+# コンテナのログ（docker compose logs で見られる）は、ディスクを使い切らないようサイズと世代数を制限する
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   app:
     container_name: app
@@ -6,6 +13,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./laravel:/var/www/laravel
+    logging: *default-logging
   nginx:
     image: nginx:stable
     container_name: nginx
@@ -17,5 +25,6 @@ services:
       - ./docker/nginx/security-headers.conf:/etc/nginx/snippets/security-headers.conf
       # nginxには公開ディレクトリのみマウント（.env等をnginxコンテナから見せない）
       - ./laravel/public:/var/www/laravel/public
+    logging: *default-logging
     depends_on:
       - app
