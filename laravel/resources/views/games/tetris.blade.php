@@ -10,8 +10,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>テトリス | てくてくテック</title>
 </head>
-<body id=D onKeyDown=K=event.keyCode-38>
-    <script>
+<body id=D>
+    {{-- CSP で許可するため nonce を付ける。キー操作は onKeyDown 属性（CSP で実行できない）ではなくスクリプト内で登録する --}}
+    <script nonce="{{ Vite::cspNonce() }}">
+        D.onkeydown=e=>K=e.keyCode-38;
         Z=X=[B=A=12];
         function Y() {
             for(C=[q=c=i=4];f=i--*K;c-=!Z[h+(K+6?p+K:C[i]=p*A-(p/9|0)*145)])
