@@ -1,13 +1,15 @@
 name: Rollback
 
 # 本番を指定したリリースに戻す（EC2 には直近 3 リリース分のイメージが残っている）
+# sha を空欄にすると、1つ前に動いていたリリースに戻す（もう一度空欄で実行すると元に戻る）
 # 戻せるリリースの SHA は、デプロイのログの末尾（Images kept for rollback）で確認できる
 on:
   workflow_dispatch:
     inputs:
       sha:
-        description: 戻したいリリースのコミット SHA（40 桁）
-        required: true
+        description: 戻したいリリースのコミット SHA（40 桁）。空欄なら1つ前のリリース
+        required: false
+        default: ""
         type: string
 
 permissions:
@@ -36,8 +38,13 @@ jobs:
     steps:
       - name: Validate input
         run: |
-          if [[ ! "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "::error::sha にはコミット SHA（40 桁の16進数）を指定してください"
+          if [[ -z "$RELEASE_SHA" ]]; then
+            # 空欄なら EC2 側で .previous-release（1つ前に動いていたリリース）を読んで切り替える
+            echo "TARGET=previous" >> "$GITHUB_ENV"
+          elif [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "TARGET=$RELEASE_SHA" >> "$GITHUB_ENV"
+          else
+            echo "::error::sha にはコミット SHA（40 桁の16進数）を指定するか、空欄にしてください"
             exit 1
           fi
 
@@ -58,9 +65,9 @@ jobs:
           {
             "commands": [
               "set -euo pipefail",
-              "bash /home/ec2-user/tektektech/deploy/switch-release.sh $RELEASE_SHA"
+              "bash /home/ec2-user/tektektech/deploy/switch-release.sh $TARGET"
             ],
             "executionTimeout": ["600"]
           }
           EOF
-          bash .github/scripts/run-on-ec2.sh "rollback to $RELEASE_SHA" "$RUNNER_TEMP/params.json"
+          bash .github/scripts/run-on-ec2.sh "rollback to $TARGET" "$RUNNER_TEMP/params.json"
