@@ -43,41 +43,14 @@
             <div class="content-box">
                 <h2 class="font-cherry">よこのしゃしん</h2>
                 <div class="sub-content">
-                    <div class="photo-swiper swiper">
-                        <div class="swiper-wrapper">
-                            {{-- 正方形の写真も横長のスライダーに収まるため、ここに含める --}}
-                            @foreach ($photos as $photo)
-                                @if (in_array($photo['orientation'], ['landscape', 'square'], true))
-                                    <div class="swiper-slide">
-                                        <img class="slide-photo" src="{{ $photo['url'] }}" alt="{{ $photo['filename'] }}">
-                                    </div>
-                                @endif
-                            @endforeach
-                        </div>
-                        <div class="swiper-pagination"></div>
-                        <div class="swiper-button-prev"></div>
-                        <div class="swiper-button-next"></div>
-                    </div>
+                    <x-photo-swiper :photos="$landscapePhotos" />
                 </div>
             </div>
 
             <div class="content-box">
                 <h2 class="font-cherry">たてのしゃしん</h2>
                 <div class="sub-content">
-                    <div class="photo-swiper swiper">
-                        <div class="swiper-wrapper">
-                            @foreach ($photos as $photo)
-                                @if ($photo['orientation'] === 'portrait')
-                                    <div class="swiper-slide">
-                                        <img class="slide-photo" src="{{ $photo['url'] }}" alt="{{ $photo['filename'] }}">
-                                    </div>
-                                @endif
-                            @endforeach
-                        </div>
-                        <div class="swiper-pagination"></div>
-                        <div class="swiper-button-prev"></div>
-                        <div class="swiper-button-next"></div>
-                    </div>
+                    <x-photo-swiper :photos="$portraitPhotos" />
                 </div>
             </div>
 

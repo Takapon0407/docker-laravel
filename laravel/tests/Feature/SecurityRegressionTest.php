@@ -73,17 +73,18 @@ class SecurityRegressionTest extends TestCase
     }
 
     /**
-     * /hobbies は写真の縦横（正方形を含む）をメタデータから判定し、メタデータが取れない写真でもページを表示すること
+     * /hobbies は写真の縦横（正方形を含む）をメタデータから判定して振り分け、メタデータが取れない写真や画像以外のファイルは表示しないこと
      *
      * @return void
      */
-    public function test_hobbies_sorts_photos_by_orientation_and_tolerates_missing_metadata()
+    public function test_hobbies_groups_photos_by_orientation_and_skips_unusable_files()
     {
         Storage::fake('s3');
         Storage::disk('s3')->put('wide.jpg', 'dummy');
         Storage::disk('s3')->put('tall.jpg', 'dummy');
         Storage::disk('s3')->put('square.jpg', 'dummy');
         Storage::disk('s3')->put('broken.jpg', 'dummy');
+        Storage::disk('s3')->put('readme.txt', 'dummy');
 
         $s3Client = Mockery::mock(S3Client::class);
         $s3Client->shouldReceive('headObject')
@@ -98,6 +99,10 @@ class SecurityRegressionTest extends TestCase
         $s3Client->shouldReceive('headObject')
             ->with(Mockery::on(fn (array $args) => $args['Key'] === 'broken.jpg'))
             ->andThrow(new S3Exception('Forbidden', new Command('HeadObject')));
+        // 画像以外のファイルは S3 にメタデータを問い合わせない
+        $s3Client->shouldReceive('headObject')
+            ->with(Mockery::on(fn (array $args) => $args['Key'] === 'readme.txt'))
+            ->never();
         $this->app->instance(S3Client::class, $s3Client);
 
         $response = $this->get('/hobbies');
@@ -107,5 +112,6 @@ class SecurityRegressionTest extends TestCase
         $response->assertSeeInOrder(['よこのしゃしん', 'alt="square.jpg"', 'たてのしゃしん', 'alt="tall.jpg"'], false);
         $response->assertSeeInOrder(['よこのしゃしん', 'alt="wide.jpg"', 'たてのしゃしん'], false);
         $response->assertDontSee('alt="broken.jpg"', false);
+        $response->assertDontSee('readme.txt', false);
     }
 }
