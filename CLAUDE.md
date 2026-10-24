@@ -44,13 +44,14 @@ docker compose exec -T -w /var/www/laravel app php vendor/bin/pint --test
 
 - `main` への push で `.github/workflows/deploy.yml` が動く：`test` と `lint`（PHPStan / Pint）が通ったら、ビルド（npm / composer `--no-dev`）→ tarball を S3 へ → SSM Run Command で `deploy/remote-deploy.sh` を実行
 - `remote-deploy.sh`：コードを含むイメージ `tektektech-app` / `tektektech-nginx` を **コミットの SHA をタグにして**作り、`deploy/switch-release.sh` でコンテナごと入れ替える。トップページが 200 を返さなければ**直前のリリース（`.current-release`）に自動で戻す**。イメージは直近 3 世代を残す
-- 手動で戻すときは Actions の `Rollback` に SHA（40 桁）を渡す。戻せる SHA はデプロイのログ末尾の `Images kept for rollback` に出る
+- 手動で戻すときは Actions の `Rollback` を実行する。**sha を空欄にすると 1 つ前に動いていたリリース（`.previous-release`）に戻る**（もう一度空欄で実行すると元に戻る）。特定のリリースに戻すときは SHA（40 桁）を渡す。戻せる SHA はデプロイのログ末尾の `Images kept for rollback` に出る
 - `.env` は `laravel/.env.production.enc` を EC2 上で復号する（パスフレーズは Parameter Store `/tektektech/prod/env-enc-key` と 1Password）。**`.env` や復号結果の中身は読まない・出力しない**
-- EC2 上の `/home/ec2-user/tektektech/laravel/app` などは以前の方式（コードを上書き＋マウント）の残骸で、今は使われていない
+- EC2 の `/home/ec2-user/tektektech` に置くのは `docker-compose.yml`・`deploy/`・`laravel/storage`・`laravel/.env`・`.current-release`／`.previous-release` だけ（以前の方式の残骸はデプロイ時に削除する）
 
 ## 設計上の前提（変えるときは関連箇所もあわせて直す）
 
 - **GET / HEAD 以外は nginx で 405**。セッション・Cookie・CSRF のミドルウェアは `bootstrap/app.php` で外している。フォームやログインを追加するときは戻すこと
+- **CSP は `App\Http\Middleware\ContentSecurityPolicy` で nonce を使って付ける**。インラインの `<script>` には `nonce="{{ Vite::cspNonce() }}"` を付け、`onclick=` などのイベントハンドラ属性は使わない（スクリプト内で登録する）。外部の画像・フォントなどを増やすときはミドルウェアの許可先に追加する。ローカルで `npm run dev` 中は CSP を付けない
 - nginx は `index.php` 以外の `.php` を 404、ドットファイルを 403 にする。セキュリティヘッダーは `docker/nginx/security-headers.conf` にまとめ、**location 内で `add_header` を書くときはこのファイルも include する**（書かないと server レベルのヘッダーが消える）。`/build/assets/` の `Cache-Control` は 404 に付かないよう `always` なし
 - 本番の opcache は `validate_timestamps=0`（コードはイメージの中で変わらない）。Blade のコンパイル済みビューはコンテナ内の `/tmp/views`
 - `config/cache.php` は `serializable_classes => false`（**キャッシュにオブジェクトを入れられない**）。enum などは値（文字列）にして保存する
