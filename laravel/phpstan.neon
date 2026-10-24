@@ -4,6 +4,9 @@ includes:
 parameters:
     paths:
         - app
+        - bootstrap/app.php
+        - routes
+        - tests
 
-    # The level 9 is the highest level
-    level: 8
+    # 10 が最も厳しいレベル（mixed 型の値もそのまま使えない）
+    level: 10

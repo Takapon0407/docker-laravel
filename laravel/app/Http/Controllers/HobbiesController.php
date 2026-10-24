@@ -55,7 +55,7 @@ class HobbiesController extends Controller
     private function fetchPhotos(): array
     {
         $disk = Storage::disk('s3');
-        $bucket = (string) config('filesystems.disks.s3.bucket');
+        $bucket = config()->string('filesystems.disks.s3.bucket');
         $keys = array_filter(
             $disk->files(''),
             fn (string $key): bool => in_array(strtolower(pathinfo($key, PATHINFO_EXTENSION)), self::PHOTO_EXTENSIONS, true)
@@ -85,9 +85,10 @@ class HobbiesController extends Controller
         }
 
         // 幅・高さは S3 への PUT 時に Lambda がメタデータとして付加している
-        $width = $meta['Metadata']['width'] ?? null;
-        $height = $meta['Metadata']['height'] ?? null;
-        if ($width === null || $height === null) {
+        $metadata = $meta['Metadata'] ?? null;
+        $width = is_array($metadata) ? $metadata['width'] ?? null : null;
+        $height = is_array($metadata) ? $metadata['height'] ?? null : null;
+        if (! is_numeric($width) || ! is_numeric($height)) {
             return null;
         }
 

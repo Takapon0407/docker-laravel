@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
         if (! $this->app->environment('local')) {
             URL::forceScheme('https');
             // リクエストのHostヘッダーではなくAPP_URLを基準にURLを生成する
-            URL::forceRootUrl(config('app.url'));
+            URL::forceRootUrl(config()->string('app.url'));
         }
     }
 }
