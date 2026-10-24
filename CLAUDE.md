@@ -67,3 +67,4 @@ docker compose exec -T -w /var/www/laravel app php vendor/bin/pint --test
 - Docker Desktop（Mac）で 1 ファイルだけをバインドマウントしていると、書き換え後もコンテナから古い長さのまま見えることがある（`nginx -t` が途中で終わる等）。`docker compose up -d --force-recreate nginx` で直る。本番（Linux）では起きない
 - 手元の Docker は Content Trust が有効で、`docker run` は手元で作ったイメージでも失敗する。`docker compose` 経由なら動く
 - 編集が反映されないときは、コンパイル済みビュー（`php artisan view:clear`）と opcache（app コンテナの再起動）を疑う
+- `Storage::disk('s3')->url()` などは URL を作るだけでも AWS SDK が認証情報を取りに行く（EC2 ではメタデータサービスへの通信、CI では失敗して 500）。全ページで通る処理では使わず、必要なら設定から組み立てる。テストは認証情報なし（`docker compose exec -e AWS_ACCESS_KEY_ID= -e AWS_SECRET_ACCESS_KEY= -e AWS_EC2_METADATA_DISABLED=true ...`）でも通ることを確かめる
