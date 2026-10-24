@@ -1,12 +1,11 @@
 name: PHPStan
 on:
-  push:
-    branches:
-      - main
   pull_request:
     types:
       - opened
       - synchronize
+  # main へのデプロイ（deploy.yml）からも呼び出し、通った場合だけデプロイする
+  workflow_call:
 permissions:
   contents: read
 

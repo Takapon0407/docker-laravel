@@ -20,8 +20,16 @@ env:
   INSTANCE_ID: i-0006d1df01ceb7dc0
 
 jobs:
+  # テストと静的解析が通らなければビルド・デプロイしない
+  test:
+    uses: ./.github/workflows/test.yml
+
+  phpstan:
+    uses: ./.github/workflows/phpstan.yml
+
   # ビルド（npm / composer のスクリプトが動く）は AWS の権限を持たないジョブで行う
   build:
+    needs: [test, phpstan]
     runs-on: ubuntu-latest
     outputs:
       sha256: ${{ steps.package.outputs.sha256 }}
