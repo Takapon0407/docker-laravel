@@ -1,9 +1,10 @@
 @extends('layouts.common')
+@section('title', '趣味')
+@section('description', 'たかぽんの趣味（写真・音楽・ゲーム）を紹介しています。')
+@push('head')
+    @vite('resources/ts/laravel/hobbies.ts')
+@endpush
 @section('content')
-@vite('resources/ts/laravel/hobbies.ts')
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&display=swap" rel="stylesheet">
 
 <div class="container hobbies-container">
 

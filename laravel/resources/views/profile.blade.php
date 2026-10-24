@@ -1,9 +1,9 @@
 @extends('layouts.common')
+@section('description', 'Webエンジニア・たかぽんのポートフォリオサイトです。スキルスタック・略歴・資格などを紹介しています。')
+@push('head')
+    @vite('resources/ts/laravel/profile.ts')
+@endpush
 @section('content')
-@vite('resources/ts/laravel/profile.ts')
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&display=swap" rel="stylesheet">
 
 <div id="notification" class="notification"></div>
 

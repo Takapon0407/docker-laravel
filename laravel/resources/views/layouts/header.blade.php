@@ -1,5 +1,3 @@
-@vite('resources/ts/laravel/util/header.ts')
-
 <nav class="navbar navbar-expand-lg navbar-light pl-5 pr-5 pt-2 pb-2">
   <!-- TODO: 良いロゴができたら置き換える -->
   <a class="navbar-brand text-white ms-3" href="/">てくてくてっく</a>
