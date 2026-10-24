@@ -1,10 +1,15 @@
-{{-- 
-    HTML,JSを7行(改行なし)でテトリス実装
-    参考記事はこちらを参照
-    https://qiita.com/ryuichi1208/items/f9e6ac2b99bbe4fc82d3
+{{--
+    HTML と JS を 7 行（改行なし）で書いたテトリス
+    参考: https://qiita.com/ryuichi1208/items/f9e6ac2b99bbe4fc82d3
     TODO: レンダリングが走って参照内容をページ上に表示できないので、いい感じに追加したい
 --}}
-
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>テトリス | てくてくテック</title>
+</head>
 <body id=D onKeyDown=K=event.keyCode-38>
     <script>
         Z=X=[B=A=12];
@@ -23,3 +28,4 @@
         D.innerHTML=S+P;Z[5]||setTimeout(Y,99-P)}Y(h=e=K=t=P=0)
     </script>
 </body>
+</html>

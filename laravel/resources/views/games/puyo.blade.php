@@ -1,9 +1,15 @@
-{{-- 
-    HTML,JSの7行(改行なし)でぷよぷよ実装
-    参考記事はこちらを参照
-    https://qiita.com/ryuichi1208/items/f9e6ac2b99bbe4fc82d3
+{{--
+    HTML と JS を 10 行で書いたぷよぷよ
+    参考: https://qiita.com/yoitomakenouta/items/8b93d0b9dacf365ce0b1
     TODO: レンダリングが走って参照内容をページ上に表示できないので、いい感じに追加したい
 --}}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ぷよぷよ | てくてくテック</title>
+</head>
 <body id=D onKeyDown=K=event.keyCode-38>
     <script>
         function G(x){
@@ -33,3 +39,4 @@
         Y(f=X=Z=[r=h=K=P=0])
     </script>
 </body>
+</html>
