@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // CloudFront / ALB 経由のリクエストのため、X-Forwarded-For / Port / Proto を信頼する
+        // CloudFront 経由のリクエストのため、X-Forwarded-For / Port / Proto を信頼する
         // X-Forwarded-Host は信頼しない（URL 生成は AppServiceProvider で APP_URL に固定）
         // TrustHosts はオリジンに渡る Host が CloudFront の設定次第で変わるため無効のまま
         $middleware->trustProxies(
