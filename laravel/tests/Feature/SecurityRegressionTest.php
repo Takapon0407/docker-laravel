@@ -13,10 +13,8 @@ class SecurityRegressionTest extends TestCase
 {
     /**
      * DBを使わない構成のため、雛形の /api/user が公開されていないこと
-     *
-     * @return void
      */
-    public function test_scaffold_api_user_route_is_not_exposed()
+    public function test_scaffold_api_user_route_is_not_exposed(): void
     {
         $response = $this->get('/api/user', ['Accept' => 'text/html']);
 
@@ -25,10 +23,8 @@ class SecurityRegressionTest extends TestCase
 
     /**
      * /hobbies はS3への問い合わせ結果をキャッシュし、アクセスのたびにS3を呼ばないこと
-     *
-     * @return void
      */
-    public function test_hobbies_caches_s3_metadata_between_requests()
+    public function test_hobbies_caches_s3_metadata_between_requests(): void
     {
         Storage::fake('s3');
         Storage::disk('s3')->put('a.jpg', 'dummy');
@@ -46,10 +42,8 @@ class SecurityRegressionTest extends TestCase
 
     /**
      * リクエストの Host ヘッダーではなく APP_URL を基準に URL を生成すること
-     *
-     * @return void
      */
-    public function test_generated_urls_ignore_request_host_header()
+    public function test_generated_urls_ignore_request_host_header(): void
     {
         $response = $this->get('http://evil.example/');
 
@@ -61,10 +55,8 @@ class SecurityRegressionTest extends TestCase
     /**
      * 閲覧専用サイトのため、セッションや CSRF トークンの Cookie を発行しないこと
      * （来訪者ごとのセッションファイル作成を防ぎ、CloudFront でキャッシュできるようにする）
-     *
-     * @return void
      */
-    public function test_pages_do_not_set_cookies()
+    public function test_pages_do_not_set_cookies(): void
     {
         $response = $this->get('/');
 
@@ -74,10 +66,8 @@ class SecurityRegressionTest extends TestCase
 
     /**
      * /hobbies は写真の縦横（正方形を含む）をメタデータから判定して振り分け、メタデータが取れない写真や画像以外のファイルは表示しないこと
-     *
-     * @return void
      */
-    public function test_hobbies_groups_photos_by_orientation_and_skips_unusable_files()
+    public function test_hobbies_groups_photos_by_orientation_and_skips_unusable_files(): void
     {
         Storage::fake('s3');
         Storage::disk('s3')->put('wide.jpg', 'dummy');
