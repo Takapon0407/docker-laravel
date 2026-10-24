@@ -25,10 +25,13 @@ $ pwd
 $ cd laravel
 $ composer install
 $ cd ..
-$ docker compose up -d
+$ docker compose up -d --build
 ```
 
 上記でコンテナを立ち上げた後、`http://localhost/`へアクセス
+
+ローカルでは `docker-compose.override.yml` が自動で読み込まれ、コード（`laravel/`）と nginx の設定をコンテナにマウントするため、編集はすぐ反映される。
+本番は `docker-compose.yml` だけを使い、コードを含むイメージでコンテナごと入れ替える（下記「デプロイ」）。
 
 ### php stan での静的分析を local で叩く
 
@@ -55,6 +58,19 @@ $ pwd
 $ npm install
 $ npm run dev
 ```
+
+## デプロイ
+
+`main` へのマージで GitHub Actions（`Deploy to EC2`）が実行される。
+
+1. テスト・Lint が通ったら、Vite のビルドと `composer install --no-dev` を行い、tarball を S3 に置く
+2. SSM Run Command で EC2 上の `deploy/remote-deploy.sh` を実行し、コードを含むイメージ（`tektektech-app` / `tektektech-nginx`）をコミットの SHA をタグにして作る
+3. `deploy/switch-release.sh` でコンテナを新しいイメージに入れ替え、トップページが 200 を返すか確認する。**失敗したら直前のリリースに自動で戻す**
+4. ロールバック用に直近 3 リリース分のイメージを残し、それより古いものは消す（残っている SHA はデプロイのログの末尾に出る）
+
+### ロールバック
+
+GitHub の Actions → `Rollback` → `Run workflow` で、戻したいリリースのコミット SHA（40 桁）を指定して実行する。
 
 ## env ファイルの更新手順について
 
