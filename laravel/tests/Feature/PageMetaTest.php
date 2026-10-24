@@ -10,6 +10,17 @@ use Tests\TestCase;
 class PageMetaTest extends TestCase
 {
     /**
+     * トップページと同じ内容だった /profile は、トップページへ恒久的に転送すること
+     */
+    public function test_profile_url_redirects_permanently_to_top(): void
+    {
+        $response = $this->get('/profile');
+
+        $response->assertStatus(301);
+        $response->assertRedirect(url('/'));
+    }
+
+    /**
      * ページごとのタイトル・説明・canonical・OGP を出力すること
      */
     public function test_pages_output_title_description_and_ogp(): void

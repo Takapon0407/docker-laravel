@@ -159,8 +159,8 @@
                 <div class="sub-content">
                     <div class="sub-left-content">
                         <ul>
-                            <li><a href="{{ url('/games/tetris') }}" target="_blank" rel="noopener noreferrer">テトリス</a>　参考: <a href="https://qiita.com/ryuichi1208/items/f9e6ac2b99bbe4fc82d3">7行テトリス</a></li>
-                            <li><a href="{{ url('/games/puyo') }}" target="_blank" rel="noopener noreferrer">ぷよぷよ</a>　参考: <a href="https://qiita.com/yoitomakenouta/items/8b93d0b9dacf365ce0b1">10行ぷよぷよ</a></li>
+                            <li><a href="{{ route('games.tetris') }}" target="_blank" rel="noopener noreferrer">テトリス</a>　参考: <a href="https://qiita.com/ryuichi1208/items/f9e6ac2b99bbe4fc82d3">7行テトリス</a></li>
+                            <li><a href="{{ route('games.puyo') }}" target="_blank" rel="noopener noreferrer">ぷよぷよ</a>　参考: <a href="https://qiita.com/yoitomakenouta/items/8b93d0b9dacf365ce0b1">10行ぷよぷよ</a></li>
                         </ul>
                     </div>
                 </div>
