@@ -1,9 +1,14 @@
 <?php
 
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,6 +26,17 @@ return Application::configure(basePath: dirname(__DIR__))
                 Request::HEADER_X_FORWARDED_PROTO |
                 Request::HEADER_X_FORWARDED_AWS_ELB,
         );
+
+        // サイトは閲覧専用（GET のみ、フォーム・ログインなし）のため、セッション・Cookie・CSRF 対策は使わない
+        // （来訪者ごとのセッションファイル作成と Set-Cookie をなくし、CloudFront でキャッシュしやすくする）
+        // フォームやログインを追加するときは、ここで外しているミドルウェアを戻すこと
+        $middleware->web(remove: [
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            StartSession::class,
+            ShareErrorsFromSession::class,
+            PreventRequestForgery::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

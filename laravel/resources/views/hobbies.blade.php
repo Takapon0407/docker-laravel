@@ -45,8 +45,9 @@
                 <div class="sub-content">
                     <div class="photo-swiper swiper">
                         <div class="swiper-wrapper">
+                            {{-- 正方形の写真も横長のスライダーに収まるため、ここに含める --}}
                             @foreach ($photos as $photo)
-                                @if ($photo['orientation'] === 'landscape')
+                                @if (in_array($photo['orientation'], ['landscape', 'square'], true))
                                     <div class="swiper-slide">
                                         <img class="slide-photo" src="{{ $photo['url'] }}" alt="{{ $photo['filename'] }}">
                                     </div>
