@@ -71,7 +71,26 @@ if ! bash "$BASE/deploy/switch-release.sh" "$RELEASE_SHA"; then
     exit 1
 fi
 
-# 5. 古いイメージを消す（新しい順に KEEP_IMAGES 世代はロールバック用に残す）
+# 5. 以前の方式（EC2 上のコードを上書きし、コンテナにマウントしていた）で使っていたファイルとイメージを消す
+# 今はコードをイメージに含めているため使っていない（EC2 に残すのは compose の設定・デプロイ用スクリプト・storage・.env だけ）
+LEGACY_PATHS=(
+    Dockerfile .dockerignore .gitignore .github README.md docker infra
+    laravel/app laravel/bootstrap laravel/config laravel/database laravel/lang laravel/public
+    laravel/resources laravel/routes laravel/tests laravel/vendor laravel/node_modules
+    laravel/artisan laravel/composer.json laravel/composer.lock laravel/package.json laravel/package-lock.json
+    laravel/vite.config.ts laravel/phpunit.xml laravel/phpstan.neon laravel/Makefile laravel/README.md
+    laravel/.env.example laravel/.env.production.enc laravel/.editorconfig laravel/.gitattributes laravel/.gitignore
+)
+for path in "${LEGACY_PATHS[@]}"; do
+    if [[ -e "$BASE/$path" ]]; then
+        rm -rf "${BASE:?}/$path"
+        echo "Removed legacy $path"
+    fi
+done
+# 以前の方式でビルドしていたイメージ（タグ latest）
+docker image rm tektektech-app:latest 2>/dev/null && echo "Removed legacy image tektektech-app:latest" || true
+
+# 6. 古いイメージを消す（新しい順に KEEP_IMAGES 世代はロールバック用に残す）
 # 実行中のコンテナが使っているイメージ（ロールバック後など）は消せないため、失敗しても続ける
 for repo in tektektech-app tektektech-nginx; do
     docker image ls "$repo" --format '{{.Tag}}' | tail -n +"$((KEEP_IMAGES + 1))" | while read -r tag; do
