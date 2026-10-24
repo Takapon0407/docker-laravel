@@ -44,6 +44,23 @@ class ContentSecurityPolicyTest extends TestCase
     }
 
     /**
+     * 写真を配信する S3 のオリジンを、AWS SDK を使わず設定から求めて img-src に含めること
+     */
+    public function test_img_src_allows_photo_bucket_from_config(): void
+    {
+        config([
+            'filesystems.disks.s3.url' => null,
+            'filesystems.disks.s3.endpoint' => null,
+            'filesystems.disks.s3.bucket' => 'example-bucket',
+            'filesystems.disks.s3.region' => 'ap-northeast-1',
+        ]);
+
+        $policy = (string) $this->get('/')->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString("img-src 'self' data: https://example-bucket.s3.ap-northeast-1.amazonaws.com;", $policy);
+    }
+
+    /**
      * nonce はリクエストごとに変わること
      */
     public function test_nonce_changes_per_request(): void
