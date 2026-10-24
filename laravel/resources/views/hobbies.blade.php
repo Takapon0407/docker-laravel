@@ -1,9 +1,10 @@
 @extends('layouts.common')
+@section('title', '趣味')
+@section('description', 'たかぽんの趣味（写真・音楽・ゲーム）を紹介しています。')
+@push('head')
+    @vite('resources/ts/laravel/hobbies.ts')
+@endpush
 @section('content')
-@vite('resources/ts/laravel/hobbies.ts')
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&display=swap" rel="stylesheet">
 
 <div class="container hobbies-container">
 
@@ -158,8 +159,8 @@
                 <div class="sub-content">
                     <div class="sub-left-content">
                         <ul>
-                            <li><a href="{{ url('/games/tetris') }}" target="_blank" rel="noopener noreferrer">テトリス</a>　参考: <a href="https://qiita.com/ryuichi1208/items/f9e6ac2b99bbe4fc82d3">7行テトリス</a></li>
-                            <li><a href="{{ url('/games/puyo') }}" target="_blank" rel="noopener noreferrer">ぷよぷよ</a>　参考: <a href="https://qiita.com/yoitomakenouta/items/8b93d0b9dacf365ce0b1">10行ぷよぷよ</a></li>
+                            <li><a href="{{ route('games.tetris') }}" target="_blank" rel="noopener noreferrer">テトリス</a>　参考: <a href="https://qiita.com/ryuichi1208/items/f9e6ac2b99bbe4fc82d3">7行テトリス</a></li>
+                            <li><a href="{{ route('games.puyo') }}" target="_blank" rel="noopener noreferrer">ぷよぷよ</a>　参考: <a href="https://qiita.com/yoitomakenouta/items/8b93d0b9dacf365ce0b1">10行ぷよぷよ</a></li>
                         </ul>
                     </div>
                 </div>
