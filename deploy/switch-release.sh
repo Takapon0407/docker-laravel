@@ -13,7 +13,8 @@ if [[ ! "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
     exit 1
 fi
 export IMAGE_TAG="$RELEASE_SHA"
-export COMPOSE_FILE=docker-compose.yml
+# compose ファイルは絶対パスで指定し、ローカル開発用の docker-compose.override.yml は読み込まない
+export COMPOSE_FILE="$BASE/docker-compose.yml"
 export COMPOSE_PROJECT_NAME=tektektech
 cd "$BASE"
 
