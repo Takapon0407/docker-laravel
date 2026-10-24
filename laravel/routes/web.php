@@ -12,5 +12,3 @@ Route::prefix('games')->group(function () {
     Route::view('/tetris', 'games.tetris');
     Route::view('/puyo', 'games.puyo');
 });
-
-Route::view('/hello-world', 'top');
