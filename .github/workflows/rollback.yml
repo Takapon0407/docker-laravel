@@ -1,0 +1,66 @@
+name: Rollback
+
+# 本番を指定したリリースに戻す（EC2 には直近 3 リリース分のイメージが残っている）
+# 戻せるリリースの SHA は、デプロイのログの末尾（Images kept for rollback）で確認できる
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 戻したいリリースのコミット SHA（40 桁）
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+# デプロイと同時に走らないようにする
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ap-northeast-1
+  DEPLOY_ROLE_ARN: arn:aws:iam::945611748417:role/github-actions-deploy-tektektech
+  INSTANCE_ID: i-0006d1df01ceb7dc0
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # GitHub OIDC で AWS の IAM ロールを引き受けるために必要（アクセスキーは使わない）
+      id-token: write
+    env:
+      # 入力値はシェルに直接埋め込まず、環境変数で受け取って形式を確かめてから使う
+      RELEASE_SHA: ${{ inputs.sha }}
+    steps:
+      - name: Validate input
+        run: |
+          if [[ ! "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::sha にはコミット SHA（40 桁の16進数）を指定してください"
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ env.DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Roll back on EC2 via SSM
+        run: |
+          cat > "$RUNNER_TEMP/params.json" <<EOF
+          {
+            "commands": [
+              "set -euo pipefail",
+              "bash /home/ec2-user/tektektech/deploy/switch-release.sh $RELEASE_SHA"
+            ],
+            "executionTimeout": ["600"]
+          }
+          EOF
+          .github/scripts/run-on-ec2.sh "rollback to $RELEASE_SHA" "$RUNNER_TEMP/params.json"
