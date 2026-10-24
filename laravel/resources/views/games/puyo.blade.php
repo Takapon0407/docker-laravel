@@ -10,8 +10,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ぷよぷよ | てくてくテック</title>
 </head>
-<body id=D onKeyDown=K=event.keyCode-38>
-    <script>
+<body id=D>
+    {{-- CSP で許可するため nonce を付ける。キー操作は onKeyDown 属性（CSP で実行できない）ではなくスクリプト内で登録する --}}
+    <script nonce="{{ Vite::cspNonce() }}">
+        D.onkeydown=e=>K=e.keyCode-38;
         function G(x){
             Z[x]==c&&(Z[x]=q?(P+=k++,0):-c,G(x+1),G(x+8),G(x-1),G(x-8),v++)
         }
