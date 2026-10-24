@@ -152,4 +152,4 @@ jobs:
             "executionTimeout": ["900"]
           }
           EOF
-          .github/scripts/run-on-ec2.sh "deploy $GITHUB_SHA" "$RUNNER_TEMP/params.json"
+          bash .github/scripts/run-on-ec2.sh "deploy $GITHUB_SHA" "$RUNNER_TEMP/params.json"
