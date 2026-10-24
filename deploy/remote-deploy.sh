@@ -22,14 +22,14 @@ if [[ ! "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
     exit 1
 fi
 export IMAGE_TAG="$RELEASE_SHA"
-# ローカル開発用の docker-compose.override.yml は読み込まない
-export COMPOSE_FILE=docker-compose.yml
 # イメージ・コンテナの名前空間（compose のプロジェクト名）を、ビルド時と起動時で揃える
 export COMPOSE_PROJECT_NAME=tektektech
 
 # 1. イメージを作る（実行中のコンテナには影響しない）
+# compose ファイルは絶対パスで指定する（SSM はコマンドを /usr/bin などで実行するため、相対パスだと見つからない）
+# ローカル開発用の docker-compose.override.yml は読み込まない
 # ベースイメージ（php / nginx）は毎回最新のパッチ版を取得する
-docker compose --project-directory "$RELEASE_DIR" build --pull
+docker compose -f "$RELEASE_DIR/docker-compose.yml" build --pull
 
 # 2. 実行時に使うファイル（compose の設定・デプロイ用スクリプト）を配置する
 mkdir -p "$BASE/laravel/storage"
