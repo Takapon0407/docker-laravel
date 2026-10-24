@@ -1,2 +1,7 @@
 # security-audit-skill の出力（脆弱性情報を含むためコミットしない）
 /security-audit/
+
+# macOS のフォルダ表示設定
+.DS_Store
+# Claude Code の個人設定・個人用エージェント（リポジトリでは共有しない）
+/.claude/
