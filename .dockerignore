@@ -1,4 +1,4 @@
-# 秘密情報・不要物をイメージに含めない（実行時は ./laravel をバインドマウントする）
+# 秘密情報・不要物をイメージに含めない
 .git
 .github
 .claude
@@ -7,6 +7,9 @@ docker/db
 laravel/.env
 laravel/.env.*
 laravel/node_modules
-# 実行時はバインドマウントで上書きされるため、前回リリースのキャッシュ（APP_KEY を含む設定キャッシュ）やログ・セッションをイメージに含めない
+# 前回のキャッシュ（APP_KEY を含む設定キャッシュ）やログをイメージに含めない（storage は実行時にマウント、設定キャッシュはコンテナごとに作る）
 laravel/storage
 laravel/bootstrap/cache
+# ローカル開発用の設定は本番のイメージに含めない
+docker-compose.override.yml
+docker/php/php.local.ini
