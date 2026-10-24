@@ -23,7 +23,7 @@
     <meta name="twitter:card" content="summary">
     {{-- PWA --}}
     <meta name="theme-color" content="#55c501"/>
-    <link rel="apple-touch-icon" href="{{ asset('tektektech.jpg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     {{-- 見出しのフォント（Cherry Bomb One） --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
