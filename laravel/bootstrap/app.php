@@ -13,7 +13,6 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
-        commands: __DIR__.'/../routes/console.php',
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // CloudFront 経由のリクエストのため、X-Forwarded-For / Port / Proto を信頼する
