@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use Aws\S3\S3Client;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Filesystem\AwsS3V3Adapter;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,24 +15,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(S3Client::class, function ($app) {
-            $config = [
-                'version' => 'latest',
-                'region'  => config('filesystems.disks.s3.region'),
-                'http' => [
-                    'connect_timeout' => 3,
-                    'timeout'         => 10,
-                ],
-            ];
+        // 認証情報（キー未設定時は EC2 の IAM ロール等）・タイムアウトは config/filesystems.php の s3 ディスクの設定を使う
+        $this->app->singleton(S3Client::class, function (): S3Client {
+            $disk = Storage::disk('s3');
+            assert($disk instanceof AwsS3V3Adapter);
 
-            // キー未設定時はSDKの既定の認証情報チェーン（EC2のIAMロール等）を使う
-            $key = config('filesystems.disks.s3.key');
-            $secret = config('filesystems.disks.s3.secret');
-            if (! empty($key) && ! empty($secret)) {
-                $config['credentials'] = ['key' => $key, 'secret' => $secret];
-            }
-
-            return new S3Client($config);
+            return $disk->getClient();
         });
     }
 
@@ -39,9 +29,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if ($this->app->environment('local')) {
-            URL::forceScheme('http');
-        } else {
+        if (! $this->app->environment('local')) {
             URL::forceScheme('https');
             // リクエストのHostヘッダーではなくAPP_URLを基準にURLを生成する
             URL::forceRootUrl(config('app.url'));
