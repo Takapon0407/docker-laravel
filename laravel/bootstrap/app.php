@@ -23,8 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             at: '*',
             headers: Request::HEADER_X_FORWARDED_FOR |
                 Request::HEADER_X_FORWARDED_PORT |
-                Request::HEADER_X_FORWARDED_PROTO |
-                Request::HEADER_X_FORWARDED_AWS_ELB,
+                Request::HEADER_X_FORWARDED_PROTO,
         );
 
         // サイトは閲覧専用（GET のみ、フォーム・ログインなし）のため、セッション・Cookie・CSRF 対策は使わない
