@@ -64,7 +64,7 @@ jobs:
       - name: Package release
         id: package
         run: |
-          # 本番の実行に使わないもの（テスト・TS / SCSS のソース・開発用の設定・CI・ドキュメント）は含めない
+          # 本番の実行に使わないもの（テスト・TS / SCSS のソース・開発用の設定・ローカル用の compose / php.ini・CI・ドキュメント）は含めない
           tar czf "$RUNNER_TEMP/release.tar.gz" \
             --exclude=./.git \
             --exclude=./.github \
@@ -85,6 +85,8 @@ jobs:
             --exclude=./laravel/phpstan.neon \
             --exclude=./laravel/phpunit.xml \
             --exclude=./laravel/vite.config.ts \
+            --exclude=./docker-compose.override.yml \
+            --exclude=./docker/php/php.local.ini \
             .
           echo "sha256=$(sha256sum "$RUNNER_TEMP/release.tar.gz" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
@@ -106,6 +108,12 @@ jobs:
     env:
       RELEASE_SHA256: ${{ needs.build.outputs.sha256 }}
     steps:
+      # SSM の実行を待つスクリプト（.github/scripts）を使うため
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
       - name: Download release artifact
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -139,33 +147,9 @@ jobs:
               "echo \"$RELEASE_SHA256  \$TMP/release.tar.gz\" | sha256sum -c -",
               "mkdir \"\$TMP/release\"",
               "tar xzf \"\$TMP/release.tar.gz\" -C \"\$TMP/release\"",
-              "bash \"\$TMP/release/deploy/remote-deploy.sh\" \"\$TMP/release\""
+              "bash \"\$TMP/release/deploy/remote-deploy.sh\" \"\$TMP/release\" $GITHUB_SHA"
             ],
             "executionTimeout": ["900"]
           }
           EOF
-          COMMAND_ID=$(aws ssm send-command \
-            --instance-ids "$INSTANCE_ID" \
-            --document-name AWS-RunShellScript \
-            --comment "deploy $GITHUB_SHA" \
-            --parameters "file://$RUNNER_TEMP/params.json" \
-            --query Command.CommandId --output text)
-          echo "SSM command: $COMMAND_ID"
-
-          # 終了状態になるまで待つ（aws ssm wait は約100秒で打ち切られ、遅いビルドでジョブだけ失敗するため自前で待つ）
-          STATUS=Pending
-          for i in $(seq 1 100); do
-            sleep 10
-            STATUS=$(aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" \
-              --query Status --output text 2>/dev/null || echo Pending)
-            case "$STATUS" in
-              Pending|InProgress|Delayed) ;;
-              *) break ;;
-            esac
-          done
-
-          RESULT=$(aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID")
-          echo "::group::stdout"; echo "$RESULT" | jq -r .StandardOutputContent; echo "::endgroup::"
-          echo "::group::stderr"; echo "$RESULT" | jq -r .StandardErrorContent; echo "::endgroup::"
-          echo "Status: $STATUS"
-          test "$STATUS" = "Success"
+          .github/scripts/run-on-ec2.sh "deploy $GITHUB_SHA" "$RUNNER_TEMP/params.json"

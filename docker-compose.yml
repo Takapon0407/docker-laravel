@@ -1,3 +1,7 @@
+# 本番の構成（EC2 では docker-compose.override.yml を読まないよう、このファイルだけを指定して使う）
+# コードはイメージに含め、デプロイのたびにコミットの SHA をタグにしたイメージを作ってコンテナごと入れ替える
+# 残すデータ（storage）と .env だけをマウントする
+
 # コンテナのログ（docker compose logs で見られる）は、ディスクを使い切らないようサイズと世代数を制限する
 x-logging: &default-logging
   driver: json-file
@@ -8,23 +12,28 @@ x-logging: &default-logging
 services:
   app:
     container_name: app
-    build: .
+    build:
+      context: .
+      target: app
+    image: tektektech-app:${IMAGE_TAG:-local}
     # サーバー再起動時にも自動で起動する
     restart: unless-stopped
+    environment:
+      # Blade のコンパイル済みビューはコンテナごとに作る（前のリリースのものを使わない）
+      VIEW_COMPILED_PATH: /tmp/views
     volumes:
-      - ./laravel:/var/www/laravel
+      - ./laravel/storage:/var/www/laravel/storage
+      - ./laravel/.env:/var/www/laravel/.env:ro
     logging: *default-logging
   nginx:
-    image: nginx:stable
     container_name: nginx
+    build:
+      context: .
+      target: nginx
+    image: tektektech-nginx:${IMAGE_TAG:-local}
     restart: unless-stopped
     ports:
       - 80:80
-    volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - ./docker/nginx/security-headers.conf:/etc/nginx/snippets/security-headers.conf
-      # nginxには公開ディレクトリのみマウント（.env等をnginxコンテナから見せない）
-      - ./laravel/public:/var/www/laravel/public
     logging: *default-logging
     depends_on:
       - app

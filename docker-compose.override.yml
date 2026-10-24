@@ -1,0 +1,12 @@
+# ローカル開発用（docker compose が自動で読み込む。本番では読み込まない）
+# コード・設定をマウントし、編集がすぐ反映されるようにする
+services:
+  app:
+    volumes:
+      - ./laravel:/var/www/laravel
+      - ./docker/php/php.local.ini:/usr/local/etc/php/conf.d/zz-local.ini:ro
+  nginx:
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/nginx/security-headers.conf:/etc/nginx/snippets/security-headers.conf
+      - ./laravel/public:/var/www/laravel/public
