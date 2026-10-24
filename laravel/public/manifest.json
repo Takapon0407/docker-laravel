@@ -1,14 +1,20 @@
 {
-    "name": "\u3066\u304f\u3066\u304f\u30c6\u30c3\u30af \u30dd\u30fc\u30c8\u30d5\u30a9\u30ea\u30aa",
-    "short_name": "tektektech",
-    "background_color": "#55c501",
-    "display": "fullscreen",
-    "description": "A portfolio site for TekTekTech, showcasing projects and skills in web development and technology.",
-    "theme_color": "#55c501",
+    "name": "てくてくテック ポートフォリオ",
+    "short_name": "てくてくテック",
+    "description": "Webエンジニア・たかぽんのポートフォリオサイトです。",
+    "lang": "ja",
     "start_url": "/",
+    "display": "standalone",
+    "background_color": "#55c501",
+    "theme_color": "#55c501",
     "icons": [
         {
-            "src": "tektektech.jpg",
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/icon-512.png",
             "sizes": "512x512",
             "type": "image/png"
         }
