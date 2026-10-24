@@ -7,7 +7,7 @@
 
 <div id="notification" class="notification"></div>
 
-<div class="container">
+<div class="container page-container">
     <div class="content-box">
         <h2 class="font-cherry">だれ？</h2>
         <div class="sub-content">
