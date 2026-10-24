@@ -1,5 +1,6 @@
 // pagesで共通して利用するcss
-.container {
+// ページ全体の入れ物（Bootstrap の .container とあわせて使う。.container 自体は上書きしない）
+.page-container {
     display: flex;
     flex-direction: column;
     height: 100%;
