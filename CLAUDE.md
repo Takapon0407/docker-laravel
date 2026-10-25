@@ -45,7 +45,7 @@ docker compose exec -T -w /var/www/laravel app php vendor/bin/pint --test
 - `main` への push で `.github/workflows/deploy.yml` が動く：`test` と `lint`（PHPStan / Pint）が通ったら、ビルド（npm / composer `--no-dev`）→ tarball を S3 へ → SSM Run Command で `deploy/remote-deploy.sh` を実行
 - `remote-deploy.sh`：コードを含むイメージ `tektektech-app` / `tektektech-nginx` を **コミットの SHA をタグにして**作り、`deploy/switch-release.sh` でコンテナごと入れ替える。トップページが 200 を返さなければ**直前のリリース（`.current-release`）に自動で戻す**。イメージは直近 3 世代を残す
 - 手動で戻すときは Actions の `Rollback` を実行する。**sha を空欄にすると 1 つ前に動いていたリリース（`.previous-release`）に戻る**（もう一度空欄で実行すると元に戻る）。特定のリリースに戻すときは SHA（40 桁）を渡す。戻せる SHA はデプロイのログ末尾の `Images kept for rollback` に出る
-- `.env` は `laravel/.env.production.enc` を EC2 上で復号する（パスフレーズは Parameter Store `/tektektech/prod/env-enc-key` と 1Password）。**`.env` や復号結果の中身は読まない・出力しない**
+- `.env` の中身は Parameter Store の `/tektektech/prod/env`（SecureString）にあり、デプロイ時に EC2 が IAM ロールで取得して `laravel/.env` に書き出す。**`.env` の中身は読まない・出力しない**
 - EC2 の `/home/ec2-user/tektektech` に置くのは `docker-compose.yml`・`deploy/`・`laravel/storage`・`laravel/.env`・`.current-release`／`.previous-release` だけ（以前の方式の残骸はデプロイ時に削除する）
 
 ## 設計上の前提（変えるときは関連箇所もあわせて直す）
@@ -63,7 +63,7 @@ docker compose exec -T -w /var/www/laravel app php vendor/bin/pint --test
 
 - **`core.fileMode=false`**：`chmod +x` してもコミットに実行権限が乗らない。スクリプトはワークフロー・EC2 とも `bash script.sh` で呼ぶ（必要なら `git update-index --chmod=+x`）
 - **SSM Run Command は `/usr/bin` をカレントにして実行される**：デプロイスクリプト内で相対パスを使わない（compose ファイルは絶対パスで指定）
-- デプロイスクリプトを変えたら、CI と同じ手順で作ったリリースを使い、`/` をカレントにして `remote-deploy.sh` 自体を手元で実行して確かめる（`aws` / `openssl` / `chown` だけ偽物にし、`BASE` をテスト用のフォルダに置き換える）
+- デプロイスクリプトを変えたら、CI と同じ手順で作ったリリースを使い、`/` をカレントにして `remote-deploy.sh` 自体を手元で実行して確かめる（`aws`（Parameter Store の値の代わりに手元の `.env` を出す）と `chown` だけ偽物にし、`BASE` をテスト用のフォルダに置き換える）
 - Docker Desktop（Mac）で 1 ファイルだけをバインドマウントしていると、書き換え後もコンテナから古い長さのまま見えることがある（`nginx -t` が途中で終わる等）。`docker compose up -d --force-recreate nginx` で直る。本番（Linux）では起きない
 - 手元の Docker は Content Trust が有効で、`docker run` は手元で作ったイメージでも失敗する。`docker compose` 経由なら動く
 - 編集が反映されないときは、コンパイル済みビュー（`php artisan view:clear`）と opcache（app コンテナの再起動）を疑う

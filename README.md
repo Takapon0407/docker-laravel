@@ -74,18 +74,17 @@ GitHub の Actions → `Rollback` → `Run workflow` で、戻したいリリー
 
 ## env ファイルの更新手順について
 
-local の `laravel/` ディレクトリにて以下を実行。
-パスフレーズは 1Password（`op://selfdevelopment/tektektech-portfolio/env-enc-key`）と、本番 EC2 が読み取る AWS Systems Manager Parameter Store（`/tektektech/prod/env-enc-key`、SecureString）で管理している（公開厳禁、`.env.production` や GitHub Secrets には置かない）。パスフレーズを変更するときは両方を更新する。
-1Password CLI（`brew install 1password-cli`、アプリの「設定 → 開発者 → 1Password CLI と連携」をオン）で取り出し、`-pass file:<(...)` で渡す。
-コマンド引数に直接書くとシェル履歴やプロセス一覧に残るため、`-k` や `-pass pass:` は使わない。
+本番の `.env` の中身は、AWS Systems Manager Parameter Store の **`/tektektech/prod/env`（SecureString）** に置いている（リポジトリや GitHub Secrets には置かない）。
+デプロイのたびに EC2 が IAM ロールで読み取り、`laravel/.env` に書き出す。
+
+更新するときは、AWS コンソールの Systems Manager → パラメータストア → `/tektektech/prod/env` →「編集」で値を書き換え、`main` にデプロイする（デプロイ時に反映される）。
+CLI で更新する場合は、書き込み権限のある認証情報で次を実行する（値をコマンド引数に直接書かず、ファイルから渡す）。
 
 ```
-// 暗号化
-openssl aes-256-cbc -salt -pbkdf2 -iter 10000 -in .env.production -out .env.production.enc -pass file:<(op read --no-newline "op://selfdevelopment/tektektech-portfolio/env-enc-key")
-
-// 復号化(.env.productionとして書き出し)
-openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in .env.production.enc -out .env.production -pass file:<(op read --no-newline "op://selfdevelopment/tektektech-portfolio/env-enc-key")
+aws ssm put-parameter --region ap-northeast-1 --name /tektektech/prod/env --type SecureString --overwrite --value file://.env.production
 ```
+
+`.env.production` を手元に作った場合は、更新後に削除する（`.gitignore` 済みだが、平文を残さない）。
 
 ## 画像の追加について
 
