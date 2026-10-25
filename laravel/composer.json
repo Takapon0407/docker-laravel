@@ -4,7 +4,7 @@
     "description": "てくてくテックのポートフォリオサイト（https://tektektech-portfolio.com/）",
     "license": "MIT",
     "require": {
-        "php": "^8.4",
+        "php": "^8.5",
         "aws/aws-sdk-php": "^3.293",
         "laravel/framework": "^13.0",
         "league/flysystem-aws-s3-v3": "^3.0"

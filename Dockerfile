@@ -12,6 +12,14 @@ RUN mkdir -p /var/www/laravel/storage /var/www/laravel/bootstrap/cache \
     && chown www-data:www-data /var/www/laravel/bootstrap/cache
 WORKDIR /var/www
 
+# ローカル開発用（docker-compose.override.yml で使う）。本番の app に composer を足しただけ
+# 手元の PHP のバージョンに頼らず、composer も本番と同じ PHP で動かす
+FROM app AS dev
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends unzip \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
 # nginx（公開ディレクトリと設定だけを含める。.env などは見せない）
 FROM nginx:stable AS nginx
 COPY ./docker/nginx/default.conf /etc/nginx/conf.d/default.conf

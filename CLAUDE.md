@@ -29,10 +29,11 @@
 
 ```bash
 docker compose up -d --build        # docker-compose.override.yml も自動で読まれ、コードと設定がマウントされる
+docker compose exec -T -w /var/www/laravel app composer install
 cd laravel && npm install && npm run build   # Vite（開発中は npm run dev）
 ```
 
-テスト・静的解析は app コンテナで実行する（ホストの PHP は 8.4 のため）。
+composer・テスト・静的解析は app コンテナで実行する（ホストの PHP に頼らない）。ローカルの app は Dockerfile の `dev` ターゲット（本番の `app` ＋ composer）で、本番のイメージには composer は入らない。
 
 ```bash
 docker compose exec -T -w /var/www/laravel app php artisan test

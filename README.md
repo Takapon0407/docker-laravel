@@ -22,13 +22,13 @@ $ git clone git@github.com:Takapon0407/docker-laravel.git
 $ cd docker-laravel
 $ pwd
 /Users/taka/Practice/Laravel/docker-laravel/docker-laravel (=リポジトリのルート)
-$ cd laravel
-$ composer install
-$ cd ..
 $ docker compose up -d --build
+$ docker compose exec -w /var/www/laravel app composer install
 ```
 
 上記でコンテナを立ち上げた後、`http://localhost/`へアクセス
+
+composer は手元の PHP ではなく app コンテナ（本番と同じ PHP 8.5）で動かす。ローカルの app コンテナは Dockerfile の `dev` ターゲット（本番の `app` に composer を足したもの）で作られる。
 
 ローカルでは `docker-compose.override.yml` が自動で読み込まれ、コード（`laravel/`）と nginx の設定をコンテナにマウントするため、編集はすぐ反映される。
 本番は `docker-compose.yml` だけを使い、コードを含むイメージでコンテナごと入れ替える（下記「デプロイ」）。
@@ -40,12 +40,8 @@ local で php stan を動かすには以下手順を参考。
 
 ```
 $ pwd
-docker-laravel/laravel
-$ ./vendor/bin/phpstan analyse
-
-// localでメモリリミットのエラーが起きる場合
-php vendor/bin/phpstan analyse app --memory-limit=1G
-
+docker-laravel (=リポジトリのルート)
+$ docker compose exec -T -w /var/www/laravel app php vendor/bin/phpstan analyse --memory-limit=1G
 ```
 
 ## frontend(Vite)
