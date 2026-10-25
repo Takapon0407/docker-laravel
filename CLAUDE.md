@@ -11,14 +11,17 @@
 ## 本番の構成
 
 ```
-閲覧者 ─HTTPS→ CloudFront ─HTTP:80→ origin.tektektech-portfolio.com（Route 53 → EC2 の Elastic IP）
+閲覧者 ─HTTPS→ CloudFront ─HTTP:80（VPC オリジン：AWS の内部ネットワーク）→ EC2 のプライベート IP
                                       EC2: nginx コンテナ → app コンテナ（php-fpm）
 ```
 
-- **ALB はない**（以前使っていた名残りのターゲットグループ・SG が残っているだけ）。EC2 の SG は 80 番を CloudFront のプレフィックスリストからのみ許可
+- CloudFront のオリジンは **VPC オリジン `tektektech-ec2`**（EC2 のプライベート DNS 名 `ip-172-31-45-191.ap-northeast-1.compute.internal`）。メンテナンス画面（`/errors/*`）だけ S3 オリジン
+- EC2 の SG の受信は **80 番・`CloudFront-VPCOrigins-Service-SG` からのみ**（インターネットから EC2 には直接届かない）。ALB はない
+- EC2 はパブリックサブネットに置いたまま、**Elastic IP は送信専用**（Docker イメージの取得・SSM・S3・Parameter Store・OS の更新に使う。解放するとデプロイできなくなる）
+- 閲覧者 → CloudFront は全ビヘイビア `Redirect HTTP to HTTPS`
 - 証明書は ACM（us-east-1、DNS 検証で自動更新）。EC2 へのログインは SSM Session Manager のみ（22 番は閉じている）
 - AWS を CLI で見るときは SSO の閲覧専用プロファイル `tektektech-view`（許可セット `ViewOnlyAccess`）を使う。切れたらユーザーに `aws sso login --profile tektektech-view` を実行してもらう
-  - `ReadOnlyAccess` は Parameter Store の値（.env の復号キー）まで読めるため使わない
+  - `ReadOnlyAccess` は Parameter Store の値（本番の .env）まで読めるため使わない。`ViewOnlyAccess` では Parameter Store の一覧・IAM ポリシーの中身・CloudFront の詳細設定は見られない
 
 ## ローカル開発
 
