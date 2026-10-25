@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg pt-2 pb-2">
   {{-- TODO: 良いロゴができたら置き換える --}}
-  <a class="navbar-brand text-white ms-3" href="{{ route('profile') }}">てくてくてっく</a>
+  <a class="navbar-brand text-white ms-3" href="{{ route('profile') }}">てくてくテック</a>
   <button
     class="navbar-toggler"
     type="button"

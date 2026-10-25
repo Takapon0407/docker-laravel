@@ -1,5 +1,5 @@
 @extends('layouts.common')
-@section('description', 'Webエンジニア・たかぽんのポートフォリオサイトです。スキルスタック・略歴・資格などを紹介しています。')
+@section('description', 'Laravel・React・AWSを中心にWebサービスを開発しているエンジニア、たかぽんのポートフォリオです。スキルスタック・略歴・資格（AWS認定5種など）を紹介しています。')
 @push('head')
     @vite('resources/ts/laravel/profile.ts')
 @endpush
