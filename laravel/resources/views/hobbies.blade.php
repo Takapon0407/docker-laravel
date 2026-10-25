@@ -1,6 +1,6 @@
 @extends('layouts.common')
 @section('title', '趣味')
-@section('description', 'たかぽんの趣味（写真・音楽・ゲーム）を紹介しています。')
+@section('description', 'Webエンジニア・たかぽんの趣味のページです。α7R3で撮った写真、弾いている楽器、これまで遊んできたゲームを紹介しています。')
 @push('head')
     @vite('resources/ts/laravel/hobbies.ts')
 @endpush

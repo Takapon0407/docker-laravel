@@ -32,12 +32,14 @@ class PageMetaTest extends TestCase
         $top->assertSee('<title>てくてくテック</title>', false);
         $top->assertSee('<link rel="canonical" href="'.url('/').'">', false);
         $top->assertSee('<meta property="og:title" content="てくてくテック">', false);
-        $top->assertSee('<meta name="description" content="Webエンジニア・たかぽんのポートフォリオサイトです。スキルスタック', false);
+        $top->assertSee('<meta name="description" content="Laravel・React・AWSを中心にWebサービスを開発しているエンジニア、たかぽんのポートフォリオです。', false);
+        // ヘッダーのロゴもサイト名と同じ表記にそろえる
+        $top->assertDontSee('てくてくてっく');
 
         $hobbies = $this->get('/hobbies');
         $hobbies->assertSee('<title>趣味 | てくてくテック</title>', false);
         $hobbies->assertSee('<link rel="canonical" href="'.url('/hobbies').'">', false);
         $hobbies->assertSee('<meta property="og:title" content="趣味 | てくてくテック">', false);
-        $hobbies->assertSee('<meta name="description" content="たかぽんの趣味（写真・音楽・ゲーム）を紹介しています。">', false);
+        $hobbies->assertSee('<meta name="description" content="Webエンジニア・たかぽんの趣味のページです。α7R3で撮った写真、弾いている楽器、これまで遊んできたゲームを紹介しています。">', false);
     }
 }
