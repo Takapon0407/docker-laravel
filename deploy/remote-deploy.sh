@@ -14,7 +14,8 @@ RELEASE_DIR="$1"
 RELEASE_SHA="$2"
 BASE=/home/ec2-user/tektektech
 AWS_REGION=ap-northeast-1
-ENC_KEY_PARAM=/tektektech/prod/env-enc-key
+# 本番の .env の中身（SecureString。EC2 の IAM ロールで読み取る）
+ENV_PARAM=/tektektech/prod/env
 KEEP_IMAGES=3
 
 if [[ ! "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
@@ -43,17 +44,17 @@ cd "$BASE/laravel"
 chown -R 33:33 storage
 chmod -R u=rwX,g=rX,o= storage
 
-# 3. .env の復号。パスフレーズは EC2 の IAM ロールで Parameter Store から取得し、環境変数で openssl に渡す
-# （コマンド引数・SSM のコマンド履歴・ログには値を出さない）
-# 一時ファイル（umask 077 で本人以外読めない）に復号し、所有者と権限を整えてから置き換える
-# （復号に失敗しても既存の .env を壊さない／作成直後に他ユーザーから読める瞬間を作らない）
-ENCRYPTION_SECRET="$(aws ssm get-parameter --region "$AWS_REGION" --name "$ENC_KEY_PARAM" \
-    --with-decryption --query Parameter.Value --output text)"
-export ENCRYPTION_SECRET
+# 3. .env を Parameter Store（SecureString）から取得する。EC2 の IAM ロールで読み取り、値はログやコマンド引数に出さない
+# 一時ファイル（umask 077 で本人以外読めない）に書き出し、所有者と権限を整えてから置き換える
+# （取得に失敗しても既存の .env を壊さない／作成直後に他ユーザーから読める瞬間を作らない）
 ENV_TMP="$(umask 077 && mktemp .env.XXXXXX)"
 trap 'rm -f "$ENV_TMP"' EXIT
-openssl aes-256-cbc -d -pbkdf2 -iter 10000 -in "$RELEASE_DIR/laravel/.env.production.enc" -out "$ENV_TMP" -pass env:ENCRYPTION_SECRET
-unset ENCRYPTION_SECRET
+aws ssm get-parameter --region "$AWS_REGION" --name "$ENV_PARAM" \
+    --with-decryption --query Parameter.Value --output text > "$ENV_TMP"
+if [[ ! -s "$ENV_TMP" ]]; then
+    echo "Failed to get .env from Parameter Store ($ENV_PARAM)" >&2
+    exit 1
+fi
 # .env は ec2-user と www-data グループだけが読めるようにする（コンテナには読み取り専用でマウントする）
 chown ec2-user:33 "$ENV_TMP"
 chmod 640 "$ENV_TMP"
