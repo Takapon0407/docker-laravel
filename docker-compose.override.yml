@@ -2,6 +2,9 @@
 # コード・設定をマウントし、編集がすぐ反映されるようにする
 services:
   app:
+    # composer 入りのイメージを使う（Dockerfile の dev ターゲット）
+    build:
+      target: dev
     volumes:
       - ./laravel:/var/www/laravel
       - ./docker/php/php.local.ini:/usr/local/etc/php/conf.d/zz-local.ini:ro
