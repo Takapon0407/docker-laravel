@@ -4,7 +4,8 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "watch": "vite build --watch"
+        "watch": "vite build --watch",
+        "test": "node --test 'resources/ts/**/*.test.ts'"
     },
     "devDependencies": {
         "laravel-vite-plugin": "^3.2.0",
