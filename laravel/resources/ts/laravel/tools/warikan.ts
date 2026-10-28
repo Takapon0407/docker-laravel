@@ -1,5 +1,6 @@
 import { split, splitPerPerson, ROUNDING_UNITS, type Group, type Person, type SplitMode } from "@/lib/warikan";
 import { showPopupNotification } from "../util/notification";
+import { setUpInstallButton } from "../util/install-prompt";
 
 // group: グループごとに比率か固定額を決める / person: 1人ずつ金額を決める（空欄の人は自動）
 type PageMode = "group" | "person";
@@ -379,6 +380,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // LINE の共有用 URL は PC 版の LINE では使えないため、スマホなどタッチ操作の端末だけで出す
     lineLink.hidden = !window.matchMedia("(pointer: coarse)").matches;
+
+    setUpInstallButton(
+        element<HTMLElement>("warikan-install"),
+        element<HTMLButtonElement>("warikan-install-button"),
+        element<HTMLElement>("warikan-install-ios"),
+    );
 
     element<HTMLButtonElement>("warikan-reset").addEventListener("click", () => {
         // 割り方の種類はそのままにして、入力だけ消す

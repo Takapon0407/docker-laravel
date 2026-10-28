@@ -21,10 +21,10 @@
     <meta property="og:image" content="{{ asset('tektektech.jpg') }}">
     <meta property="og:locale" content="ja_JP">
     <meta name="twitter:card" content="summary">
-    {{-- PWA --}}
+    {{-- PWA（ホーム画面に別のアプリとして追加できるページは @section('manifest') / @section('apple-touch-icon') で差し替える） --}}
     <meta name="theme-color" content="#55c501"/>
-    <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}">
-    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <link rel="apple-touch-icon" href="@yield('apple-touch-icon', asset('icons/apple-touch-icon.png'))">
+    <link rel="manifest" href="@yield('manifest', asset('manifest.json'))">
     {{-- 見出しのフォント（Cherry Bomb One） --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -1,0 +1,24 @@
+{
+    "id": "/tools/warikan",
+    "name": "割り勘計算 | てくてくテック",
+    "short_name": "割り勘",
+    "description": "合計金額と人数から割り勘の金額を計算するツールです。",
+    "lang": "ja",
+    "start_url": "/tools/warikan",
+    "scope": "/tools/warikan",
+    "display": "standalone",
+    "background_color": "#55c501",
+    "theme_color": "#55c501",
+    "icons": [
+        {
+            "src": "/icons/warikan-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/warikan-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

@@ -48,5 +48,10 @@ class PageMetaTest extends TestCase
         $warikan->assertSee('<link rel="canonical" href="'.url('/tools/warikan').'">', false);
         // ヘッダーからたどれること
         $warikan->assertSee('href="'.route('tools.warikan').'"', false);
+        // ホーム画面には割り勘専用のアプリとして追加する（ほかのページはポートフォリオの manifest のまま）
+        $warikan->assertSee('<link rel="manifest" href="'.asset('manifest-warikan.json').'">', false);
+        $warikan->assertSee('<link rel="apple-touch-icon" href="'.asset('icons/warikan-apple-touch-icon.png').'">', false);
+        $top->assertSee('<link rel="manifest" href="'.asset('manifest.json').'">', false);
+        $top->assertSee('<link rel="apple-touch-icon" href="'.asset('icons/apple-touch-icon.png').'">', false);
     }
 }
