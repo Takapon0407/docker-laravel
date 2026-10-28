@@ -1,0 +1,203 @@
+.warikan-container {
+    max-width: 640px;
+    padding: 1.5rem 1rem 3rem;
+
+    // ボタンの緑を Bootstrap の success ではなくサイトの緑にする
+    .btn-success,
+    .btn-outline-success {
+        --bs-btn-hover-bg: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-border-color: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-active-bg: #{$main-color};
+        --bs-btn-active-border-color: #{$main-color};
+        --bs-btn-hover-color: #fff;
+        --bs-btn-active-color: #fff;
+    }
+
+    .btn-success {
+        --bs-btn-bg: #{$main-color};
+        --bs-btn-border-color: #{$main-color};
+    }
+
+    .btn-outline-success {
+        --bs-btn-color: color-mix(in srgb, #{$main-color} 80%, #000);
+        --bs-btn-border-color: #{$main-color};
+    }
+}
+
+.warikan-title {
+    font-size: 2rem;
+    text-align: center;
+    color: $main-color;
+    margin-bottom: 1.5rem;
+}
+
+.warikan-split-mode {
+    margin-bottom: 1.25rem;
+    background: #fff;
+    border-radius: var(--bs-border-radius);
+}
+
+.warikan-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.warikan-heading {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.75rem;
+}
+
+.warikan-help {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.warikan-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.warikan-group {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.75rem;
+}
+
+.warikan-group-header {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+
+    input {
+        font-weight: bold;
+    }
+
+    .btn {
+        flex-shrink: 0;
+    }
+}
+
+.warikan-group-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+
+    // hidden 属性を display: flex で打ち消さない
+    &[hidden] {
+        display: none;
+    }
+
+    > .form-control,
+    > .input-group,
+    > .warikan-stepper,
+    > .warikan-mode {
+        flex: 1;
+    }
+}
+
+.warikan-people {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.warikan-person {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    > input {
+        flex: 0.8 1 0;
+        min-width: 0;
+        font-weight: bold;
+    }
+
+    > .input-group {
+        flex: 1.4 1 0;
+        min-width: 0;
+    }
+
+    > .btn {
+        flex-shrink: 0;
+    }
+}
+
+.warikan-label {
+    flex: 0 0 4rem;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.warikan-stepper {
+    display: flex;
+    gap: 0.5rem;
+
+    .btn {
+        flex: 0 0 2.75rem;
+    }
+
+    input {
+        text-align: center;
+    }
+}
+
+.warikan-result {
+    border-top: 4px solid $main-color;
+}
+
+.warikan-error {
+    color: #c0392b;
+    margin-bottom: 0;
+
+    &:empty {
+        display: none;
+    }
+}
+
+// base/_common.scss の ul { padding-left } / li { width: 100% } をリセット
+.warikan-result-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 1rem;
+
+    li {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 1rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+}
+
+.warikan-result-name {
+    overflow-wrap: anywhere;
+}
+
+.warikan-result-amount {
+    font-size: 1.5rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.warikan-summary {
+    margin-bottom: 1rem;
+    color: #555;
+
+    div {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    dd {
+        margin-bottom: 0.25rem;
+    }
+}

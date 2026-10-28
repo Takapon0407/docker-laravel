@@ -13,3 +13,7 @@ Route::prefix('games')->name('games.')->group(function () {
     Route::view('/tetris', 'games.tetris')->name('tetris');
     Route::view('/puyo', 'games.puyo')->name('puyo');
 });
+
+Route::prefix('tools')->name('tools.')->group(function () {
+    Route::view('/warikan', 'tools.warikan')->name('warikan');
+});

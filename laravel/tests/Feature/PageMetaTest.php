@@ -41,5 +41,12 @@ class PageMetaTest extends TestCase
         $hobbies->assertSee('<link rel="canonical" href="'.url('/hobbies').'">', false);
         $hobbies->assertSee('<meta property="og:title" content="趣味 | てくてくテック">', false);
         $hobbies->assertSee('<meta name="description" content="Webエンジニア・たかぽんの趣味のページです。α7R3で撮った写真、弾いている楽器、これまで遊んできたゲームを紹介しています。">', false);
+
+        $warikan = $this->get('/tools/warikan');
+        $warikan->assertOk();
+        $warikan->assertSee('<title>割り勘計算 | てくてくテック</title>', false);
+        $warikan->assertSee('<link rel="canonical" href="'.url('/tools/warikan').'">', false);
+        // ヘッダーからたどれること
+        $warikan->assertSee('href="'.route('tools.warikan').'"', false);
     }
 }
