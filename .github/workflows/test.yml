@@ -32,6 +32,11 @@ jobs:
           npm ci
           npm run build
 
+      # ブラウザ側の計算ロジック（割り勘など）のテスト（Node の型除去で .ts をそのまま実行する）
+      - name: Run TypeScript Tests
+        working-directory: laravel
+        run: npm test
+
       - name: Setup PHP
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:

@@ -5,7 +5,7 @@
 ## 概要
 
 - ポートフォリオサイト（https://tektektech-portfolio.com/）。Laravel 13 / PHP 8.5、フロントは Blade ＋ TypeScript ＋ Sass（Vite でビルド）
-- **閲覧専用のサイト**：DB・ログイン・フォームはない。ページは `/`（プロフィール）・`/hobbies`・`/games/{tetris,puyo}` だけ
+- **閲覧専用のサイト**：DB・ログイン・フォームはない。ページは `/`（プロフィール）・`/hobbies`・`/games/{tetris,puyo}`・`/tools/warikan` だけ
 - `/hobbies` の写真は S3 から取得する。S3 への PUT 時に Lambda が幅・高さをメタデータとして付け、`HobbiesController` が `headObject` で読んで縦横を判定する
 
 ## 本番の構成
@@ -39,6 +39,7 @@ composer・テスト・静的解析は app コンテナで実行する（ホス�
 docker compose exec -T -w /var/www/laravel app php artisan test
 docker compose exec -T -w /var/www/laravel app php vendor/bin/phpstan analyse --memory-limit=1G   # level 10
 docker compose exec -T -w /var/www/laravel app php vendor/bin/pint --test
+cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts）。依存なしで node --test を使う
 ```
 
 - 見た目に関わる変更は、変更前後で主要な要素の位置・大きさ・色を測って比べる（PC 幅とスマホ幅）。CSS / JS を変えたら `npm run build` し直す
@@ -59,6 +60,7 @@ docker compose exec -T -w /var/www/laravel app php vendor/bin/pint --test
 - nginx は `index.php` 以外の `.php` を 404、ドットファイルを 403 にする。セキュリティヘッダーは `docker/nginx/security-headers.conf` にまとめ、**location 内で `add_header` を書くときはこのファイルも include する**（書かないと server レベルのヘッダーが消える）。`/build/assets/` の `Cache-Control` は 404 に付かないよう `always` なし
 - 本番の opcache は `validate_timestamps=0`（コードはイメージの中で変わらない）。Blade のコンパイル済みビューはコンテナ内の `/tmp/views`
 - `config/cache.php` は `serializable_classes => false`（**キャッシュにオブジェクトを入れられない**）。enum などは値（文字列）にして保存する
+- `/tools/*` の便利ツールは計算をブラウザ内だけで行う（サーバーに入力を送らない）。DOM に依存しないロジックは `resources/ts/lib/` に置いてテストし、ページの TS（`resources/ts/laravel/tools/`）から使う（`resources/ts/laravel/` 以下は全部 Vite のエントリーになるため）
 - `config/` は変更したものだけを置き、ほかは Laravel の既定値を使う。`/hobbies` のゲーム一覧は `config/hobbies.php` のデータ
 - Sass は `components/`・`base/`・`pages/` に分け、サイトの緑は `_variables.scss` の `$main-color`。Bootstrap 5 のクラスを使う（Bootstrap 4 のクラスは効かない）
 - `/` と `/profile` は同じ内容のため `/profile` は `/` へ 301。ページのタイトル・説明は `@section('title')` / `@section('description')`
