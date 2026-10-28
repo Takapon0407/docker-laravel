@@ -1,7 +1,11 @@
 @extends('layouts.common')
 @section('title', '割り勘計算')
 @section('description', '合計金額と人数から割り勘の金額を計算するツールです。先輩・後輩などのグループごとの比率や、固定額の人、1人ずつ金額を決める割り方にも対応し、端数は幹事のお釣りにします。')
+{{-- ホーム画面には、ポートフォリオとは別の「割り勘」アプリとして追加する --}}
+@section('manifest', asset('manifest-warikan.json'))
+@section('apple-touch-icon', asset('icons/warikan-apple-touch-icon.png'))
 @push('head')
+    <meta name="apple-mobile-web-app-title" content="割り勘">
     @vite('resources/ts/laravel/tools/warikan.ts')
 @endpush
 @section('content')
@@ -76,6 +80,14 @@
                 <a class="btn btn-outline-success" id="warikan-line" href="https://line.me/R/share" target="_blank" rel="noopener noreferrer" hidden>LINEで送る</a>
             </div>
         </div>
+    </section>
+
+    {{-- 追加できる環境（Android の Chrome など・iPhone / iPad）だけ TS で表示する。アプリとして開いているときは出さない --}}
+    <section class="warikan-card warikan-install" id="warikan-install" hidden>
+        <button type="button" class="btn btn-outline-success w-100" id="warikan-install-button">📱 ホーム画面に追加</button>
+        <p class="warikan-help mt-2 mb-0" id="warikan-install-ios" hidden>
+            Safari の画面下（または上）の<strong>共有ボタン</strong>を押し、<strong>「ホーム画面に追加」</strong>を選ぶと、アプリのように開けます。
+        </p>
     </section>
 
     <button type="button" class="btn btn-link text-secondary d-block mx-auto" id="warikan-reset">入力をリセット</button>
