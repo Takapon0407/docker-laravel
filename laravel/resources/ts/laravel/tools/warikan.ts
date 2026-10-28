@@ -104,9 +104,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const resultList = element<HTMLUListElement>("warikan-result-list");
     const collectedEl = element<HTMLElement>("warikan-collected");
     const changeEl = element<HTMLElement>("warikan-change");
+    const lineLink = element<HTMLAnchorElement>("warikan-line");
 
     let state = loadState();
-    let copyText = "";
+    let shareText = "";
 
     function field(rowEl: Element, name: string): HTMLInputElement {
         return rowEl.querySelector<HTMLInputElement>(`[data-field="${name}"]`)!;
@@ -185,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!result.ok) {
             errorEl.textContent = result.error;
             resultBody.hidden = true;
-            copyText = "";
+            shareText = "";
             return;
         }
 
@@ -215,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
         collectedEl.textContent = `${yen.format(result.collected)}円`;
         changeEl.textContent = `${yen.format(result.change)}円`;
 
-        copyText = [
+        shareText = [
             `割り勘（合計 ${yen.format(state.total)}円）`,
             ...lines.map((g) =>
                 state.mode === "group"
@@ -224,6 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ),
             `集める合計 ${yen.format(result.collected)}円（幹事のお釣り ${yen.format(result.change)}円）`,
         ].join("\n");
+        lineLink.href = `https://line.me/R/share?text=${encodeURIComponent(shareText)}`;
     }
 
     function update(): void {
@@ -357,11 +359,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     element<HTMLButtonElement>("warikan-copy").addEventListener("click", () => {
-        navigator.clipboard.writeText(copyText).then(
+        navigator.clipboard.writeText(shareText).then(
             () => showPopupNotification("結果をコピーしました"),
             () => showPopupNotification("コピーできませんでした"),
         );
     });
+
+    // OS の共有メニュー（LINE・メッセージなどを選べる）。未対応のブラウザではボタンを出さない
+    const shareButton = element<HTMLButtonElement>("warikan-share");
+    shareButton.hidden = typeof navigator.share !== "function";
+    shareButton.addEventListener("click", () => {
+        navigator.share({ text: shareText }).catch((error: unknown) => {
+            // 共有メニューを閉じただけのとき（AbortError）は何も出さない
+            if (!(error instanceof DOMException && error.name === "AbortError")) {
+                showPopupNotification("共有できませんでした");
+            }
+        });
+    });
+
+    // LINE の共有用 URL は PC 版の LINE では使えないため、スマホなどタッチ操作の端末だけで出す
+    lineLink.hidden = !window.matchMedia("(pointer: coarse)").matches;
 
     element<HTMLButtonElement>("warikan-reset").addEventListener("click", () => {
         // 割り方の種類はそのままにして、入力だけ消す

@@ -188,6 +188,21 @@
     white-space: nowrap;
 }
 
+.warikan-share {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    // コピーは 1 行目いっぱい、共有と LINE は 2 行目に並べる
+    > #warikan-copy {
+        flex: 1 0 100%;
+    }
+
+    > :not(#warikan-copy) {
+        flex: 1 1 0;
+    }
+}
+
 .warikan-summary {
     margin-bottom: 1rem;
     color: #555;

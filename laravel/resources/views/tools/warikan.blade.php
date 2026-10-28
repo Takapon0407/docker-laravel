@@ -69,7 +69,12 @@
                 <div><dt>集める合計</dt><dd id="warikan-collected"></dd></div>
                 <div><dt>幹事のお釣り</dt><dd id="warikan-change"></dd></div>
             </dl>
-            <button type="button" class="btn btn-success w-100" id="warikan-copy">結果をコピー</button>
+            <div class="warikan-share">
+                <button type="button" class="btn btn-success" id="warikan-copy">結果をコピー</button>
+                {{-- 使えない環境では TS で隠したまま（共有: Web Share API に未対応 / LINE: PC 版の LINE は共有用 URL に未対応） --}}
+                <button type="button" class="btn btn-outline-success" id="warikan-share" hidden>共有</button>
+                <a class="btn btn-outline-success" id="warikan-line" href="https://line.me/R/share" target="_blank" rel="noopener noreferrer" hidden>LINEで送る</a>
+            </div>
         </div>
     </section>
 
