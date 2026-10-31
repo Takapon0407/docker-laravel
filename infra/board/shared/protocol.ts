@@ -4,7 +4,8 @@
 export type ClientMessage = { action: "ping"; requestId: string };
 
 export type ServerMessage =
-    | { type: "pong"; requestId: string }
+    // debug は dev 環境でだけ付ける（接続がどう見えているかの確認用）
+    | { type: "pong"; requestId: string; debug?: { ip: string | null } }
     | { type: "error"; requestId: string | null; code: ErrorCode; message: string };
 
 export type ErrorCode = "invalid_message" | "unknown_action" | "internal_error";

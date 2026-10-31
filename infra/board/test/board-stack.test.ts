@@ -15,7 +15,8 @@ function template(stage: BoardStage): Template {
         const stack = new BoardStack(app, `Test-${stage}`, {
             env,
             stage,
-            originSecretParameterName: stage === "prod" ? "/test/origin-secret" : undefined,
+            originSecret: stage === "prod" ? { parameterName: "/test/origin-secret" } : { value: "dev-value" },
+            testDistribution: stage === "dev",
         });
         t = Template.fromStack(stack);
         templates.set(stage, t);
@@ -49,12 +50,30 @@ test("prod はテーブルを残し、削除保護を付ける。dev は消せ�
     template("dev").hasResource("AWS::DynamoDB::GlobalTable", { DeletionPolicy: "Delete" });
 });
 
-test("prod だけ確認用ヘッダーの値を SSM から読む", () => {
+test("確認用ヘッダーの値は、prod は SSM から読み、dev は値をそのまま渡す。debug は dev だけ", () => {
     template("prod").hasResourceProperties("AWS::Lambda::Function", {
-        Environment: { Variables: Match.objectLike({ ORIGIN_SECRET_PARAMETER: "/test/origin-secret" }) },
+        Environment: { Variables: Match.objectLike({ ORIGIN_SECRET_PARAMETER: "/test/origin-secret", ORIGIN_SECRET_VALUE: "", DEBUG: "0" }) },
     });
     template("dev").hasResourceProperties("AWS::Lambda::Function", {
-        Environment: { Variables: Match.objectLike({ ORIGIN_SECRET_PARAMETER: "" }) },
+        Environment: { Variables: Match.objectLike({ ORIGIN_SECRET_PARAMETER: "", ORIGIN_SECRET_VALUE: "dev-value", DEBUG: "1" }) },
+    });
+});
+
+test("確認用の CloudFront は dev だけに作り、/tools/board/ws をステージに書き換えて確認用ヘッダーを付ける", () => {
+    template("prod").resourceCountIs("AWS::CloudFront::Distribution", 0);
+    template("dev").hasResourceProperties("AWS::CloudFront::Function", {
+        FunctionCode: Match.stringLikeRegexp('event.request.uri = "/ws"'),
+    });
+    template("dev").hasResourceProperties("AWS::CloudFront::Distribution", {
+        DistributionConfig: Match.objectLike({
+            Origins: [Match.objectLike({ OriginCustomHeaders: [{ HeaderName: "X-Origin-Verify", HeaderValue: "dev-value" }] })],
+            CacheBehaviors: [Match.objectLike({ PathPattern: "/tools/board/ws" })],
+        }),
+    });
+    template("dev").hasResourceProperties("AWS::CloudFront::OriginRequestPolicy", {
+        OriginRequestPolicyConfig: Match.objectLike({
+            HeadersConfig: { HeaderBehavior: "whitelist", Headers: Match.arrayWith(["Sec-WebSocket-Key", "CloudFront-Viewer-Address"]) },
+        }),
     });
 });
 
