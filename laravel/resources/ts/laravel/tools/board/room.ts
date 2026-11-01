@@ -353,6 +353,9 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(() => onSuccess?.())
             .catch((error: unknown) => {
                 topicError.textContent = error instanceof BoardRequestError ? error.message : "操作できませんでした";
+            })
+            .finally(() => {
+                // 一覧のボタンは topicsUpdated で描き直されるが、追加のボタンは残るため戻す
                 button.disabled = false;
             });
     }
