@@ -77,6 +77,16 @@ test("確認用の CloudFront は dev だけに作り、/tools/board/ws をス�
     });
 });
 
+test("prod も /tools/board/ws の書き換えの関数とヘッダーの設定を作り、手で設定するための値を出力する", () => {
+    const t = template("prod");
+
+    t.hasResourceProperties("AWS::CloudFront::Function", { Name: "tektektech-board-prod-rewrite", FunctionCode: Match.stringLikeRegexp('event.request.uri = "/ws"') });
+    t.hasResourceProperties("AWS::CloudFront::OriginRequestPolicy", { OriginRequestPolicyConfig: Match.objectLike({ Name: "tektektech-board-prod-websocket" }) });
+    for (const name of ["OriginDomain", "RewriteFunctionName", "OriginRequestPolicyName"]) {
+        t.hasOutput(name, {});
+    }
+});
+
 test("ステージにスロットリングを付ける", () => {
     template("dev").hasResourceProperties("AWS::ApiGatewayV2::Stage", {
         DefaultRouteSettings: { ThrottlingRateLimit: 20, ThrottlingBurstLimit: 40 },

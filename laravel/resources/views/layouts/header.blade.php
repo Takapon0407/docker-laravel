@@ -28,5 +28,12 @@
         <a class="nav-link text-white" href="{{ route('tools.warikan') }}">割り勘</a>
       </li>
     </ul>
+    @if (config('board.enabled'))
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link text-white" href="{{ route('tools.board') }}">質問ボード</a>
+        </li>
+      </ul>
+    @endif
   </div>
 </nav>

@@ -15,6 +15,18 @@ class BoardPageTest extends TestCase
 
         $this->get('/tools/board')->assertNotFound();
         $this->get('/tools/board/room')->assertNotFound();
+        // ヘッダーにもリンクを出さない
+        $this->get('/tools/warikan')->assertDontSee(route('tools.board'), false);
+    }
+
+    /**
+     * 有効にしたら、ヘッダーからボードへのリンクを出すこと
+     */
+    public function test_header_links_to_board_when_enabled(): void
+    {
+        config(['board.enabled' => true]);
+
+        $this->get('/tools/warikan')->assertSee('href="'.route('tools.board').'"', false);
     }
 
     /**
