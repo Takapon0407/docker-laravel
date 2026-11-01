@@ -29,7 +29,11 @@ export type ClientMessage =
     // key は投稿したときに返した取り消し用の鍵
     | { action: "deletePost"; requestId: string; postId: string; key: string }
     | { action: "like"; requestId: string; postId: string }
-    | { action: "unlike"; requestId: string; postId: string };
+    | { action: "unlike"; requestId: string; postId: string }
+    // ここから下は主催者だけ。select なら追加したトピックを今のトピックにする
+    | { action: "addTopic"; requestId: string; title: string; select: boolean }
+    | { action: "renameTopic"; requestId: string; topicId: string; title: string }
+    | { action: "setTopic"; requestId: string; topicId: string };
 
 export type Role = "participant" | "admin";
 
@@ -80,6 +84,8 @@ export type ServerMessage =
     | { type: "postAdded"; post: PostView }
     | { type: "postDeleted"; postId: string }
     | { type: "postLiked"; postId: string; likes: number }
+    // トピックが変わったら、一覧と今のトピックをまとめて送る（最大 20 個なので全部送る）
+    | { type: "topicsUpdated"; topics: TopicView[]; currentTopicId: string }
     | { type: "error"; requestId: string | null; code: ErrorCode; message: string };
 
 export type ErrorCode =
@@ -88,9 +94,12 @@ export type ErrorCode =
     | "validation_error"
     | "room_not_found"
     | "not_joined"
+    | "forbidden"
     | "not_accepting"
     | "too_many_posts"
     | "post_not_found"
+    | "topic_not_found"
+    | "too_many_topics"
     | "internal_error";
 
 const REQUEST_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
@@ -199,6 +208,30 @@ export function parseClientMessage(body: string | null | undefined): ParseResult
             return { ok: true, message: { action, requestId, postId } };
         }
 
+        case "addTopic":
+        case "renameTopic": {
+            const title = typeof fields.title === "string" ? cleanText(fields.title).replace(/\n/g, " ") : "";
+            if (title === "" || length(title) > LIMITS.topicTitle) {
+                return invalid(`トピック名は 1〜${LIMITS.topicTitle} 文字で入力してください`);
+            }
+            if (action === "addTopic") {
+                return { ok: true, message: { action, requestId, title, select: fields.select === true } };
+            }
+            const { topicId } = fields;
+            if (!isToken(topicId)) {
+                return { ok: false, requestId, code: "topic_not_found" };
+            }
+            return { ok: true, message: { action, requestId, topicId, title } };
+        }
+
+        case "setTopic": {
+            const { topicId } = fields;
+            if (!isToken(topicId)) {
+                return { ok: false, requestId, code: "topic_not_found" };
+            }
+            return { ok: true, message: { action, requestId, topicId } };
+        }
+
         default:
             return { ok: false, requestId, code: "unknown_action" };
     }
@@ -224,8 +257,11 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
     validation_error: "入力内容を確認してください",
     room_not_found: "ルームが見つかりません。URL が正しいか、保存期間が過ぎていないか確認してください",
     not_joined: "ルームに入っていません。ページを開き直してください",
+    forbidden: "主催者だけができる操作です",
     not_accepting: "今は投稿を受け付けていません",
     too_many_posts: `このルームの投稿が上限（${LIMITS.posts} 件）に達しました`,
     post_not_found: "投稿が見つかりません。すでに削除されたかもしれません",
+    topic_not_found: "トピックが見つかりません",
+    too_many_topics: `トピックは ${LIMITS.topics} 個までです`,
     internal_error: "エラーが発生しました。時間をおいてもう一度お試しください",
 };

@@ -2,6 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import type { APIGatewayProxyResult, APIGatewayProxyWebsocketEventV2 } from "aws-lambda";
 import {
     ERROR_MESSAGES,
+    LIMITS,
     parseClientMessage,
     POSTS_PER_MESSAGE,
     RETENTIONS,
@@ -70,6 +71,20 @@ export function createRouter(deps: Dependencies) {
             throw new ActionError("room_not_found");
         }
         return { connection: { ...connection, roomId: connection.roomId }, room };
+    }
+
+    // 主催者として join した接続だけ通す
+    async function adminRoom(connectionId: string): Promise<RoomRecord> {
+        const { connection, room } = await currentRoom(connectionId);
+        if (connection.role !== "admin") {
+            throw new ActionError("forbidden");
+        }
+        return room;
+    }
+
+    async function broadcastTopics(roomId: string, currentTopicId: string): Promise<void> {
+        const topics = await deps.store.listTopics(roomId, nowSeconds());
+        await broadcast(roomId, { type: "topicsUpdated", topics, currentTopicId });
     }
 
     // 同じルームに入っている全員に送る（1 人に送れなくても、ほかの人には送る）
@@ -202,6 +217,45 @@ export function createRouter(deps: Dependencies) {
                 const liked: ServerMessage = { type: "postLiked", postId: message.postId, likes: result.likes };
                 // 数が変わったときだけ全員に送る（すでにいいね済みなどのときは、押した人の表示だけ合わせる）
                 await (result.status === "changed" ? broadcast(room.id, liked) : deps.send(connectionId, liked));
+                return;
+            }
+
+            case "addTopic": {
+                const room = await adminRoom(connectionId);
+                const topics = await deps.store.listTopics(room.id, nowSeconds());
+                if (topics.length >= LIMITS.topics) {
+                    throw new ActionError("too_many_topics");
+                }
+                // 最後に足す
+                const topic: TopicRecord = { id: deps.randomToken(), title: message.title, order: Math.max(-1, ...topics.map((t) => t.order)) + 1 };
+                await deps.store.putTopic(room.id, topic, room.expiresAt);
+                if (message.select) {
+                    await deps.store.setCurrentTopic(room.id, topic.id);
+                }
+                await deps.send(connectionId, { type: "ok", requestId: message.requestId });
+                await broadcastTopics(room.id, message.select ? topic.id : room.currentTopicId);
+                return;
+            }
+
+            case "renameTopic": {
+                const room = await adminRoom(connectionId);
+                if (!(await deps.store.renameTopic(room.id, message.topicId, message.title))) {
+                    throw new ActionError("topic_not_found");
+                }
+                await deps.send(connectionId, { type: "ok", requestId: message.requestId });
+                await broadcastTopics(room.id, room.currentTopicId);
+                return;
+            }
+
+            case "setTopic": {
+                const room = await adminRoom(connectionId);
+                const topics = await deps.store.listTopics(room.id, nowSeconds());
+                if (!topics.some((t) => t.id === message.topicId)) {
+                    throw new ActionError("topic_not_found");
+                }
+                await deps.store.setCurrentTopic(room.id, message.topicId);
+                await deps.send(connectionId, { type: "ok", requestId: message.requestId });
+                await broadcast(room.id, { type: "topicsUpdated", topics, currentTopicId: message.topicId });
                 return;
             }
         }

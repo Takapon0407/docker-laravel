@@ -1,6 +1,6 @@
-import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
+import { ConditionalCheckFailedException, TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import type { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { DeleteCommand, GetCommand, PutCommand, QueryCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
+import { DeleteCommand, GetCommand, PutCommand, QueryCommand, TransactWriteCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { LIMITS, type PostKind, type Role } from "../shared/protocol.ts";
 import type { BoardStore, ConnectionRecord, LikeResult, PostRecord, RoomRecord, TopicRecord } from "./store.ts";
 
@@ -139,6 +139,44 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
                 topics.push({ id: String(item.SK).slice("TOPIC#".length), title: String(item.title), order: Number(item.order) });
             }
             return topics.sort((a, b) => a.order - b.order);
+        },
+
+        async putTopic(roomId, topic, expiresAt) {
+            await db.send(
+                new PutCommand({ TableName: tableName, Item: { ...topicKey(roomId, topic.id), title: topic.title, order: topic.order, expiresAt } }),
+            );
+        },
+
+        async renameTopic(roomId, topicId, title) {
+            try {
+                await db.send(
+                    new UpdateCommand({
+                        TableName: tableName,
+                        Key: topicKey(roomId, topicId),
+                        UpdateExpression: "SET title = :title",
+                        ConditionExpression: "attribute_exists(PK)",
+                        ExpressionAttributeValues: { ":title": title },
+                    }),
+                );
+            } catch (error) {
+                if (error instanceof ConditionalCheckFailedException) {
+                    return false;
+                }
+                throw error;
+            }
+            return true;
+        },
+
+        async setCurrentTopic(roomId, topicId) {
+            await db.send(
+                new UpdateCommand({
+                    TableName: tableName,
+                    Key: roomKey(roomId),
+                    UpdateExpression: "SET currentTopicId = :topicId",
+                    ConditionExpression: "attribute_exists(PK)",
+                    ExpressionAttributeValues: { ":topicId": topicId },
+                }),
+            );
         },
 
         async saveConnection(connectionId, connection, expiresAt) {

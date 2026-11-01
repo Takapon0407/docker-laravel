@@ -395,3 +395,87 @@ test("join：それまでの投稿を、古い順に分けて送る（取り消�
     assert.deepEqual(posts.map((p) => p.body), Array.from({ length: count }, (_, i) => `投稿 ${i}`));
     assert.equal(JSON.stringify(messages).includes("deleteKeyHash"), false);
 });
+
+test("addTopic：最後に足して、全員にトピックの一覧を送る。select なら今のトピックにする", async () => {
+    const { t, created, received } = await roomWithMembers({ topics: ["A"] });
+    const room = t.memory.rooms.get(created.roomId)!;
+    const first = room.currentTopicId;
+
+    await t.send("owner", { action: "addTopic", requestId: "a1", title: "B", select: false });
+    assert.deepEqual(received("owner")[0], { type: "ok", requestId: "a1" });
+    const updated = received("guest1")[0];
+    assert.ok(updated?.type === "topicsUpdated");
+    assert.deepEqual(updated.topics.map((x) => [x.title, x.order]), [["A", 0], ["B", 1]]);
+    assert.equal(updated.currentTopicId, first);
+    assert.equal(room.currentTopicId, first);
+    t.sent.length = 0;
+
+    await t.send("owner", { action: "addTopic", requestId: "a2", title: "C", select: true });
+    const selected = received("guest2")[0];
+    assert.ok(selected?.type === "topicsUpdated");
+    const c = selected.topics.find((x) => x.title === "C")!;
+    assert.equal(selected.currentTopicId, c.id);
+    assert.equal(room.currentTopicId, c.id);
+});
+
+test("setTopic：今のトピックを切り替えて全員に送り、そのあとの投稿は新しいトピックに入る", async () => {
+    const { t, created, post, received } = await roomWithMembers({ topics: ["A", "B"] });
+    const b = t.memory.topics.get(created.roomId)![1]!;
+
+    await t.send("owner", { action: "setTopic", requestId: "s", topicId: b.id });
+
+    assert.deepEqual(received("owner")[0], { type: "ok", requestId: "s" });
+    for (const id of ["owner", "guest1", "guest2"]) {
+        const m = received(id).at(-1);
+        assert.ok(m?.type === "topicsUpdated", id);
+        assert.equal(m.currentTopicId, b.id);
+    }
+    const posted = await post("guest1");
+    assert.equal(t.memory.posts.get(created.roomId)!.get(posted.postId)!.topicId, b.id);
+});
+
+test("renameTopic：名前を変えて全員に送る。ないトピックは topic_not_found", async () => {
+    const { t, created, received } = await roomWithMembers({ topics: ["A"] });
+    const a = t.memory.topics.get(created.roomId)![0]!;
+
+    await t.send("owner", { action: "renameTopic", requestId: "r", topicId: a.id, title: "A（質疑）" });
+    const m = received("guest1")[0];
+    assert.ok(m?.type === "topicsUpdated");
+    assert.deepEqual(m.topics.map((x) => x.title), ["A（質疑）"]);
+    t.sent.length = 0;
+
+    await t.send("owner", { action: "renameTopic", requestId: "r", topicId: "n".repeat(22), title: "X" });
+    const denied = received("owner")[0];
+    assert.equal(denied?.type === "error" && denied.code, "topic_not_found");
+    await t.send("owner", { action: "setTopic", requestId: "s", topicId: "n".repeat(22) });
+    const deniedSet = received("owner").at(-1);
+    assert.equal(deniedSet?.type === "error" && deniedSet.code, "topic_not_found");
+});
+
+test("トピックの操作は主催者だけ。参加者は forbidden で、何も変わらない", async () => {
+    const { t, created, received } = await roomWithMembers({ topics: ["A", "B"] });
+    const b = t.memory.topics.get(created.roomId)![1]!;
+
+    for (const body of [
+        { action: "addTopic", requestId: "x", title: "C", select: true },
+        { action: "renameTopic", requestId: "x", topicId: b.id, title: "X" },
+        { action: "setTopic", requestId: "x", topicId: b.id },
+    ]) {
+        t.sent.length = 0;
+        await t.send("guest1", body);
+        const m = received("guest1")[0];
+        assert.equal(m?.type === "error" && m.code, "forbidden", body.action);
+        assert.deepEqual(received("guest2"), []);
+    }
+    assert.deepEqual(t.memory.topics.get(created.roomId)!.map((x) => x.title), ["A", "B"]);
+    assert.notEqual(t.memory.rooms.get(created.roomId)!.currentTopicId, b.id);
+});
+
+test("addTopic：トピックが上限なら too_many_topics", async () => {
+    const { t, received } = await roomWithMembers({ topics: Array.from({ length: LIMITS.topics }, (_, i) => `T${i}`) });
+
+    await t.send("owner", { action: "addTopic", requestId: "a", title: "もう 1 つ", select: false });
+
+    const m = received("owner")[0];
+    assert.equal(m?.type === "error" && m.code, "too_many_topics");
+});
