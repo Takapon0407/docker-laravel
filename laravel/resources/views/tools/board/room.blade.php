@@ -44,12 +44,43 @@
             </details>
         </section>
 
+        <section class="board-card" id="board-compose">
+            <form id="board-post-form" novalidate>
+                <div class="btn-group mb-2" role="group" aria-label="投稿の種類">
+                    <input type="radio" class="btn-check" name="kind" id="board-kind-question" value="question" checked>
+                    <label class="btn btn-outline-success btn-sm" for="board-kind-question">質問</label>
+                    <input type="radio" class="btn-check" name="kind" id="board-kind-comment" value="comment">
+                    <label class="btn btn-outline-success btn-sm" for="board-kind-comment">コメント</label>
+                </div>
+                <div class="mb-2" id="board-nickname-field">
+                    <label class="visually-hidden" for="board-nickname">ニックネーム</label>
+                    <input type="text" class="form-control form-control-sm" id="board-nickname" placeholder="ニックネーム（空欄なら「匿名」）" autocomplete="nickname">
+                </div>
+                <label class="visually-hidden" for="board-post-body">本文</label>
+                <textarea class="form-control mb-1" id="board-post-body" rows="3" placeholder="質問やコメントを入力"></textarea>
+                <div class="board-compose-footer">
+                    <span class="board-help" id="board-post-topic"></span>
+                    <span class="board-help" id="board-post-count"></span>
+                </div>
+                <p class="board-error mt-2 mb-0" id="board-post-error" role="alert"></p>
+                <button type="submit" class="btn btn-success w-100 mt-2" id="board-post-submit">投稿する</button>
+            </form>
+            <p class="board-help mb-0" id="board-closed" hidden>今は投稿を受け付けていません。</p>
+        </section>
+
         <div class="board-topics" role="group" aria-label="トピック">
             <ul class="nav nav-pills" id="board-topic-tabs"></ul>
         </div>
 
-        <section class="board-card" id="board-posts">
-            <p class="board-help mb-0">投稿の機能は準備中です。</p>
+        <section id="board-posts" aria-label="投稿">
+            <div class="board-sort btn-group mb-2" role="group" aria-label="並び順">
+                <input type="radio" class="btn-check" name="sort" id="board-sort-new" value="new" checked>
+                <label class="btn btn-outline-success btn-sm" for="board-sort-new">新着順</label>
+                <input type="radio" class="btn-check" name="sort" id="board-sort-likes" value="likes">
+                <label class="btn btn-outline-success btn-sm" for="board-sort-likes">いいね順</label>
+            </div>
+            <p class="board-help board-posts-empty" id="board-posts-empty">まだ投稿はありません。</p>
+            <ul class="board-post-list" id="board-post-list"></ul>
         </section>
     </div>
 </div>

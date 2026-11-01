@@ -53,9 +53,66 @@ test("createRoom：タイトル・保存期間・名前の扱い・トピック�
 
 test("join：ルーム ID・鍵の形が正しくなければ room_not_found", () => {
     const valid = "a".repeat(22);
-    assert.equal(parseClientMessage(JSON.stringify({ action: "join", requestId: "r", roomId: valid, key: valid })).ok, true);
+    assert.equal(parseClientMessage(JSON.stringify({ action: "join", requestId: "r", roomId: valid, key: valid, browserId: valid })).ok, true);
     for (const [roomId, key] of [[valid, "short"], ["a".repeat(23), valid], [valid, "a".repeat(21) + "!"], [1, valid]]) {
-        const result = parseClientMessage(JSON.stringify({ action: "join", requestId: "r", roomId, key }));
+        const result = parseClientMessage(JSON.stringify({ action: "join", requestId: "r", roomId, key, browserId: valid }));
         assert.equal(result.ok === false && result.code, "room_not_found");
+    }
+});
+
+test("join：ブラウザ ID がないか形が正しくなければ invalid_message", () => {
+    const valid = "a".repeat(22);
+    for (const browserId of [undefined, "short", 1]) {
+        const result = parseClientMessage(JSON.stringify({ action: "join", requestId: "r", roomId: valid, key: valid, browserId }));
+        assert.equal(result.ok === false && result.code, "invalid_message");
+    }
+});
+
+test("post：改行を \\n にそろえ、制御文字と前後の空白を除く。空のニックネームは null", () => {
+    const result = parseClientMessage(JSON.stringify({ action: "post", requestId: "r", kind: "question", body: "  1行目\r\n2行目\u0007\t ", nickname: "  " }));
+
+    assert.deepEqual(result, { ok: true, message: { action: "post", requestId: "r", kind: "question", body: "1行目\n2行目", nickname: null } });
+});
+
+test("post：ニックネームは 1 行にし、なければ null", () => {
+    const parse = (nickname: unknown) => {
+        const result = parseClientMessage(JSON.stringify({ action: "post", requestId: "r", kind: "comment", body: "本文", nickname }));
+        return result.ok && result.message.action === "post" ? result.message.nickname : "error";
+    };
+
+    assert.equal(parse(" たか\nさん "), "たか さん");
+    assert.equal(parse(null), null);
+    assert.equal(parse(undefined), null);
+});
+
+test("post：種類・本文・ニックネームが正しくなければ validation_error", () => {
+    const base = { action: "post", requestId: "r", kind: "question", body: "本文", nickname: null };
+    const cases: Record<string, unknown>[] = [
+        { kind: "reply" },
+        { body: " \n " },
+        { body: "あ".repeat(301) },
+        { body: 1 },
+        { nickname: "あ".repeat(21) },
+        { nickname: 1 },
+    ];
+    for (const override of cases) {
+        const result = parseClientMessage(JSON.stringify({ ...base, ...override }));
+        assert.equal(result.ok === false && result.code, "validation_error", JSON.stringify(override));
+    }
+    assert.equal(parseClientMessage(JSON.stringify({ ...base, body: "🎉".repeat(300) })).ok, true);
+});
+
+test("deletePost / like / unlike：投稿 ID・鍵の形が正しくなければ post_not_found", () => {
+    const valid = "a".repeat(22);
+    assert.equal(parseClientMessage(JSON.stringify({ action: "deletePost", requestId: "r", postId: valid, key: valid })).ok, true);
+    assert.equal(parseClientMessage(JSON.stringify({ action: "like", requestId: "r", postId: valid })).ok, true);
+    for (const body of [
+        { action: "deletePost", requestId: "r", postId: valid, key: "short" },
+        { action: "deletePost", requestId: "r", postId: 1, key: valid },
+        { action: "like", requestId: "r", postId: "short" },
+        { action: "unlike", requestId: "r" },
+    ]) {
+        const result = parseClientMessage(JSON.stringify(body));
+        assert.equal(result.ok === false && result.code, "post_not_found", JSON.stringify(body));
     }
 });
