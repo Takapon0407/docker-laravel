@@ -190,8 +190,9 @@ export function createRouter(deps: Dependencies) {
             }
 
             case "deletePost": {
-                const { room } = await currentRoom(connectionId);
-                if (!(await deps.store.deletePost(room.id, message.postId, hash(message.key)))) {
+                // 鍵がなければ主催者の削除
+                const room = message.key === null ? await adminRoom(connectionId) : (await currentRoom(connectionId)).room;
+                if (!(await deps.store.deletePost(room.id, message.postId, message.key === null ? null : hash(message.key)))) {
                     // 鍵が違うときも、投稿がないのと同じに扱う
                     throw new ActionError("post_not_found");
                 }
@@ -217,6 +218,50 @@ export function createRouter(deps: Dependencies) {
                 const liked: ServerMessage = { type: "postLiked", postId: message.postId, likes: result.likes };
                 // 数が変わったときだけ全員に送る（すでにいいね済みなどのときは、押した人の表示だけ合わせる）
                 await (result.status === "changed" ? broadcast(room.id, liked) : deps.send(connectionId, liked));
+                return;
+            }
+
+            case "pin":
+            case "unpin": {
+                const room = await adminRoom(connectionId);
+                const pinned = message.action === "pin";
+                if (!(await deps.store.setPinned(room.id, message.postId, pinned))) {
+                    throw new ActionError("post_not_found");
+                }
+                await deps.send(connectionId, { type: "ok", requestId: message.requestId });
+                await broadcast(room.id, { type: "postPinned", postId: message.postId, pinned });
+                return;
+            }
+
+            case "setAccepting": {
+                const room = await adminRoom(connectionId);
+                await deps.store.updateRoom(room.id, { accepting: message.accepting });
+                await deps.send(connectionId, { type: "ok", requestId: message.requestId });
+                await broadcast(room.id, { type: "acceptingChanged", accepting: message.accepting });
+                return;
+            }
+
+            case "rotateKeys": {
+                const room = await adminRoom(connectionId);
+                const members = (await deps.store.listMembers(room.id, nowSeconds())).filter(
+                    (member) => member.role === "admin" && member.connectionId !== connectionId,
+                );
+                if (message.target === "join") {
+                    // 入っている参加者はそのまま（全員を追い出すと、勉強会の途中で全員が入り直すことになる）。新しく入るときは新しい URL が要る
+                    const joinKey = deps.randomToken();
+                    await deps.store.updateRoom(room.id, { joinKey });
+                    await deps.send(connectionId, { type: "keysRotated", requestId: message.requestId, joinKey });
+                    await Promise.all(members.map((member) => deps.send(member.connectionId, { type: "joinKeyChanged", joinKey })));
+                    return;
+                }
+                // 主催者用 URL が漏れたときのため、ほかの主催者はすぐに参加者にする（新しい URL を受け取ったら入り直す）
+                const adminKey = deps.randomToken();
+                await deps.store.updateRoom(room.id, { adminKeyHash: hash(adminKey) });
+                await deps.send(connectionId, { type: "keysRotated", requestId: message.requestId, joinKey: room.joinKey, adminKey });
+                for (const member of members) {
+                    await deps.store.setRole(member.connectionId, room.id, "participant");
+                    await deps.send(member.connectionId, { type: "roleChanged", role: "participant" });
+                }
                 return;
             }
 

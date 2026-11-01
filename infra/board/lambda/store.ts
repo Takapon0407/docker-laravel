@@ -66,20 +66,26 @@ export interface BoardStore {
     // トピックがあるときだけ名前を変える。変えられたら true
     renameTopic(roomId: string, topicId: string, title: string): Promise<boolean>;
     setCurrentTopic(roomId: string, topicId: string): Promise<void>;
+    // 受付中か・鍵を変える
+    updateRoom(roomId: string, fields: Partial<Pick<RoomRecord, "accepting" | "joinKey" | "adminKeyHash">>): Promise<void>;
 
     saveConnection(connectionId: string, connection: ConnectionRecord, expiresAt: number): Promise<void>;
     getConnection(connectionId: string): Promise<ConnectionRecord | null>;
     // 接続をルームに入れる（ほかのルームに入っていたら、そちらからは抜ける）
     joinRoom(connectionId: string, roomId: string, role: Role, browserId: string, expiresAt: number): Promise<void>;
     listMembers(roomId: string, now: number): Promise<MemberRecord[]>;
+    // 主催者用 URL を作り直したとき、ほかの主催者を参加者にする
+    setRole(connectionId: string, roomId: string, role: Role): Promise<void>;
     // 接続の情報と、ルームの接続一覧からの登録を消す
     deleteConnection(connectionId: string): Promise<void>;
 
     // 受付中で、投稿が上限より少ないときだけ追加する（ルームの投稿の数も増やす）
     addPost(roomId: string, post: PostRecord, expiresAt: number): Promise<"added" | "not_accepting" | "too_many_posts">;
     listPosts(roomId: string): Promise<PostRecord[]>;
-    // 取り消し用の鍵のハッシュが合うときだけ消す（ルームの投稿の数も減らす）。消せたら true
-    deletePost(roomId: string, postId: string, deleteKeyHash: string): Promise<boolean>;
+    // 取り消し用の鍵のハッシュが合うときだけ消す（null なら確かめない＝主催者の削除）。ルームの投稿の数も減らす。消せたら true
+    deletePost(roomId: string, postId: string, deleteKeyHash: string | null): Promise<boolean>;
+    // 投稿があるときだけ変える。変えられたら true
+    setPinned(roomId: string, postId: string, pinned: boolean): Promise<boolean>;
     like(roomId: string, postId: string, browserId: string, expiresAt: number): Promise<LikeResult>;
     unlike(roomId: string, postId: string, browserId: string): Promise<LikeResult>;
 }

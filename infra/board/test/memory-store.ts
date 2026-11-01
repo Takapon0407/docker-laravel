@@ -41,6 +41,9 @@ export function createMemoryStore() {
         async setCurrentTopic(roomId, topicId) {
             rooms.get(roomId)!.currentTopicId = topicId;
         },
+        async updateRoom(roomId, fields) {
+            Object.assign(rooms.get(roomId)!, fields);
+        },
         async saveConnection(connectionId, connection, expiresAt) {
             connections.set(connectionId, { ...connection, expiresAt });
         },
@@ -65,6 +68,14 @@ export function createMemoryStore() {
         },
         async listMembers(roomId, now) {
             return [...(members.get(roomId) ?? [])].filter(([, m]) => m.expiresAt >= now).map(([connectionId, m]) => ({ connectionId, role: m.role }));
+        },
+        async setRole(connectionId, roomId, role) {
+            const member = members.get(roomId)?.get(connectionId);
+            const connection = connections.get(connectionId);
+            if (member && connection?.roomId === roomId) {
+                member.role = role;
+                connection.role = role;
+            }
         },
         async deleteConnection(connectionId) {
             const current = connections.get(connectionId);
@@ -93,11 +104,19 @@ export function createMemoryStore() {
         },
         async deletePost(roomId, postId, deleteKeyHash) {
             const post = posts.get(roomId)?.get(postId);
-            if (!post || post.deleteKeyHash !== deleteKeyHash) {
+            if (!post || (deleteKeyHash !== null && post.deleteKeyHash !== deleteKeyHash)) {
                 return false;
             }
             posts.get(roomId)!.delete(postId);
             rooms.get(roomId)!.postCount--;
+            return true;
+        },
+        async setPinned(roomId, postId, pinned) {
+            const post = posts.get(roomId)?.get(postId);
+            if (!post) {
+                return false;
+            }
+            post.pinned = pinned;
             return true;
         },
         async like(roomId, postId, browserId) {

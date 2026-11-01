@@ -42,6 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const likes = loadLikes(storage, link.roomId);
     const configured = document.querySelector<HTMLMetaElement>('meta[name="board-websocket-url"]')?.content;
     let joinedOnce = false;
+    // 入るときに使う URL の鍵（URL を作り直したら、アドレスバーと一緒に変える）
+    let linkKey = link.key;
 
     // ルームの状態（join のたびに取り直し、ほかの人の操作の通知で更新する）
     let room: RoomView | null = null;
@@ -51,6 +53,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let viewingTopicId: string | null = null;
     let sortOrder: SortOrder = "new";
     let isAdmin = false;
+    // 主催者の画面に出す URL の鍵
+    let joinKey: string | null = null;
+    let adminKey: string | null = null;
     // いいね・取り消しの返事を待っている投稿（二重に押せないようにする）
     const busy = new Set<string>();
 
@@ -68,12 +73,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const stored = loadAdminKey(storage, link!.roomId);
         try {
             // 入れた鍵（主催者のとき、ブラウザに残して主催者用 URL に使う）
-            let key = stored ?? link!.key;
+            let key = stored ?? linkKey;
             let joined = await request(key);
             if (stored && joined === null) {
                 // 主催者用の URL が作り直されて、残っていた鍵が使えなくなった
                 forgetAdminKey(storage, link!.roomId);
-                key = link!.key;
+                key = linkKey;
                 joined = await request(key);
             }
             if (joined === null) {
@@ -126,6 +131,42 @@ document.addEventListener("DOMContentLoaded", () => {
             case "topicsUpdated":
                 updateTopics(message.topics, message.currentTopicId);
                 break;
+            case "postPinned": {
+                const post = posts.get(message.postId);
+                if (post) {
+                    posts.set(post.id, { ...post, pinned: message.pinned });
+                }
+                break;
+            }
+            case "acceptingChanged":
+                if (room) {
+                    room = { ...room, accepting: message.accepting };
+                    showPopupNotification(message.accepting ? "投稿の受付が再開されました" : "投稿の受付が締め切られました");
+                    renderCompose();
+                    renderAdminControls();
+                }
+                break;
+            case "joinKeyChanged":
+                joinKey = message.joinKey;
+                showAdminUrls();
+                showPopupNotification("ほかの主催者が共有用 URL を作り直しました");
+                break;
+            case "roleChanged":
+                if (message.role === "participant") {
+                    // ほかの主催者が主催者用 URL を作り直した。残っていた鍵はもう使えない
+                    // （同じブラウザの別のタブで作り直したときは、新しい鍵が残っているので消さない）
+                    if (loadAdminKey(storage, link!.roomId) === adminKey) {
+                        forgetAdminKey(storage, link!.roomId);
+                    }
+                    // 再接続したときに古い主催者の鍵で入ろうとしないよう、アドレスバーは共有用 URL にする
+                    if (joinKey !== null) {
+                        linkKey = joinKey;
+                        history.replaceState(null, "", buildRoomUrl(window.location.origin, { roomId: link!.roomId, key: joinKey }));
+                    }
+                    setAdmin(false);
+                    showPopupNotification("主催者用 URL が作り直されたため、参加者として表示しています");
+                }
+                break;
             default:
                 return;
         }
@@ -166,26 +207,44 @@ document.addEventListener("DOMContentLoaded", () => {
         if (switched || !topics.some((topic) => topic.id === viewingTopicId)) {
             viewingTopicId = room.currentTopicId;
         }
-        isAdmin = joined.role === "admin" && usedAdminKey !== null && joined.joinKey !== undefined;
         renderRoom(joined.room);
         renderCompose();
-        renderTopicAdmin();
+        if (joined.role === "admin" && usedAdminKey !== null && joined.joinKey !== undefined) {
+            joinKey = joined.joinKey;
+            adminKey = usedAdminKey;
+            saveAdminKey(storage, joined.room.id, adminKey);
+            setAdmin(true);
+        } else {
+            setAdmin(false);
+        }
         scheduleRenderPosts();
+    }
 
+    function setAdmin(value: boolean): void {
+        isAdmin = value;
         element<HTMLElement>("board-role-badge").hidden = !isAdmin;
         element<HTMLElement>("board-admin").hidden = !isAdmin;
         element<HTMLElement>("board-topic-admin").hidden = !isAdmin;
-        if (isAdmin && usedAdminKey !== null) {
-            const adminKey = usedAdminKey;
-            saveAdminKey(storage, joined.room.id, adminKey);
-            const shareUrl = buildRoomUrl(window.location.origin, { roomId: joined.room.id, key: joined.joinKey! });
-            element<HTMLInputElement>("board-share-url").value = shareUrl;
-            element<HTMLInputElement>("board-admin-url").value = buildRoomUrl(window.location.origin, { roomId: joined.room.id, key: adminKey });
-            // 主催者の鍵をこのブラウザに残せたら、アドレスバーは共有用 URL にする（そのまま共有しても安全なように）
-            if (loadAdminKey(storage, joined.room.id) === adminKey) {
-                history.replaceState(null, "", shareUrl);
-            }
+        if (isAdmin) {
+            showAdminUrls();
+            renderAdminControls();
+            renderTopicAdmin();
         }
+        // 投稿ごとの主催者のボタンを出し入れする
+        scheduleRenderPosts();
+    }
+
+    function showAdminUrls(): void {
+        if (!isAdmin || joinKey === null || adminKey === null) {
+            return;
+        }
+        const shareUrl = buildRoomUrl(window.location.origin, { roomId: link!.roomId, key: joinKey });
+        element<HTMLInputElement>("board-share-url").value = shareUrl;
+        element<HTMLInputElement>("board-admin-url").value = buildRoomUrl(window.location.origin, { roomId: link!.roomId, key: adminKey });
+        // 主催者の鍵をこのブラウザに残せたら、アドレスバーは共有用 URL にする（そのまま共有しても安全なように）
+        // 残せなければ、再接続したときも主催者として入れるよう、アドレスバーは主催者用 URL にする
+        linkKey = loadAdminKey(storage, link!.roomId) === adminKey ? joinKey : adminKey;
+        history.replaceState(null, "", buildRoomUrl(window.location.origin, { roomId: link!.roomId, key: linkKey }));
     }
 
     function renderRoom(room: RoomView): void {
@@ -264,6 +323,64 @@ document.addEventListener("DOMContentLoaded", () => {
             .finally(() => {
                 submit.disabled = false;
             });
+    });
+
+    // ----- 受付・URL の作り直し（主催者だけ） -----
+
+    const acceptingToggle = element<HTMLButtonElement>("board-accepting-toggle");
+
+    function renderAdminControls(): void {
+        if (!room) {
+            return;
+        }
+        element<HTMLElement>("board-accepting-status").textContent = room.accepting ? "投稿を受け付けています" : "投稿の受付を締め切っています";
+        acceptingToggle.textContent = room.accepting ? "受付を締め切る" : "受付を再開する";
+    }
+
+    acceptingToggle.addEventListener("click", () => {
+        if (!room) {
+            return;
+        }
+        acceptingToggle.disabled = true;
+        // 結果はほかの人と同じ acceptingChanged で届く
+        client
+            .request({ action: "setAccepting", accepting: !room.accepting })
+            .catch((error: unknown) => showPopupNotification(error instanceof BoardRequestError ? error.message : "操作できませんでした"))
+            .finally(() => {
+                acceptingToggle.disabled = false;
+            });
+    });
+
+    document.querySelectorAll<HTMLButtonElement>("[data-rotate]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const target = button.dataset.rotate === "admin" ? "admin" : "join";
+            const message =
+                target === "join"
+                    ? "共有用 URL を作り直しますか？古い URL では新しく入れなくなります。"
+                    : "主催者用 URL を作り直しますか？ほかの主催者は参加者になります。";
+            if (!window.confirm(message)) {
+                return;
+            }
+            button.disabled = true;
+            client
+                .request({ action: "rotateKeys", target })
+                .then((result) => {
+                    if (result.type !== "keysRotated") {
+                        throw new Error(`unexpected message: ${result.type}`);
+                    }
+                    joinKey = result.joinKey;
+                    if (result.adminKey !== undefined) {
+                        adminKey = result.adminKey;
+                        saveAdminKey(storage, link!.roomId, adminKey);
+                    }
+                    showAdminUrls();
+                    showPopupNotification(target === "join" ? "共有用 URL を作り直しました" : "主催者用 URL を作り直しました");
+                })
+                .catch((error: unknown) => showPopupNotification(error instanceof BoardRequestError ? error.message : "作り直せませんでした"))
+                .finally(() => {
+                    button.disabled = false;
+                });
+        });
     });
 
     // ----- トピックの管理（主催者だけ） -----
@@ -477,6 +594,27 @@ document.addEventListener("DOMContentLoaded", () => {
             remove.textContent = "取り消す";
             actions.append(remove);
         }
+        if (isAdmin) {
+            const pin = document.createElement("button");
+            pin.type = "button";
+            pin.className = "btn btn-link btn-sm board-post-admin";
+            pin.dataset.action = post.pinned ? "unpin" : "pin";
+            pin.dataset.postId = post.id;
+            pin.disabled = busy.has(post.id);
+            pin.textContent = post.pinned ? "ピン留めを外す" : "ピン留め";
+            actions.append(pin);
+            // 自分の投稿は「取り消す」で消せる
+            if (!deleteKeys.has(post.id)) {
+                const remove = document.createElement("button");
+                remove.type = "button";
+                remove.className = "btn btn-link btn-sm board-post-admin";
+                remove.dataset.action = "admin-delete";
+                remove.dataset.postId = post.id;
+                remove.disabled = busy.has(post.id);
+                remove.textContent = "削除";
+                actions.append(remove);
+            }
+        }
 
         li.append(meta, body, actions);
         return li;
@@ -503,19 +641,27 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!button || !postId || busy.has(postId)) {
             return;
         }
-        if (button.dataset.action === "delete") {
-            if (window.confirm("この投稿を取り消しますか？")) {
-                act(postId, { action: "deletePost", postId, key: deleteKeys.get(postId)! }, () => {
+        const { action } = button.dataset;
+        if (action === "delete" || action === "admin-delete") {
+            // 主催者の削除は鍵を送らない（サーバーが主催者か確かめる）
+            const key = action === "delete" ? deleteKeys.get(postId)! : null;
+            if (window.confirm(action === "delete" ? "この投稿を取り消しますか？" : "この投稿を削除しますか？（全員の画面から消えます）")) {
+                act(postId, { action: "deletePost", postId, key }, () => {
                     posts.delete(postId);
                     forgetPost(postId);
                 });
             }
             return;
         }
-        const action = button.dataset.action === "unlike" ? "unlike" : "like";
-        act(postId, { action, postId }, () => {
+        if (action === "pin" || action === "unpin") {
+            // ピン留めは、サーバーからの postPinned で表示を変える
+            act(postId, { action, postId }, () => {});
+            return;
+        }
+        const like = action === "unlike" ? "unlike" : "like";
+        act(postId, { action: like, postId }, () => {
             // いいねの数は、サーバーからの postLiked で更新する
-            if (action === "like") {
+            if (like === "like") {
                 likes.add(postId);
             } else {
                 likes.delete(postId);

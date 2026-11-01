@@ -42,6 +42,18 @@
                     <button type="button" class="btn btn-outline-success" data-copy="board-admin-url">コピー</button>
                 </div>
             </details>
+
+            <div class="board-admin-controls">
+                <p class="mb-0"><span id="board-accepting-status"></span></p>
+                <button type="button" class="btn btn-outline-success btn-sm" id="board-accepting-toggle"></button>
+            </div>
+            <details class="board-admin-url mt-2">
+                <summary>URL を作り直す（URL が広まってしまったとき）</summary>
+                <p class="board-help mt-2 mb-1">共有用 URL を作り直すと、古い URL では新しく入れなくなります。入っている参加者はそのままです。</p>
+                <button type="button" class="btn btn-outline-danger btn-sm mb-2" data-rotate="join">共有用 URL を作り直す</button>
+                <p class="board-help mb-1">主催者用 URL を作り直すと、ほかの主催者はすぐに参加者になります。新しい主催者用 URL を渡し直してください。</p>
+                <button type="button" class="btn btn-outline-danger btn-sm" data-rotate="admin">主催者用 URL を作り直す</button>
+            </details>
         </section>
 
         {{-- 主催者だけに表示する --}}

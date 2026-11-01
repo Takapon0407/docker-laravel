@@ -39,7 +39,7 @@ test("WebSocket の各ルートを作る", () => {
     const routes = template("dev").findResources("AWS::ApiGatewayV2::Route");
     const keys = Object.values(routes).map((r) => (r as { Properties: { RouteKey: string } }).Properties.RouteKey).sort();
 
-    assert.deepEqual(keys, ["$connect", "$default", "$disconnect", "addTopic", "createRoom", "deletePost", "join", "like", "ping", "post", "renameTopic", "setTopic", "unlike"]);
+    assert.deepEqual(keys, ["$connect", "$default", "$disconnect", "addTopic", "createRoom", "deletePost", "join", "like", "pin", "ping", "post", "renameTopic", "rotateKeys", "setAccepting", "setTopic", "unlike", "unpin"]);
 });
 
 test("prod はテーブルを残し、削除保護を付ける。dev は消せる", () => {
