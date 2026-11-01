@@ -50,6 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 見ているトピック（最初は今のトピック）
     let viewingTopicId: string | null = null;
     let sortOrder: SortOrder = "new";
+    let isAdmin = false;
     // いいね・取り消しの返事を待っている投稿（二重に押せないようにする）
     const busy = new Set<string>();
 
@@ -122,10 +123,33 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 break;
             }
+            case "topicsUpdated":
+                updateTopics(message.topics, message.currentTopicId);
+                break;
             default:
                 return;
         }
         scheduleRenderPosts();
+    }
+
+    // 主催者がトピックを足した・名前を変えた・切り替えた
+    function updateTopics(next: TopicView[], currentTopicId: string): void {
+        if (!room) {
+            return;
+        }
+        const switched = currentTopicId !== room.currentTopicId;
+        topics = next;
+        room = { ...room, currentTopicId };
+        if (switched) {
+            // 全員の画面を今のトピックに移す
+            viewingTopicId = currentTopicId;
+            const title = topics.find((topic) => topic.id === currentTopicId)?.title;
+            if (title !== undefined) {
+                showPopupNotification(`トピックが「${title}」に切り替わりました`);
+            }
+        }
+        renderCompose();
+        renderTopicAdmin();
     }
 
     function render(joined: Joined, usedAdminKey: string | null): void {
@@ -133,21 +157,25 @@ document.addEventListener("DOMContentLoaded", () => {
         statusEl.hidden = true;
         errorSection.hidden = true;
         roomEl.hidden = false;
+        // 切断している間にトピックが切り替わっていたら、今のトピックに移す
+        const switched = room !== null && room.currentTopicId !== joined.room.currentTopicId;
         room = joined.room;
         topics = joined.topics;
         // 入り直したときは、このあと届く投稿で置き換える
         posts.clear();
-        if (!topics.some((topic) => topic.id === viewingTopicId)) {
+        if (switched || !topics.some((topic) => topic.id === viewingTopicId)) {
             viewingTopicId = room.currentTopicId;
         }
+        isAdmin = joined.role === "admin" && usedAdminKey !== null && joined.joinKey !== undefined;
         renderRoom(joined.room);
         renderCompose();
+        renderTopicAdmin();
         scheduleRenderPosts();
 
-        const isAdmin = joined.role === "admin" && usedAdminKey !== null && joined.joinKey !== undefined;
         element<HTMLElement>("board-role-badge").hidden = !isAdmin;
         element<HTMLElement>("board-admin").hidden = !isAdmin;
-        if (isAdmin) {
+        element<HTMLElement>("board-topic-admin").hidden = !isAdmin;
+        if (isAdmin && usedAdminKey !== null) {
             const adminKey = usedAdminKey;
             saveAdminKey(storage, joined.room.id, adminKey);
             const shareUrl = buildRoomUrl(window.location.origin, { roomId: joined.room.id, key: joined.joinKey! });
@@ -237,6 +265,97 @@ document.addEventListener("DOMContentLoaded", () => {
                 submit.disabled = false;
             });
     });
+
+    // ----- トピックの管理（主催者だけ） -----
+
+    const topicAdminList = element<HTMLUListElement>("board-topic-admin-list");
+    const topicError = element<HTMLParagraphElement>("board-topic-error");
+
+    // トピックが変わったときだけ描き直す（投稿のたびに描き直すと、名前を変えている途中の入力が消える）
+    function renderTopicAdmin(): void {
+        if (!isAdmin || !room) {
+            return;
+        }
+        topicAdminList.replaceChildren(
+            ...topics.map((topic) => {
+                const li = document.createElement("li");
+                li.dataset.topicId = topic.id;
+                const input = document.createElement("input");
+                input.type = "text";
+                input.className = "form-control form-control-sm";
+                input.value = topic.title;
+                input.setAttribute("aria-label", `「${topic.title}」の名前`);
+                const rename = document.createElement("button");
+                rename.type = "button";
+                rename.className = "btn btn-outline-success btn-sm";
+                rename.dataset.action = "rename";
+                rename.textContent = "名前を保存";
+                // 名前を変えたときだけ押せる
+                rename.disabled = true;
+                input.addEventListener("input", () => {
+                    rename.disabled = input.value.trim() === topic.title || input.value.trim() === "";
+                });
+                li.append(input, rename);
+                if (topic.id === room!.currentTopicId) {
+                    const current = document.createElement("span");
+                    current.className = "board-topic-current";
+                    current.textContent = "今のトピック";
+                    li.append(current);
+                } else {
+                    const select = document.createElement("button");
+                    select.type = "button";
+                    select.className = "btn btn-success btn-sm";
+                    select.dataset.action = "select";
+                    select.textContent = "切り替える";
+                    li.append(select);
+                }
+                return li;
+            }),
+        );
+    }
+
+    topicAdminList.addEventListener("click", (event) => {
+        const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-action]");
+        const topicId = button?.closest<HTMLLIElement>("li")?.dataset.topicId;
+        if (!button || !topicId) {
+            return;
+        }
+        if (button.dataset.action === "select") {
+            topicRequest(button, { action: "setTopic", topicId });
+        } else {
+            const title = button.closest("li")!.querySelector("input")!.value.trim();
+            topicRequest(button, { action: "renameTopic", topicId, title });
+        }
+    });
+
+    const topicAddForm = element<HTMLFormElement>("board-topic-add-form");
+    const topicAddTitle = element<HTMLInputElement>("board-topic-add-title");
+    topicAddForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const title = topicAddTitle.value.trim();
+        if (title === "") {
+            topicError.textContent = "トピック名を入力してください";
+            topicAddTitle.focus();
+            return;
+        }
+        const select = element<HTMLInputElement>("board-topic-add-select").checked;
+        topicRequest(topicAddForm.querySelector("button")!, { action: "addTopic", title, select }, () => {
+            topicAddTitle.value = "";
+        });
+    });
+
+    // 結果はほかの人と同じ topicsUpdated で届くので、ここではエラーだけ扱う
+    function topicRequest(button: HTMLButtonElement, message: Parameters<BoardClient["request"]>[0], onSuccess?: () => void): void {
+        topicError.textContent = "";
+        button.disabled = true;
+        client
+            .request(message)
+            .then(() => onSuccess?.())
+            .catch((error: unknown) => {
+                topicError.textContent = error instanceof BoardRequestError ? error.message : "操作できませんでした";
+                button.disabled = false;
+            });
+    }
 
     // ----- 投稿の一覧 -----
 
