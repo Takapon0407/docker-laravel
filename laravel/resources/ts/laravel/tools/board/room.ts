@@ -39,18 +39,21 @@ document.addEventListener("DOMContentLoaded", () => {
         // このブラウザに主催者の鍵が残っていれば、共有用 URL から開いても主催者として入る
         const stored = loadAdminKey(storage, link!.roomId);
         try {
-            let joined = await request(stored ?? link!.key);
+            // 入れた鍵（主催者のとき、ブラウザに残して主催者用 URL に使う）
+            let key = stored ?? link!.key;
+            let joined = await request(key);
             if (stored && joined === null) {
                 // 主催者用の URL が作り直されて、残っていた鍵が使えなくなった
                 forgetAdminKey(storage, link!.roomId);
-                joined = await request(link!.key);
+                key = link!.key;
+                joined = await request(key);
             }
             if (joined === null) {
                 showError("ルームが見つかりません。URL が正しいか、保存期間が過ぎていないか確認してください。");
                 client.close();
                 return;
             }
-            render(joined, joined.role === "admin" ? (stored ?? link!.key) : null);
+            render(joined, joined.role === "admin" ? key : null);
         } catch (error) {
             // 接続が切れたなどの一時的なエラーは、再接続したときに入り直す
             if (!joinedOnce) {
