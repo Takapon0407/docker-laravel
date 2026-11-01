@@ -140,3 +140,109 @@
         }
     }
 }
+
+.board-topic-count {
+    margin-left: 0.35rem;
+    font-size: 0.75rem;
+    opacity: 0.75;
+}
+
+// 投稿が入るトピック（見ていないときも分かるよう、緑の枠にする）
+.board-topics .nav-link.is-current:not(.active) {
+    border-color: $main-color;
+    color: color-mix(in srgb, #{$main-color} 80%, #000);
+}
+
+.board-compose-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+
+    .is-over {
+        color: #c0392b;
+        font-weight: bold;
+    }
+}
+
+.board-post-list {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
+.board-post {
+    background: #fff;
+    border-radius: 12px;
+    padding: 0.9rem 1rem 0.6rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    &.is-pinned {
+        border-left: 4px solid $main-color;
+    }
+}
+
+.board-post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #777;
+    margin-bottom: 0.35rem;
+}
+
+.board-post-kind {
+    border-radius: 4px;
+    padding: 0.05rem 0.45rem;
+    font-weight: bold;
+    color: #fff;
+
+    &.is-question {
+        background: $main-color;
+    }
+
+    &.is-comment {
+        background: #6c8ebf;
+    }
+}
+
+.board-post-name {
+    color: #333;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+}
+
+.board-post-pinned {
+    color: color-mix(in srgb, #{$main-color} 80%, #000);
+    font-weight: bold;
+}
+
+.board-post-body {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    margin-bottom: 0.4rem;
+}
+
+.board-post-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.board-like {
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    color: #555;
+    padding: 0.1rem 0.7rem;
+
+    &.is-liked {
+        border-color: #e0245e;
+        color: #e0245e;
+    }
+}
+
+.board-post-delete {
+    color: #888;
+    font-size: 0.8rem;
+}
