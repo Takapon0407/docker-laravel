@@ -11,6 +11,7 @@ import type { BoardStore, ConnectionRecord, LikeResult, PostRecord, RoomRecord, 
 //   ROOM#<id>        LIKE#<投稿>#<ブラウザ ID>  いいね（二重のいいねを防ぐ）
 //   ROOM#<id>        CONN#<接続 ID>   ルームに入っている接続（変更を送る相手）
 //   CONN#<接続 ID>   META             接続（IP・入っているルーム・ブラウザ ID）
+//   RATE#<対象>#<時間枠の始まり>  -    レート制限のカウンター
 const roomKey = (roomId: string) => ({ PK: `ROOM#${roomId}`, SK: "META" });
 const topicKey = (roomId: string, topicId: string) => ({ PK: `ROOM#${roomId}`, SK: `TOPIC#${topicId}` });
 const memberKey = (roomId: string, connectionId: string) => ({ PK: `ROOM#${roomId}`, SK: `CONN#${connectionId}` });
@@ -372,6 +373,27 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
 
         unlike(roomId, postId, browserId) {
             return changeLike(roomId, postId, browserId, -1, 0);
+        },
+
+        async consume(key, windowStart, windowSeconds, limit) {
+            try {
+                await db.send(
+                    new UpdateCommand({
+                        TableName: tableName,
+                        Key: { PK: `RATE#${key}#${windowStart}`, SK: "-" },
+                        UpdateExpression: "ADD #count :one SET expiresAt = :expiresAt",
+                        ConditionExpression: "attribute_not_exists(#count) OR #count < :limit",
+                        ExpressionAttributeNames: { "#count": "count" },
+                        ExpressionAttributeValues: { ":one": 1, ":limit": limit, ":expiresAt": windowStart + windowSeconds + 60 },
+                    }),
+                );
+            } catch (error) {
+                if (error instanceof ConditionalCheckFailedException) {
+                    return false;
+                }
+                throw error;
+            }
+            return true;
         },
     };
 }

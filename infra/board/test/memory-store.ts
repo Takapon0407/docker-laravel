@@ -11,6 +11,7 @@ export function createMemoryStore() {
     const posts = new Map<string, Map<string, PostRecord & { expiresAt: number }>>();
     // 「ルーム ID 投稿 ID ブラウザ ID」
     const likes = new Set<string>();
+    const rates = new Map<string, number>();
 
     const store: BoardStore = {
         async createRoom(room, roomTopics) {
@@ -117,6 +118,15 @@ export function createMemoryStore() {
                 return false;
             }
             post.pinned = pinned;
+            return true;
+        },
+        async consume(key, windowStart, _windowSeconds, limit) {
+            const name = `${key}#${windowStart}`;
+            const count = rates.get(name) ?? 0;
+            if (count >= limit) {
+                return false;
+            }
+            rates.set(name, count + 1);
             return true;
         },
         async like(roomId, postId, browserId) {
