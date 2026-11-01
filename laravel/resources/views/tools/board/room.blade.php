@@ -44,6 +44,24 @@
             </details>
         </section>
 
+        {{-- 主催者だけに表示する --}}
+        <section class="board-card" id="board-topic-admin" hidden>
+            <h2 class="board-heading">トピックの管理</h2>
+            <p class="board-help">「切り替える」と、参加者の画面も切り替わり、そのあとの投稿はそのトピックに入ります。</p>
+            <ul class="board-topic-admin-list" id="board-topic-admin-list"></ul>
+            <form class="board-topic-add" id="board-topic-add-form" novalidate>
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control" id="board-topic-add-title" placeholder="新しいトピック" aria-label="新しいトピックの名前">
+                    <button type="submit" class="btn btn-success">追加</button>
+                </div>
+                <div class="form-check mt-1">
+                    <input class="form-check-input" type="checkbox" id="board-topic-add-select" checked>
+                    <label class="form-check-label board-help" for="board-topic-add-select">追加したら切り替える</label>
+                </div>
+                <p class="board-error mb-0" id="board-topic-error" role="alert"></p>
+            </form>
+        </section>
+
         <section class="board-card" id="board-compose">
             <form id="board-post-form" novalidate>
                 <div class="btn-group mb-2" role="group" aria-label="投稿の種類">

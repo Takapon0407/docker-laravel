@@ -116,3 +116,31 @@ test("deletePost / like / unlike：投稿 ID・鍵の形が正しくなければ
         assert.equal(result.ok === false && result.code, "post_not_found", JSON.stringify(body));
     }
 });
+
+test("addTopic / renameTopic：トピック名は 1 行にし、1〜40 文字", () => {
+    assert.deepEqual(parseClientMessage(JSON.stringify({ action: "addTopic", requestId: "r", title: " Q&A\nタイム ", select: true })), {
+        ok: true,
+        message: { action: "addTopic", requestId: "r", title: "Q&A タイム", select: true },
+    });
+    // select は true のときだけ切り替える
+    const added = parseClientMessage(JSON.stringify({ action: "addTopic", requestId: "r", title: "A", select: "yes" }));
+    assert.equal(added.ok && added.message.action === "addTopic" && added.message.select, false);
+
+    for (const title of ["  ", "あ".repeat(41), 1]) {
+        for (const action of ["addTopic", "renameTopic"]) {
+            const result = parseClientMessage(JSON.stringify({ action, requestId: "r", title, topicId: "t".repeat(22) }));
+            assert.equal(result.ok === false && result.code, "validation_error", `${action} ${String(title)}`);
+        }
+    }
+});
+
+test("renameTopic / setTopic：トピック ID の形が正しくなければ topic_not_found", () => {
+    for (const body of [
+        { action: "renameTopic", requestId: "r", topicId: "short", title: "A" },
+        { action: "setTopic", requestId: "r", topicId: 1 },
+    ]) {
+        const result = parseClientMessage(JSON.stringify(body));
+        assert.equal(result.ok === false && result.code, "topic_not_found", JSON.stringify(body));
+    }
+    assert.equal(parseClientMessage(JSON.stringify({ action: "setTopic", requestId: "r", topicId: "t".repeat(22) })).ok, true);
+});

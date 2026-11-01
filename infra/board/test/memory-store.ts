@@ -27,6 +27,20 @@ export function createMemoryStore() {
         async listTopics(roomId) {
             return [...(topics.get(roomId) ?? [])].sort((a, b) => a.order - b.order);
         },
+        async putTopic(roomId, topic) {
+            topics.get(roomId)!.push({ ...topic });
+        },
+        async renameTopic(roomId, topicId, title) {
+            const topic = topics.get(roomId)?.find((t) => t.id === topicId);
+            if (!topic) {
+                return false;
+            }
+            topic.title = title;
+            return true;
+        },
+        async setCurrentTopic(roomId, topicId) {
+            rooms.get(roomId)!.currentTopicId = topicId;
+        },
         async saveConnection(connectionId, connection, expiresAt) {
             connections.set(connectionId, { ...connection, expiresAt });
         },
