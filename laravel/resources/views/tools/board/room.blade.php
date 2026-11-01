@@ -44,9 +44,9 @@
             </details>
         </section>
 
-        <nav class="board-topics" aria-label="トピック">
+        <div class="board-topics" role="group" aria-label="トピック">
             <ul class="nav nav-pills" id="board-topic-tabs"></ul>
-        </nav>
+        </div>
 
         <section class="board-card" id="board-posts">
             <p class="board-help mb-0">投稿の機能は準備中です。</p>

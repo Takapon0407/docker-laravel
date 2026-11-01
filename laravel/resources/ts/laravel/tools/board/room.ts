@@ -123,6 +123,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function showStatus(status: Status): void {
+        // エラーを出したあと（切断したときなど）は、接続の状態を出さない
+        if (!errorSection.hidden) {
+            return;
+        }
         statusEl.hidden = status === "open" && joinedOnce;
         if (status === "connecting") {
             statusEl.textContent = joinedOnce ? "再接続しています…" : "接続しています…";
