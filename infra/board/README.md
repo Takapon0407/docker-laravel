@@ -36,7 +36,7 @@ npx cdk deploy BoardStack-dev --profile <管理者のプロファイル>
 ```
 
 - デプロイが終わると `WebSocketUrl`（`wss://…/ws`）が出力される
-- `BoardStack-prod` は削除保護付き。CloudFront が付ける確認用ヘッダーの値を、SSM の SecureString `/tektektech/board/prod/origin-secret` に先に作っておく（Issue #253・#260）
+- `BoardStack-prod` は削除保護付き。CloudFront が付ける確認用ヘッダーの値を、SSM の SecureString `/tektektech/board/prod/origin-secret` に先に作っておく（「本番の公開」）
 - `--hotswap` / `--express` は dev だけで使う（本番では使わない）
 
 ## CI/CD（Issue #259）
@@ -90,6 +90,33 @@ npx cdk deploy BoardCiStack --profile <管理者のプロファイル>
 2. GitHub の Settings → Environments で設定する
    - `board-dev` を作り、Deployment branches を `develop` だけにする
    - `production` に Required reviewers（自分）を付け、Deployment branches を `main` だけにする
+
+## 本番の公開（Issue #260）
+
+ポートフォリオの CloudFront は CDK の外で管理しているため、`/tools/board/ws` のビヘイビアは手で足す。上から順に行う。
+
+1. CloudFront が付ける確認用ヘッダーの値を作る（値は表示しない）
+
+   ```bash
+   aws ssm put-parameter --name /tektektech/board/prod/origin-secret --type SecureString \
+     --value "$(openssl rand -hex 32)" --profile <管理者のプロファイル>
+   ```
+
+2. `develop` → `main` をマージし、Actions の「Board (CDK)」の `deploy-prod` を承認する（`BoardStack-prod` ができる）。出力の `OriginDomain`・`RewriteFunctionName`・`OriginRequestPolicyName`・`AlarmTopicArn` を控える
+3. アラームのメールを購読する（「エラーのアラーム」の手順。prod の `AlarmTopicArn` で）
+4. CloudFront（ポートフォリオのディストリビューション）にオリジンを足す
+   - Origin domain：`OriginDomain`（`xxxx.execute-api.ap-northeast-1.amazonaws.com`）
+   - Protocol：HTTPS only（最小の TLS は TLSv1.2）。Origin path は空
+   - Add custom header：名前 `X-Origin-Verify`、値は 1. の値（`aws ssm get-parameter --name /tektektech/board/prod/origin-secret --with-decryption --query Parameter.Value --output text --profile <管理者のプロファイル>` で表示し、コンソールに貼る）
+5. ビヘイビアを足す
+   - Path pattern：`/tools/board/ws`、Origin：4. のオリジン
+   - Viewer protocol policy：HTTPS only、Allowed HTTP methods：GET, HEAD
+   - Cache policy：`CachingDisabled`、Origin request policy：`OriginRequestPolicyName`（`tektektech-board-prod-websocket`）
+   - Function associations：Viewer request に CloudFront Functions の `RewriteFunctionName`（`tektektech-board-prod-rewrite`）
+6. Parameter Store の `/tektektech/prod/env` で `BOARD_ENABLED=true` にする（`BOARD_WEBSOCKET_URL` は空のまま：ページと同じドメインの `/tools/board/ws` につなぐ）。EC2 のデプロイ（`deploy.yml`）をもう一度実行すると反映される
+7. https://tektektech-portfolio.com/tools/board でルームを作り、別の端末から参加して確かめる
+
+`X-Origin-Verify` の値を変えるときは、SSM の値と CloudFront のヘッダーの両方を変える（Lambda は起動したときに読んだ値を使い続けるため、変えたあとは Lambda の環境変数を変えるなどして入れ替えないと、新しい値の接続が断られることがある）。
 
 ## エラーのアラーム
 

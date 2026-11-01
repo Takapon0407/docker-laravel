@@ -42,6 +42,12 @@ export interface BoardStackProps extends StackProps {
     readonly testDistribution?: boolean;
 }
 
+interface EdgeParts {
+    readonly rewrite: CloudFrontFunction;
+    readonly originRequestPolicy: OriginRequestPolicy;
+    readonly originRequestPolicyName: string;
+}
+
 // ブラウザがつなぐパス（本番はポートフォリオの CloudFront に、同じ設定のビヘイビアを手で追加する）
 export const WEBSOCKET_PATH = "/tools/board/ws";
 const STAGE_NAME = "ws";
@@ -127,11 +133,18 @@ export class BoardStack extends Stack {
         new CfnOutput(this, "WebSocketUrl", { value: stage.url });
         new CfnOutput(this, "TableName", { value: table.tableName });
 
+        // CloudFront の /tools/board/ws のビヘイビアで使うもの。本番はポートフォリオの CloudFront に手で設定する（README）
+        const originDomain = `${api.apiId}.execute-api.${this.region}.amazonaws.com`;
+        const edge = this.createEdgeParts(props.stage);
+        new CfnOutput(this, "OriginDomain", { value: originDomain });
+        new CfnOutput(this, "RewriteFunctionName", { value: edge.rewrite.functionName });
+        new CfnOutput(this, "OriginRequestPolicyName", { value: edge.originRequestPolicyName });
+
         if (props.testDistribution) {
             if (!originSecret || !("value" in originSecret)) {
                 throw new Error("testDistribution には originSecret.value（dev 用の値）が必要です");
             }
-            const distribution = this.createTestDistribution(api, originSecret.value);
+            const distribution = this.createTestDistribution(originDomain, originSecret.value, edge);
             new CfnOutput(this, "TestWebSocketUrl", { value: `wss://${distribution.distributionDomainName}${WEBSOCKET_PATH}` });
         }
     }
@@ -172,20 +185,19 @@ export class BoardStack extends Stack {
         new CfnOutput(this, "AlarmTopicArn", { value: topic.topicArn });
     }
 
-    private createTestDistribution(api: WebSocketApi, originSecretValue: string): Distribution {
-        const origin = new HttpOrigin(`${api.apiId}.execute-api.${this.region}.amazonaws.com`, {
-            protocolPolicy: OriginProtocolPolicy.HTTPS_ONLY,
-            customHeaders: { "X-Origin-Verify": originSecretValue },
-        });
-
+    private createEdgeParts(stage: BoardStage): EdgeParts {
+        // コンソールで選ぶときに分かるよう、名前を付ける
+        const originRequestPolicyName = `tektektech-board-${stage}-websocket`;
         // API Gateway はパスの先頭をステージ名として読むため、/tools/board/ws をステージのパスに書き換える
         const rewrite = new CloudFrontFunction(this, "RewriteToStage", {
+            functionName: `tektektech-board-${stage}-rewrite`,
             runtime: FunctionRuntime.JS_2_0,
             code: FunctionCode.fromInline(`function handler(event) { event.request.uri = "/${STAGE_NAME}"; return event.request; }`),
         });
 
         // WebSocket の接続に必要なヘッダーと、閲覧者のアドレスを渡す。Host は渡さない（API Gateway のドメインのままにする）
         const originRequestPolicy = new OriginRequestPolicy(this, "WebSocketOriginRequest", {
+            originRequestPolicyName,
             headerBehavior: OriginRequestHeaderBehavior.allowList(
                 "Sec-WebSocket-Key",
                 "Sec-WebSocket-Version",
@@ -195,13 +207,22 @@ export class BoardStack extends Stack {
             ),
         });
 
+        return { rewrite, originRequestPolicy, originRequestPolicyName };
+    }
+
+    private createTestDistribution(originDomain: string, originSecretValue: string, edge: EdgeParts): Distribution {
+        const origin = new HttpOrigin(originDomain, {
+            protocolPolicy: OriginProtocolPolicy.HTTPS_ONLY,
+            customHeaders: { "X-Origin-Verify": originSecretValue },
+        });
+
         const behavior = {
             origin,
             viewerProtocolPolicy: ViewerProtocolPolicy.HTTPS_ONLY,
             allowedMethods: AllowedMethods.ALLOW_GET_HEAD,
             cachePolicy: CachePolicy.CACHING_DISABLED,
-            originRequestPolicy,
-            functionAssociations: [{ function: rewrite, eventType: FunctionEventType.VIEWER_REQUEST }],
+            originRequestPolicy: edge.originRequestPolicy,
+            functionAssociations: [{ function: edge.rewrite, eventType: FunctionEventType.VIEWER_REQUEST }],
         };
 
         return new Distribution(this, "TestDistribution", {
