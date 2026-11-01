@@ -47,14 +47,20 @@ const ok: APIGatewayProxyResult = { statusCode: 200, body: "" };
 const forbidden: APIGatewayProxyResult = { statusCode: 403, body: "" };
 
 // 操作の途中で断るときに投げる（router がエラーのメッセージにして返す）
+// detail を渡すと、画面に出す文言を ERROR_MESSAGES の代わりにそれにする
 class ActionError extends Error {
     readonly code: ErrorCode;
+    readonly detail: string | undefined;
 
-    constructor(code: ErrorCode) {
+    constructor(code: ErrorCode, detail?: string) {
         super(code);
         this.code = code;
+        this.detail = detail;
     }
 }
+
+// 同じ IP から 1 分間に投稿できる数（ブラウザ ID を変えて連投されたときの上限。会場の Wi-Fi で同じ IP になる人がいても足りる数）
+const POSTS_PER_IP_PER_MINUTE = 60;
 
 // API Gateway のルート（$connect / $disconnect / $default / 各操作）ごとに処理を振り分ける
 export function createRouter(deps: Dependencies) {
@@ -71,6 +77,14 @@ export function createRouter(deps: Dependencies) {
             throw new ActionError("room_not_found");
         }
         return { connection: { ...connection, roomId: connection.roomId }, room };
+    }
+
+    // 時間枠（windowSeconds 秒ごと）で limit 回まで。超えたら断る
+    async function limit(key: string, windowSeconds: number, count: number, detail: string): Promise<void> {
+        const windowStart = Math.floor(nowSeconds() / windowSeconds) * windowSeconds;
+        if (!(await deps.store.consume(key, windowStart, windowSeconds, count))) {
+            throw new ActionError("rate_limited", detail);
+        }
     }
 
     // 主催者として join した接続だけ通す
@@ -107,6 +121,8 @@ export function createRouter(deps: Dependencies) {
             }
 
             case "createRoom": {
+                const connection = await deps.store.getConnection(connectionId);
+                await limit(`create#${connection?.ip ?? "unknown"}`, 60 * 60, LIMITS.roomsPerHour, `ルームを作れるのは 1 時間に ${LIMITS.roomsPerHour} 件までです。時間をおいてお試しください`);
                 const createdAt = deps.now();
                 const titles = message.topics.length > 0 ? message.topics : [DEFAULT_TOPIC_TITLE];
                 const topics: TopicRecord[] = titles.map((title, order) => ({ id: deps.randomToken(), title, order }));
@@ -139,6 +155,13 @@ export function createRouter(deps: Dependencies) {
                 if (!role) {
                     throw new ActionError("room_not_found");
                 }
+                // 数えるのは参加者だけで、主催者は満員でも入れる（入り直しで自分が数えられている場合もあるので、自分は除く）
+                if (role === "participant") {
+                    const members = await deps.store.listMembers(room.id, nowSeconds());
+                    if (members.filter((member) => member.role === "participant" && member.connectionId !== connectionId).length >= LIMITS.members) {
+                        throw new ActionError("room_full");
+                    }
+                }
 
                 await deps.store.joinRoom(connectionId, room.id, role, message.browserId, Math.min(room.expiresAt, nowSeconds() + CONNECTION_TTL_SECONDS));
                 const [topics, posts] = await Promise.all([deps.store.listTopics(room.id, nowSeconds()), deps.store.listPosts(room.id)]);
@@ -166,7 +189,22 @@ export function createRouter(deps: Dependencies) {
             }
 
             case "post": {
-                const { room } = await currentRoom(connectionId);
+                const { connection, room } = await currentRoom(connectionId);
+                // 断ることが分かっている投稿で、レート制限の回数を使わない（確実な確認は addPost の条件付きの書き込みで行う）
+                if (!room.accepting) {
+                    throw new ActionError("not_accepting");
+                }
+                if (room.postCount >= LIMITS.posts) {
+                    throw new ActionError("too_many_posts");
+                }
+                // 同じブラウザからは postInterval 秒に 1 回。ブラウザ ID を変えた連投に備えて IP ごとの上限も付ける
+                await limit(
+                    `post#${room.id}#${connection.browserId ?? connectionId}`,
+                    LIMITS.postInterval,
+                    1,
+                    `投稿は ${LIMITS.postInterval} 秒に 1 回までです。少し待ってからもう一度お試しください`,
+                );
+                await limit(`post-ip#${connection.ip ?? "unknown"}`, 60, POSTS_PER_IP_PER_MINUTE, "投稿が多すぎます。少し待ってからもう一度お試しください");
                 const deleteKey = deps.randomToken();
                 const post: PostRecord = {
                     id: deps.randomToken(),
@@ -334,7 +372,12 @@ export function createRouter(deps: Dependencies) {
                 // 想定外のエラーは中身を返さず、ログにだけ残す
                 console.error(error);
             }
-            await sendError(connectionId, parsed.message.requestId, error instanceof ActionError ? error.code : "internal_error");
+            await sendError(
+                connectionId,
+                parsed.message.requestId,
+                error instanceof ActionError ? error.code : "internal_error",
+                error instanceof ActionError ? error.detail : undefined,
+            );
         }
         return ok;
     };

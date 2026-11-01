@@ -384,7 +384,7 @@ test("join：それまでの投稿を、古い順に分けて送る（取り消�
     const count = POSTS_PER_MESSAGE + 3;
     for (let i = 0; i < count; i++) {
         await post("guest1", { body: `投稿 ${i}` });
-        t.advance(1000);
+        t.advance(LIMITS.postInterval * 1000);
     }
 
     await t.send("late", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.joinKey });
@@ -600,4 +600,91 @@ test("rotateKeys admin：古い主催者用 URL では主催者になれない�
     assert.equal(old?.type === "error" && old.code, "room_not_found");
     const fresh = await join(rotated.adminKey!);
     assert.equal(fresh?.type === "joined" && fresh.role, "admin");
+});
+
+test("post：同じブラウザからは 10 秒に 1 回。時間がたてば投稿できる", async () => {
+    const { t, post, received } = await roomWithMembers();
+    // 時間枠の始まりにそろえる
+    t.advance(LIMITS.postInterval * 1000 - (NOW % (LIMITS.postInterval * 1000)));
+    await post("guest1");
+
+    await t.send("guest1", { action: "post", requestId: "p", kind: "comment", body: "連投", nickname: null });
+    const m = received("guest1")[0];
+    assert.ok(m?.type === "error");
+    assert.equal(m.code, "rate_limited");
+    assert.match(m.message, /10 秒に 1 回/);
+    // ほかの人は投稿できる
+    await post("guest2");
+
+    t.advance(LIMITS.postInterval * 1000);
+    await post("guest1");
+});
+
+test("post：締め切り中に断られた投稿は、連投の回数に数えない", async () => {
+    const { t, created, post } = await roomWithMembers();
+    const room = t.memory.rooms.get(created.roomId)!;
+    room.accepting = false;
+    await t.send("guest1", { action: "post", requestId: "p", kind: "comment", body: "本文", nickname: null });
+
+    room.accepting = true;
+    await post("guest1");
+});
+
+test("post：同じ IP からは、ブラウザ ID を変えても 1 分に 60 回まで", async () => {
+    const { t, created, received } = await roomWithMembers();
+    await t.call("$connect", "bot", { headers: { "CloudFront-Viewer-Address": "198.51.100.7:443" } });
+    const counts = { posted: 0, limited: 0 };
+    for (let i = 0; i < 61; i++) {
+        // 入り直してブラウザ ID を変える
+        await t.send("bot", { action: "join", requestId: "j", browserId: `bot${String(i).padStart(3, "0")}`.padEnd(22, "x"), roomId: created.roomId, key: created.joinKey });
+        t.sent.length = 0;
+        await t.send("bot", { action: "post", requestId: "p", kind: "comment", body: `連投 ${i}`, nickname: null });
+        const m = received("bot")[0];
+        if (m?.type === "posted") {
+            counts.posted++;
+        } else if (m?.type === "error" && m.code === "rate_limited") {
+            counts.limited++;
+        }
+    }
+    assert.deepEqual(counts, { posted: 60, limited: 1 });
+});
+
+test("createRoom：同じ IP からは 1 時間に 5 件まで", async () => {
+    const t = setUp();
+    await t.call("$connect", "owner", { headers: { "CloudFront-Viewer-Address": "198.51.100.7:443" } });
+    // 時間枠の始まりにそろえる
+    t.advance(3600 * 1000 - (NOW % (3600 * 1000)));
+    for (let i = 0; i < LIMITS.roomsPerHour; i++) {
+        await createRoom(t);
+    }
+
+    await t.send("owner", { action: "createRoom", requestId: "c", title: "6 件目", retention: "7d", nameMode: "nickname", topics: [] });
+    const m = t.last();
+    assert.ok(m?.type === "error");
+    assert.equal(m.code, "rate_limited");
+    assert.match(m.message, /1 時間に 5 件/);
+
+    // 別の IP からは作れる
+    await t.call("$connect", "other", { headers: { "CloudFront-Viewer-Address": "203.0.113.9:443" } });
+    await t.send("other", { action: "createRoom", requestId: "c", title: "別の人", retention: "7d", nameMode: "nickname", topics: [] });
+    assert.equal(t.last()?.type, "roomCreated");
+});
+
+test("join：参加者は 30 人まで。主催者は数えず満員でも入れ、入り直しは数えない", async () => {
+    const t = setUp();
+    const created = await createRoom(t);
+    const join = async (connectionId: string, key: string) => {
+        await t.send(connectionId, { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key });
+        const m = t.last();
+        return m?.type === "error" ? m.code : m?.type;
+    };
+    assert.equal(await join("admin1", created.adminKey), "joined");
+    assert.equal(await join("admin2", created.adminKey), "joined");
+    for (let i = 0; i < LIMITS.members; i++) {
+        assert.equal(await join(`guest${i}`, created.joinKey), "joined");
+    }
+
+    assert.equal(await join("late", created.joinKey), "room_full");
+    assert.equal(await join("guest0", created.joinKey), "joined");
+    assert.equal(await join("owner", created.adminKey), "joined");
 });
