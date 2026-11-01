@@ -26,14 +26,19 @@ export type ClientMessage =
     | { action: "join"; requestId: string; roomId: string; key: string; browserId: string }
     // nickname は空なら null（完全に匿名のルームでは無視する）
     | { action: "post"; requestId: string; kind: PostKind; body: string; nickname: string | null }
-    // key は投稿したときに返した取り消し用の鍵
-    | { action: "deletePost"; requestId: string; postId: string; key: string }
+    // key は投稿したときに返した取り消し用の鍵。主催者は null で、どの投稿でも消せる
+    | { action: "deletePost"; requestId: string; postId: string; key: string | null }
     | { action: "like"; requestId: string; postId: string }
     | { action: "unlike"; requestId: string; postId: string }
     // ここから下は主催者だけ。select なら追加したトピックを今のトピックにする
     | { action: "addTopic"; requestId: string; title: string; select: boolean }
     | { action: "renameTopic"; requestId: string; topicId: string; title: string }
-    | { action: "setTopic"; requestId: string; topicId: string };
+    | { action: "setTopic"; requestId: string; topicId: string }
+    | { action: "pin"; requestId: string; postId: string }
+    | { action: "unpin"; requestId: string; postId: string }
+    | { action: "setAccepting"; requestId: string; accepting: boolean }
+    // join：共有用 URL、admin：主催者用 URL を作り直す
+    | { action: "rotateKeys"; requestId: string; target: "join" | "admin" };
 
 export type Role = "participant" | "admin";
 
@@ -79,6 +84,8 @@ export type ServerMessage =
     | { type: "posted"; requestId: string; postId: string; deleteKey: string }
     // 結果に中身がない操作（取り消し・いいねなど）の成功
     | { type: "ok"; requestId: string }
+    // 作り直した鍵（adminKey は主催者用 URL を作り直したときだけ）
+    | { type: "keysRotated"; requestId: string; joinKey: string; adminKey?: string }
     // ここから下は、同じルームの全員に送る（requestId なし）
     | { type: "posts"; posts: PostView[] }
     | { type: "postAdded"; post: PostView }
@@ -86,6 +93,13 @@ export type ServerMessage =
     | { type: "postLiked"; postId: string; likes: number }
     // トピックが変わったら、一覧と今のトピックをまとめて送る（最大 20 個なので全部送る）
     | { type: "topicsUpdated"; topics: TopicView[]; currentTopicId: string }
+    | { type: "postPinned"; postId: string; pinned: boolean }
+    | { type: "acceptingChanged"; accepting: boolean }
+    // ここから下は主催者にだけ送る
+    // ほかの主催者が共有用 URL を作り直した
+    | { type: "joinKeyChanged"; joinKey: string }
+    // ほかの主催者が主催者用 URL を作り直したため、参加者になった
+    | { type: "roleChanged"; role: Role }
     | { type: "error"; requestId: string | null; code: ErrorCode; message: string };
 
 export type ErrorCode =
@@ -192,13 +206,31 @@ export function parseClientMessage(body: string | null | undefined): ParseResult
         }
 
         case "deletePost": {
-            const { postId, key } = fields;
-            if (!isToken(postId) || !isToken(key)) {
+            const { postId } = fields;
+            const key = fields.key ?? null;
+            if (!isToken(postId) || (key !== null && !isToken(key))) {
                 return { ok: false, requestId, code: "post_not_found" };
             }
             return { ok: true, message: { action, requestId, postId, key } };
         }
 
+        case "setAccepting": {
+            if (typeof fields.accepting !== "boolean") {
+                return { ok: false, requestId, code: "invalid_message" };
+            }
+            return { ok: true, message: { action, requestId, accepting: fields.accepting } };
+        }
+
+        case "rotateKeys": {
+            const { target } = fields;
+            if (target !== "join" && target !== "admin") {
+                return { ok: false, requestId, code: "invalid_message" };
+            }
+            return { ok: true, message: { action, requestId, target } };
+        }
+
+        case "pin":
+        case "unpin":
         case "like":
         case "unlike": {
             const { postId } = fields;
