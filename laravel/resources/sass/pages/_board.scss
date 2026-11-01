@@ -277,3 +277,19 @@
         flex-shrink: 0;
     }
 }
+
+.board-admin-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #eee;
+}
+
+.board-post-admin {
+    color: #888;
+    font-size: 0.8rem;
+}
