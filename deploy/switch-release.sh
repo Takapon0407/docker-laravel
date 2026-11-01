@@ -40,7 +40,9 @@ for repo in tektektech-app tektektech-nginx; do
 done
 
 echo "Switching to release $RELEASE_SHA"
-docker compose up -d --no-build --remove-orphans
+# 同じリリースでも作り直す。.env は 1 ファイルだけのマウントで、remote-deploy.sh が mv で置き換えるため、
+# 作り直さないとコンテナからは古い .env が見えたままになる（.env だけを変えて同じコミットを再デプロイしたとき）
+docker compose up -d --no-build --remove-orphans --force-recreate
 # artisan は www-data で実行し、生成されるキャッシュの所有者を php-fpm と揃える
 docker compose exec -T -u www-data app php laravel/artisan config:cache
 # 実際に動いている PHP のバージョンをログに残す
