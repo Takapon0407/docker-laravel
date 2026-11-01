@@ -1,0 +1,142 @@
+.board-container {
+    max-width: 720px;
+    padding: 1.5rem 1rem 3rem;
+
+    // ボタンの緑を Bootstrap の success ではなくサイトの緑にする（割り勘と同じ）
+    .btn-success,
+    .btn-outline-success {
+        --bs-btn-hover-bg: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-border-color: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-active-bg: #{$main-color};
+        --bs-btn-active-border-color: #{$main-color};
+        --bs-btn-hover-color: #fff;
+        --bs-btn-active-color: #fff;
+    }
+
+    .btn-success {
+        --bs-btn-bg: #{$main-color};
+        --bs-btn-border-color: #{$main-color};
+        --bs-btn-disabled-bg: #{$main-color};
+        --bs-btn-disabled-border-color: #{$main-color};
+    }
+
+    .btn-outline-success {
+        --bs-btn-color: color-mix(in srgb, #{$main-color} 80%, #000);
+        --bs-btn-border-color: #{$main-color};
+    }
+
+    // ラジオボタンを使ったボタン（保存期間）の選択中
+    .btn-check:checked + .btn-outline-success {
+        background-color: $main-color;
+        border-color: $main-color;
+        color: #fff;
+    }
+}
+
+.board-title {
+    font-size: 2rem;
+    text-align: center;
+    color: $main-color;
+    margin-bottom: 1rem;
+}
+
+.board-lead {
+    color: #555;
+    margin-bottom: 1.25rem;
+}
+
+.board-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.board-heading {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 0.75rem;
+}
+
+.board-help {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.board-error {
+    color: #c0392b;
+
+    &:empty {
+        display: none;
+    }
+}
+
+.board-status {
+    text-align: center;
+    color: #666;
+}
+
+.board-room-header {
+    margin-bottom: 1rem;
+}
+
+.board-room-title {
+    font-size: 1.6rem;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+    margin-bottom: 0.25rem;
+}
+
+.board-room-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0;
+
+    // 主催者のバッジもサイトの緑にする
+    .badge {
+        background-color: $main-color !important;
+    }
+}
+
+.board-admin-url summary {
+    font-size: 0.9rem;
+    color: #555;
+    cursor: pointer;
+}
+
+// トピックのタブ（base/_common.scss の ul / li の指定をリセット）
+.board-topics {
+    margin-bottom: 1rem;
+
+    .nav {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 0.4rem;
+        padding: 0 0 0.25rem;
+    }
+
+    .nav-item {
+        width: auto;
+        flex-shrink: 0;
+    }
+
+    .nav-link {
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        color: #555;
+        background: #fff;
+        padding: 0.3rem 0.9rem;
+        white-space: nowrap;
+
+        &.active {
+            background-color: $main-color;
+            border-color: $main-color;
+            color: #fff;
+        }
+    }
+}
