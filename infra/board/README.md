@@ -36,3 +36,22 @@ npx cdk deploy BoardStack-dev --profile <管理者のプロファイル>
 - デプロイが終わると `WebSocketUrl`（`wss://…/ws`）が出力される
 - `BoardStack-prod` は削除保護付き。CloudFront が付ける確認用ヘッダーの値を、SSM の SecureString `/tektektech/board/prod/origin-secret` に先に作っておく（Issue #253・#260）
 - `--hotswap` / `--express` は dev だけで使う（本番では使わない）
+
+## エラーのアラーム
+
+Lambda のエラー（ログの `ERROR`・失敗・スロットリング）が 5 分間に 5 回以上あると、SNS のトピックに知らせる。
+メールの宛先は公開リポジトリに書かないよう、スタックごとにデプロイ後に 1 回だけ手で購読する（CloudFormation の外で足した購読は、デプロイで消えない）。
+
+```bash
+# デプロイの出力の AlarmTopicArn を使う。届いた確認メールのリンクを開くと購読が始まる
+aws sns subscribe --topic-arn <AlarmTopicArn> --protocol email --notification-endpoint <メールアドレス> --profile <管理者のプロファイル>
+```
+
+## 上限（Issue #258）
+
+| 対象 | 上限 | 決めている場所 |
+| --- | --- | --- |
+| ルームの作成 | 同じ IP から 1 時間に 5 件 | `shared/protocol.ts` の `LIMITS` |
+| 投稿 | 同じブラウザから 10 秒に 1 回、同じ IP から 1 分に 60 回 | `LIMITS`・`lambda/router.ts` |
+| 1 ルームの参加者 | 30 人（主催者は数えずに入れる） | `LIMITS` |
+| API Gateway | 1 秒に 20 件（瞬間的には 40 件） | `lib/board-stack.ts` |

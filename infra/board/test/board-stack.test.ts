@@ -82,3 +82,16 @@ test("ステージにスロットリングを付ける", () => {
         DefaultRouteSettings: { ThrottlingRateLimit: 20, ThrottlingBurstLimit: 40 },
     });
 });
+
+test("エラーのアラームを作り、SNS に知らせる（ログの ERROR も数える）", () => {
+    const t = template("dev");
+
+    t.hasResourceProperties("AWS::Logs::MetricFilter", { FilterPattern: '"ERROR"' });
+    t.hasResourceProperties("AWS::CloudWatch::Alarm", {
+        Threshold: 5,
+        ComparisonOperator: "GreaterThanOrEqualToThreshold",
+        TreatMissingData: "notBreaching",
+        AlarmActions: [{ Ref: Match.stringLikeRegexp("AlarmTopic") }],
+    });
+    t.resourceCountIs("AWS::SNS::Subscription", 0);
+});

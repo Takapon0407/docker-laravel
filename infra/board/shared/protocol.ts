@@ -15,6 +15,12 @@ export const LIMITS = {
     nickname: 20,
     // 1 ルームの投稿の数（取り消し・削除したものは数えない）
     posts: 500,
+    // 1 ルームに同時に入れる人数（主催者は数えずに入れる）
+    members: 30,
+    // 同じブラウザから続けて投稿するときの間隔（秒）
+    postInterval: 10,
+    // 同じ IP から 1 時間に作れるルームの数
+    roomsPerHour: 5,
 } as const;
 
 export type PostKind = "question" | "comment";
@@ -114,6 +120,8 @@ export type ErrorCode =
     | "post_not_found"
     | "topic_not_found"
     | "too_many_topics"
+    | "room_full"
+    | "rate_limited"
     | "internal_error";
 
 const REQUEST_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
@@ -295,5 +303,7 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
     post_not_found: "投稿が見つかりません。すでに削除されたかもしれません",
     topic_not_found: "トピックが見つかりません",
     too_many_topics: `トピックは ${LIMITS.topics} 個までです`,
+    room_full: `このルームは満員です（${LIMITS.members} 人まで）。少し待ってからもう一度開いてください`,
+    rate_limited: "操作が多すぎます。少し待ってからもう一度お試しください",
     internal_error: "エラーが発生しました。時間をおいてもう一度お試しください",
 };

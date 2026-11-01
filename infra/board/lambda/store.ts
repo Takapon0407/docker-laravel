@@ -87,5 +87,9 @@ export interface BoardStore {
     // 投稿があるときだけ変える。変えられたら true
     setPinned(roomId: string, postId: string, pinned: boolean): Promise<boolean>;
     like(roomId: string, postId: string, browserId: string, expiresAt: number): Promise<LikeResult>;
+
+    // レート制限：key ごとに、windowStart（UNIX 秒）から始まる時間枠で limit 回まで。超えたら false
+    // （時間枠の終わりの少しあとに TTL で消える）
+    consume(key: string, windowStart: number, windowSeconds: number, limit: number): Promise<boolean>;
     unlike(roomId: string, postId: string, browserId: string): Promise<LikeResult>;
 }

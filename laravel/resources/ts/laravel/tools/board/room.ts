@@ -88,6 +88,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             render(joined, joined.role === "admin" ? key : null);
         } catch (error) {
+            if (error instanceof BoardRequestError && error.code === "room_full") {
+                showError(error.message);
+                client.close();
+                return;
+            }
             // 接続が切れたなどの一時的なエラーは、再接続したときに入り直す
             if (!joinedOnce) {
                 statusEl.textContent = error instanceof BoardRequestError ? error.message : "ルームに入れませんでした。";

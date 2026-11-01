@@ -20,7 +20,10 @@ import { HttpOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { AttributeType, Billing, TableV2 } from "aws-cdk-lib/aws-dynamodb";
 import { Architecture, Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import { LogGroup, RetentionDays } from "aws-cdk-lib/aws-logs";
+import { Alarm, ComparisonOperator, MathExpression, TreatMissingData } from "aws-cdk-lib/aws-cloudwatch";
+import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions";
+import { FilterPattern, LogGroup, MetricFilter, RetentionDays } from "aws-cdk-lib/aws-logs";
+import { Topic } from "aws-cdk-lib/aws-sns";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import type { Construct } from "constructs";
 
@@ -112,11 +115,14 @@ export class BoardStack extends Stack {
             webSocketApi: api,
             stageName: STAGE_NAME,
             autoDeploy: true,
-            // 大量の接続・メッセージで費用が膨らまないよう上限を決める（値は Issue #258 で見直す）
+            // 大量の接続・メッセージで費用が膨らまないよう上限を決める
+            // 30 人が同時に入り直しても足りる量（1 秒に 20 件 ≒ 1 日 170 万件・約 2 ドルが最悪の場合の目安）
             throttle: { rateLimit: 20, burstLimit: 40 },
         });
         handler.addEnvironment("CALLBACK_URL", stage.callbackUrl);
         api.grantManageConnections(handler);
+
+        this.createErrorAlarm(handler, logGroup, props.stage);
 
         new CfnOutput(this, "WebSocketUrl", { value: stage.url });
         new CfnOutput(this, "TableName", { value: table.tableName });
@@ -128,6 +134,42 @@ export class BoardStack extends Stack {
             const distribution = this.createTestDistribution(api, originSecret.value);
             new CfnOutput(this, "TestWebSocketUrl", { value: `wss://${distribution.distributionDomainName}${WEBSOCKET_PATH}` });
         }
+    }
+
+    // エラーが続いたら SNS に知らせる。メールの宛先は公開リポジトリに書かないよう、デプロイ後に手で購読する（README）
+    private createErrorAlarm(handler: NodejsFunction, logGroup: LogGroup, stage: BoardStage): void {
+        // router は想定外のエラーを捕まえて console.error に出す（Lambda の Errors には数えられない）ため、ログの ERROR も数える
+        const loggedErrors = new MetricFilter(this, "LoggedErrors", {
+            logGroup,
+            metricNamespace: "TektektechBoard",
+            metricName: `LoggedErrors-${stage}`,
+            filterPattern: FilterPattern.anyTerm("ERROR"),
+            metricValue: "1",
+            defaultValue: 0,
+        }).metric({ statistic: "Sum", period: Duration.minutes(5) });
+
+        const errors = new MathExpression({
+            label: "Lambda のエラー（ログの ERROR・失敗・スロットリング）",
+            expression: "logged + failed + throttled",
+            period: Duration.minutes(5),
+            usingMetrics: {
+                logged: loggedErrors,
+                failed: handler.metricErrors({ period: Duration.minutes(5) }),
+                throttled: handler.metricThrottles({ period: Duration.minutes(5) }),
+            },
+        });
+
+        const topic = new Topic(this, "AlarmTopic", { displayName: `tektektech-board-${stage} alarms` });
+        const alarm = new Alarm(this, "ErrorAlarm", {
+            alarmDescription: "匿名質問ボードの Lambda で、5 分間にエラーが 5 回以上あった",
+            metric: errors,
+            threshold: 5,
+            evaluationPeriods: 1,
+            comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+            treatMissingData: TreatMissingData.NOT_BREACHING,
+        });
+        alarm.addAlarmAction(new SnsAction(topic));
+        new CfnOutput(this, "AlarmTopicArn", { value: topic.topicArn });
     }
 
     private createTestDistribution(api: WebSocketApi, originSecretValue: string): Distribution {
