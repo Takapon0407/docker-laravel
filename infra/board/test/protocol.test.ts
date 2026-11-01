@@ -144,3 +144,22 @@ test("renameTopic / setTopic：トピック ID の形が正しくなければ to
     }
     assert.equal(parseClientMessage(JSON.stringify({ action: "setTopic", requestId: "r", topicId: "t".repeat(22) })).ok, true);
 });
+
+test("deletePost：鍵は null（主催者の削除）でもよい", () => {
+    const result = parseClientMessage(JSON.stringify({ action: "deletePost", requestId: "r", postId: "p".repeat(22), key: null }));
+    assert.deepEqual(result, { ok: true, message: { action: "deletePost", requestId: "r", postId: "p".repeat(22), key: null } });
+});
+
+test("setAccepting / rotateKeys / pin：値が正しくなければ断る", () => {
+    assert.equal(parseClientMessage(JSON.stringify({ action: "setAccepting", requestId: "r", accepting: false })).ok, true);
+    assert.equal(parseClientMessage(JSON.stringify({ action: "rotateKeys", requestId: "r", target: "admin" })).ok, true);
+    for (const body of [
+        { action: "setAccepting", requestId: "r", accepting: "false" },
+        { action: "rotateKeys", requestId: "r", target: "both" },
+    ]) {
+        const result = parseClientMessage(JSON.stringify(body));
+        assert.equal(result.ok === false && result.code, "invalid_message", JSON.stringify(body));
+    }
+    const pin = parseClientMessage(JSON.stringify({ action: "pin", requestId: "r", postId: "short" }));
+    assert.equal(pin.ok === false && pin.code, "post_not_found");
+});

@@ -179,6 +179,23 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
             );
         },
 
+        async updateRoom(roomId, fields) {
+            const names = Object.keys(fields);
+            if (names.length === 0) {
+                return;
+            }
+            await db.send(
+                new UpdateCommand({
+                    TableName: tableName,
+                    Key: roomKey(roomId),
+                    UpdateExpression: `SET ${names.map((name) => `#${name} = :${name}`).join(", ")}`,
+                    ConditionExpression: "attribute_exists(PK)",
+                    ExpressionAttributeNames: Object.fromEntries(names.map((name) => [`#${name}`, name])),
+                    ExpressionAttributeValues: Object.fromEntries(Object.entries(fields).map(([name, value]) => [`:${name}`, value])),
+                }),
+            );
+        },
+
         async saveConnection(connectionId, connection, expiresAt) {
             await db.send(new PutCommand({ TableName: tableName, Item: { ...connectionKey(connectionId), ...connection, expiresAt } }));
         },
@@ -213,6 +230,36 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
             return (await queryAll(`ROOM#${roomId}`, "CONN#"))
                 .filter((item) => !(typeof item.expiresAt === "number" && item.expiresAt < now))
                 .map((item) => ({ connectionId: String(item.SK).slice("CONN#".length), role: item.role as Role }));
+        },
+
+        async setRole(connectionId, roomId, role) {
+            await db.send(
+                new TransactWriteCommand({
+                    TransactItems: [
+                        {
+                            Update: {
+                                TableName: tableName,
+                                Key: memberKey(roomId, connectionId),
+                                UpdateExpression: "SET #role = :role",
+                                ConditionExpression: "attribute_exists(PK)",
+                                ExpressionAttributeNames: { "#role": "role" },
+                                ExpressionAttributeValues: { ":role": role },
+                            },
+                        },
+                        {
+                            Update: {
+                                TableName: tableName,
+                                Key: connectionKey(connectionId),
+                                UpdateExpression: "SET #role = :role",
+                                // 同じルームに入っている間だけ（別のルームに入り直していたら変えない）
+                                ConditionExpression: "roomId = :roomId",
+                                ExpressionAttributeNames: { "#role": "role" },
+                                ExpressionAttributeValues: { ":role": role, ":roomId": roomId },
+                            },
+                        },
+                    ],
+                }),
+            );
         },
 
         async deleteConnection(connectionId) {
@@ -275,8 +322,9 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
                                 Delete: {
                                     TableName: tableName,
                                     Key: postKey(roomId, postId),
-                                    ConditionExpression: "deleteKeyHash = :hash",
-                                    ExpressionAttributeValues: { ":hash": deleteKeyHash },
+                                    ...(deleteKeyHash === null
+                                        ? { ConditionExpression: "attribute_exists(PK)" }
+                                        : { ConditionExpression: "deleteKeyHash = :hash", ExpressionAttributeValues: { ":hash": deleteKeyHash } }),
                                 },
                             },
                             {
@@ -294,6 +342,26 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
             } catch (error) {
                 failedCondition(error);
                 return false;
+            }
+            return true;
+        },
+
+        async setPinned(roomId, postId, pinned) {
+            try {
+                await db.send(
+                    new UpdateCommand({
+                        TableName: tableName,
+                        Key: postKey(roomId, postId),
+                        UpdateExpression: "SET pinned = :pinned",
+                        ConditionExpression: "attribute_exists(PK)",
+                        ExpressionAttributeValues: { ":pinned": pinned },
+                    }),
+                );
+            } catch (error) {
+                if (error instanceof ConditionalCheckFailedException) {
+                    return false;
+                }
+                throw error;
             }
             return true;
         },

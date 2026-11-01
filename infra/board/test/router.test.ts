@@ -479,3 +479,125 @@ test("addTopic：トピックが上限なら too_many_topics", async () => {
     const m = received("owner")[0];
     assert.equal(m?.type === "error" && m.code, "too_many_topics");
 });
+
+test("deletePost：主催者は鍵なしでどの投稿でも消せる。参加者は鍵なしでは forbidden", async () => {
+    const { t, created, post, received } = await roomWithMembers();
+    const { postId } = await post("guest1");
+
+    await t.send("guest2", { action: "deletePost", requestId: "d", postId, key: null });
+    const denied = received("guest2")[0];
+    assert.equal(denied?.type === "error" && denied.code, "forbidden");
+    assert.equal(t.memory.posts.get(created.roomId)!.has(postId), true);
+    t.sent.length = 0;
+
+    await t.send("owner", { action: "deletePost", requestId: "d", postId, key: null });
+    assert.deepEqual(received("owner")[0], { type: "ok", requestId: "d" });
+    assert.deepEqual(received("guest1"), [{ type: "postDeleted", postId }]);
+    assert.equal(t.memory.posts.get(created.roomId)!.has(postId), false);
+});
+
+test("pin / unpin：主催者だけ。全員に送る", async () => {
+    const { t, created, post, received } = await roomWithMembers();
+    const { postId } = await post("guest1");
+
+    await t.send("guest1", { action: "pin", requestId: "p", postId });
+    const denied = received("guest1")[0];
+    assert.equal(denied?.type === "error" && denied.code, "forbidden");
+    t.sent.length = 0;
+
+    await t.send("owner", { action: "pin", requestId: "p", postId });
+    assert.deepEqual(received("guest2"), [{ type: "postPinned", postId, pinned: true }]);
+    assert.equal(t.memory.posts.get(created.roomId)!.get(postId)!.pinned, true);
+    t.sent.length = 0;
+
+    await t.send("owner", { action: "unpin", requestId: "p", postId });
+    assert.deepEqual(received("guest2"), [{ type: "postPinned", postId, pinned: false }]);
+    t.sent.length = 0;
+
+    await t.send("owner", { action: "pin", requestId: "p", postId: "n".repeat(22) });
+    const missing = received("owner")[0];
+    assert.equal(missing?.type === "error" && missing.code, "post_not_found");
+});
+
+test("setAccepting：締め切ると全員に送り、投稿を断る。再開すると投稿できる", async () => {
+    const { t, created, received } = await roomWithMembers();
+
+    await t.send("guest1", { action: "setAccepting", requestId: "s", accepting: false });
+    const denied = received("guest1")[0];
+    assert.equal(denied?.type === "error" && denied.code, "forbidden");
+    t.sent.length = 0;
+
+    await t.send("owner", { action: "setAccepting", requestId: "s", accepting: false });
+    assert.deepEqual(received("guest1"), [{ type: "acceptingChanged", accepting: false }]);
+    assert.equal(t.memory.rooms.get(created.roomId)!.accepting, false);
+    t.sent.length = 0;
+
+    await t.send("guest1", { action: "post", requestId: "p", kind: "comment", body: "本文", nickname: null });
+    const closed = received("guest1")[0];
+    assert.equal(closed?.type === "error" && closed.code, "not_accepting");
+    t.sent.length = 0;
+
+    await t.send("owner", { action: "setAccepting", requestId: "s", accepting: true });
+    await t.send("guest1", { action: "post", requestId: "p", kind: "comment", body: "本文", nickname: null });
+    assert.ok(received("guest1").some((m) => m.type === "posted"));
+});
+
+test("rotateKeys join：古い共有用 URL では入れない。入っている参加者はそのまま、ほかの主催者には新しい鍵を送る", async () => {
+    const { t, created, received } = await roomWithMembers();
+    await t.send("owner2", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.adminKey });
+    t.sent.length = 0;
+
+    await t.send("guest1", { action: "rotateKeys", requestId: "k", target: "join" });
+    const denied = received("guest1")[0];
+    assert.equal(denied?.type === "error" && denied.code, "forbidden");
+    t.sent.length = 0;
+
+    await t.send("owner", { action: "rotateKeys", requestId: "k", target: "join" });
+    const rotated = received("owner")[0];
+    assert.ok(rotated?.type === "keysRotated");
+    assert.notEqual(rotated.joinKey, created.joinKey);
+    assert.equal("adminKey" in rotated, false);
+    assert.deepEqual(received("owner2"), [{ type: "joinKeyChanged", joinKey: rotated.joinKey }]);
+    // 参加者には新しい鍵を送らない
+    assert.deepEqual(received("guest1"), []);
+    assert.equal(t.memory.members.get(created.roomId)!.get("guest1")!.role, "participant");
+
+    const join = async (key: string) => {
+        t.sent.length = 0;
+        await t.send("late", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key });
+        return received("late")[0];
+    };
+    const old = await join(created.joinKey);
+    assert.equal(old?.type === "error" && old.code, "room_not_found");
+    assert.equal((await join(rotated.joinKey))?.type, "joined");
+});
+
+test("rotateKeys admin：古い主催者用 URL では主催者になれない。ほかの主催者はすぐに参加者になる", async () => {
+    const { t, created, received } = await roomWithMembers();
+    await t.send("owner2", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.adminKey });
+    t.sent.length = 0;
+
+    await t.send("owner", { action: "rotateKeys", requestId: "k", target: "admin" });
+    const rotated = received("owner")[0];
+    assert.ok(rotated?.type === "keysRotated" && rotated.adminKey !== undefined);
+    assert.equal(rotated.joinKey, created.joinKey);
+    assert.deepEqual(received("owner2"), [{ type: "roleChanged", role: "participant" }]);
+    assert.equal(t.memory.connections.get("owner2")!.role, "participant");
+    assert.equal(t.memory.connections.get("owner")!.role, "admin");
+    t.sent.length = 0;
+
+    // 参加者になったので、主催者の操作はできない
+    await t.send("owner2", { action: "setAccepting", requestId: "s", accepting: false });
+    const denied = received("owner2")[0];
+    assert.equal(denied?.type === "error" && denied.code, "forbidden");
+
+    const join = async (key: string) => {
+        t.sent.length = 0;
+        await t.send("late", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key });
+        return received("late")[0];
+    };
+    const old = await join(created.adminKey);
+    assert.equal(old?.type === "error" && old.code, "room_not_found");
+    const fresh = await join(rotated.adminKey!);
+    assert.equal(fresh?.type === "joined" && fresh.role, "admin");
+});
