@@ -5,7 +5,8 @@
 ## 概要
 
 - ポートフォリオサイト（https://tektektech-portfolio.com/）。Laravel 13 / PHP 8.5、フロントは Blade ＋ TypeScript ＋ Sass（Vite でビルド）
-- **閲覧専用のサイト**：DB・ログイン・フォームはない。ページは `/`（プロフィール）・`/hobbies`・`/games/{tetris,puyo}`・`/tools/warikan` だけ
+- **閲覧専用のサイト**：DB・ログイン・フォームはない。ページは `/`（プロフィール）・`/hobbies`・`/games/{tetris,puyo}`・`/tools/warikan`・`/tools/board`（匿名質問ボード）だけ
+- 匿名質問ボードだけはサーバー側の処理があるが、Laravel とは別の **`infra/board`（CDK：API Gateway の WebSocket ＋ Lambda ＋ DynamoDB）**。Laravel はページを返すだけで、ブラウザが WebSocket で直接やり取りする。詳細は `infra/board/README.md`
 - `/hobbies` の写真は S3 から取得する。S3 への PUT 時に Lambda が幅・高さをメタデータとして付け、`HobbiesController` が `headObject` で読んで縦横を判定する
 
 ## 本番の構成
@@ -15,7 +16,7 @@
                                       EC2: nginx コンテナ → app コンテナ（php-fpm）
 ```
 
-- CloudFront のオリジンは **VPC オリジン `tektektech-ec2`**（EC2 のプライベート DNS 名 `ip-172-31-45-191.ap-northeast-1.compute.internal`）。メンテナンス画面（`/errors/*`）だけ S3 オリジン
+- CloudFront のオリジンは **VPC オリジン `tektektech-ec2`**（EC2 のプライベート DNS 名 `ip-172-31-45-191.ap-northeast-1.compute.internal`）。メンテナンス画面（`/errors/*`）だけ S3 オリジン、**`/tools/board/ws` は API Gateway（`BoardStack-prod` の WebSocket）**。このビヘイビアは CDK の外で手で設定している（`X-Origin-Verify` ヘッダーの値は SSM の `/tektektech/board/prod/origin-secret` と同じ。手順は `infra/board/README.md`）
 - EC2 の SG の受信は **80 番・`CloudFront-VPCOrigins-Service-SG` からのみ**（インターネットから EC2 には直接届かない）。ALB はない
 - EC2 はパブリックサブネットに置いたまま、**Elastic IP は送信専用**（Docker イメージの取得・SSM・S3・Parameter Store・OS の更新に使う。解放するとデプロイできなくなる）
 - 閲覧者 → CloudFront は全ビヘイビア `Redirect HTTP to HTTPS`
@@ -47,6 +48,7 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 
 ## デプロイとロールバック
 
+- `infra/board` は `.github/workflows/board.yml` が別にデプロイする（PR で diff、`develop` → dev、`main` → Environment `production` の承認 → prod）
 - `main` への push で `.github/workflows/deploy.yml` が動く：`test` と `lint`（PHPStan / Pint）が通ったら、ビルド（npm / composer `--no-dev`）→ tarball を S3 へ → SSM Run Command で `deploy/remote-deploy.sh` を実行
 - `remote-deploy.sh`：コードを含むイメージ `tektektech-app` / `tektektech-nginx` を **コミットの SHA をタグにして**作り、`deploy/switch-release.sh` でコンテナごと入れ替える。トップページが 200 を返さなければ**直前のリリース（`.current-release`）に自動で戻す**。イメージは直近 3 世代を残す
 - 手動で戻すときは Actions の `Rollback` を実行する。**sha を空欄にすると 1 つ前に動いていたリリース（`.previous-release`）に戻る**（もう一度空欄で実行すると元に戻る）。特定のリリースに戻すときは SHA（40 桁）を渡す。戻せる SHA はデプロイのログ末尾の `Images kept for rollback` に出る
@@ -60,7 +62,7 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 - nginx は `index.php` 以外の `.php` を 404、ドットファイルを 403 にする。セキュリティヘッダーは `docker/nginx/security-headers.conf` にまとめ、**location 内で `add_header` を書くときはこのファイルも include する**（書かないと server レベルのヘッダーが消える）。`/build/assets/` の `Cache-Control` は 404 に付かないよう `always` なし
 - 本番の opcache は `validate_timestamps=0`（コードはイメージの中で変わらない）。Blade のコンパイル済みビューはコンテナ内の `/tmp/views`
 - `config/cache.php` は `serializable_classes => false`（**キャッシュにオブジェクトを入れられない**）。enum などは値（文字列）にして保存する
-- `/tools/*` の便利ツールは計算をブラウザ内だけで行う（サーバーに入力を送らない）。DOM に依存しないロジックは `resources/ts/lib/` に置いてテストし、ページの TS（`resources/ts/laravel/tools/`）から使う（`resources/ts/laravel/` 以下は全部 Vite のエントリーになるため）
+- `/tools/*` の便利ツールは計算をブラウザ内だけで行う（サーバーに入力を送らない。匿名質問ボードの投稿だけは例外で、`infra/board` の WebSocket に送る）。DOM に依存しないロジックは `resources/ts/lib/` に置いてテストし、ページの TS（`resources/ts/laravel/tools/`）から使う（`resources/ts/laravel/` 以下は全部 Vite のエントリーになるため）
 - `config/` は変更したものだけを置き、ほかは Laravel の既定値を使う。`/hobbies` のゲーム一覧は `config/hobbies.php` のデータ
 - Sass は `components/`・`base/`・`pages/` に分け、サイトの緑は `_variables.scss` の `$main-color`。Bootstrap 5 のクラスを使う（Bootstrap 4 のクラスは効かない）
 - `/` と `/profile` は同じ内容のため `/profile` は `/` へ 301。ページのタイトル・説明は `@section('title')` / `@section('description')`
