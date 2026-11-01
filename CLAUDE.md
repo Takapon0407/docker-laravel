@@ -72,6 +72,7 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 - **`core.fileMode=false`**：`chmod +x` してもコミットに実行権限が乗らない。スクリプトはワークフロー・EC2 とも `bash script.sh` で呼ぶ（必要なら `git update-index --chmod=+x`）
 - **SSM Run Command は `/usr/bin` をカレントにして実行される**：デプロイスクリプト内で相対パスを使わない（compose ファイルは絶対パスで指定）
 - デプロイスクリプトを変えたら、CI と同じ手順で作ったリリースを使い、`/` をカレントにして `remote-deploy.sh` 自体を手元で実行して確かめる（`aws`（Parameter Store の値の代わりに手元の `.env` を出す）と `chown` だけ偽物にし、`BASE` をテスト用のフォルダに置き換える）
+- **`.env`（Parameter Store）だけを変えたときは、Actions の「Deploy to EC2」を Re-run すれば反映される**（`switch-release.sh` が同じリリースでもコンテナを作り直す）。1 ファイルだけのマウントは、ホスト側で `mv` で置き換えるとコンテナを作り直すまで古いファイルが見えたままになる
 - Docker Desktop（Mac）で 1 ファイルだけをバインドマウントしていると、書き換え後もコンテナから古い長さのまま見えることがある（`nginx -t` が途中で終わる等）。`docker compose up -d --force-recreate nginx` で直る。本番（Linux）では起きない
 - 手元の Docker は Content Trust が有効で、`docker run` は手元で作ったイメージでも失敗する。`docker compose` 経由なら動く
 - 編集が反映されないときは、コンパイル済みビュー（`php artisan view:clear`）と opcache（app コンテナの再起動）を疑う
