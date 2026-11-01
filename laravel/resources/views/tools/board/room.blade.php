@@ -34,6 +34,13 @@
                 <input type="text" class="form-control" id="board-share-url" readonly aria-label="共有用 URL">
                 <button type="button" class="btn btn-success" data-copy="board-share-url">コピー</button>
             </div>
+            <details class="board-admin-url mb-2" id="board-qr">
+                <summary>QR コードを表示（会場のスクリーンに映す）</summary>
+                <div class="board-qr">
+                    <svg class="board-qr-image" id="board-qr-image" role="img" aria-label="参加者に配る URL の QR コード"></svg>
+                    <button type="button" class="btn btn-outline-success btn-sm" id="board-qr-fullscreen" hidden>全画面で表示</button>
+                </div>
+            </details>
             <details class="board-admin-url">
                 <summary>主催者用の URL（ほかの主催者にだけ共有する）</summary>
                 <p class="board-help mt-2">この URL を開いた人は主催者として操作できます。参加者には共有しないでください。</p>
@@ -111,6 +118,8 @@
             </div>
             <p class="board-help board-posts-empty" id="board-posts-empty">まだ投稿はありません。</p>
             <ul class="board-post-list" id="board-post-list"></ul>
+            {{-- 見えていないところに新しい投稿が届いたとき --}}
+            <button type="button" class="btn btn-success btn-sm board-new-posts" id="board-new-posts" hidden></button>
         </section>
     </div>
 </div>
