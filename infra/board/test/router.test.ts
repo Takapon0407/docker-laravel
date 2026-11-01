@@ -670,7 +670,7 @@ test("createRoom：同じ IP からは 1 時間に 5 件まで", async () => {
     assert.equal(t.last()?.type, "roomCreated");
 });
 
-test("join：参加者は 30 人まで。主催者は満員でも入れ、入り直しは数えない", async () => {
+test("join：参加者は 30 人まで。主催者は数えず満員でも入れ、入り直しは数えない", async () => {
     const t = setUp();
     const created = await createRoom(t);
     const join = async (connectionId: string, key: string) => {
@@ -678,6 +678,8 @@ test("join：参加者は 30 人まで。主催者は満員でも入れ、入り
         const m = t.last();
         return m?.type === "error" ? m.code : m?.type;
     };
+    assert.equal(await join("admin1", created.adminKey), "joined");
+    assert.equal(await join("admin2", created.adminKey), "joined");
     for (let i = 0; i < LIMITS.members; i++) {
         assert.equal(await join(`guest${i}`, created.joinKey), "joined");
     }

@@ -155,10 +155,10 @@ export function createRouter(deps: Dependencies) {
                 if (!role) {
                     throw new ActionError("room_not_found");
                 }
-                // 主催者は満員でも入れる（入り直しで自分が数えられている場合もあるので、自分は除く）
+                // 数えるのは参加者だけで、主催者は満員でも入れる（入り直しで自分が数えられている場合もあるので、自分は除く）
                 if (role === "participant") {
                     const members = await deps.store.listMembers(room.id, nowSeconds());
-                    if (members.filter((member) => member.connectionId !== connectionId).length >= LIMITS.members) {
+                    if (members.filter((member) => member.role === "participant" && member.connectionId !== connectionId).length >= LIMITS.members) {
                         throw new ActionError("room_full");
                     }
                 }
