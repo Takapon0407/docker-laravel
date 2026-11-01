@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BoardController;
 use App\Http\Controllers\HobbiesController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,4 +17,6 @@ Route::prefix('games')->name('games.')->group(function () {
 
 Route::prefix('tools')->name('tools.')->group(function () {
     Route::view('/warikan', 'tools.warikan')->name('warikan');
+    Route::get('/board', [BoardController::class, 'create'])->name('board');
+    Route::get('/board/room', [BoardController::class, 'room'])->name('board.room');
 });

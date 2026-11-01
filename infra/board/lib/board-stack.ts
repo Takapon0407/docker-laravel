@@ -103,7 +103,10 @@ export class BoardStack extends Stack {
             disconnectRouteOptions: { integration },
             defaultRouteOptions: { integration },
         });
-        api.addRoute("ping", { integration });
+        // ブラウザが送る操作（shared/protocol.ts の action）ごとにルートを作る。それ以外は $default でエラーを返す
+        for (const action of ["ping", "createRoom", "join"]) {
+            api.addRoute(action, { integration });
+        }
 
         const stage = new WebSocketStage(this, "Stage", {
             webSocketApi: api,

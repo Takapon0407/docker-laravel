@@ -47,7 +47,8 @@ class ContentSecurityPolicy
             'font-src' => ["'self'", 'https://fonts.gstatic.com'],
             // data: はハンバーガーメニューのアイコン（CSS 内の SVG）
             'img-src' => array_filter(["'self'", 'data:', $photoOrigin]),
-            'connect-src' => ["'self'"],
+            // 匿名質問ボードの WebSocket を別のドメインにつなぐとき（ローカルで dev 環境を使うときなど）はその接続先も許可する
+            'connect-src' => array_filter(["'self'", $this->boardWebSocketOrigin()]),
             'manifest-src' => ["'self'"],
             'base-uri' => ["'self'"],
             'object-src' => ["'none'"],
@@ -85,6 +86,13 @@ class ContentSecurityPolicy
         }
 
         return "https://{$bucket}.s3.{$region}.amazonaws.com";
+    }
+
+    private function boardWebSocketOrigin(): ?string
+    {
+        $url = config('board.websocket_url');
+
+        return is_string($url) && $url !== '' ? $this->originOf($url) : null;
     }
 
     private function originOf(string $url): ?string
