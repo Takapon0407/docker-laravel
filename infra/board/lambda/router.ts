@@ -1,7 +1,16 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import type { APIGatewayProxyResult, APIGatewayProxyWebsocketEventV2 } from "aws-lambda";
-import { ERROR_MESSAGES, parseClientMessage, RETENTIONS, type ClientMessage, type ErrorCode, type ServerMessage } from "../shared/protocol.ts";
-import type { BoardStore, RoomRecord, TopicRecord } from "./store.ts";
+import {
+    ERROR_MESSAGES,
+    parseClientMessage,
+    POSTS_PER_MESSAGE,
+    RETENTIONS,
+    type ClientMessage,
+    type ErrorCode,
+    type PostView,
+    type ServerMessage,
+} from "../shared/protocol.ts";
+import type { BoardStore, ConnectionRecord, PostRecord, RoomRecord, TopicRecord } from "./store.ts";
 
 // $connect には headers と identity が付く（APIGatewayProxyWebsocketEventV2 の型には含まれていない）
 export type WebSocketEvent = APIGatewayProxyWebsocketEventV2 & {
@@ -50,6 +59,30 @@ class ActionError extends Error {
 export function createRouter(deps: Dependencies) {
     const nowSeconds = () => Math.floor(deps.now() / 1000);
 
+    // join したルームと接続の情報。入っていない・ルームの期限が切れたときは断る
+    async function currentRoom(connectionId: string): Promise<{ connection: ConnectionRecord & { roomId: string }; room: RoomRecord }> {
+        const connection = await deps.store.getConnection(connectionId);
+        if (!connection?.roomId) {
+            throw new ActionError("not_joined");
+        }
+        const room = await deps.store.getRoom(connection.roomId);
+        if (!room || room.expiresAt <= nowSeconds()) {
+            throw new ActionError("room_not_found");
+        }
+        return { connection: { ...connection, roomId: connection.roomId }, room };
+    }
+
+    // 同じルームに入っている全員に送る（1 人に送れなくても、ほかの人には送る）
+    async function broadcast(roomId: string, message: ServerMessage): Promise<void> {
+        const members = await deps.store.listMembers(roomId, nowSeconds());
+        const results = await Promise.allSettled(members.map((member) => deps.send(member.connectionId, message)));
+        for (const result of results) {
+            if (result.status === "rejected") {
+                console.error(result.reason);
+            }
+        }
+    }
+
     async function handle(connectionId: string, message: ClientMessage): Promise<void> {
         switch (message.action) {
             case "ping": {
@@ -74,6 +107,7 @@ export function createRouter(deps: Dependencies) {
                     adminKeyHash: hash(adminKey),
                     createdAt,
                     expiresAt: Math.floor(createdAt / 1000) + RETENTIONS[message.retention],
+                    postCount: 0,
                 };
                 await deps.store.createRoom(room, topics);
                 await deps.send(connectionId, { type: "roomCreated", requestId: message.requestId, roomId: room.id, joinKey: room.joinKey, adminKey });
@@ -91,8 +125,8 @@ export function createRouter(deps: Dependencies) {
                     throw new ActionError("room_not_found");
                 }
 
-                await deps.store.joinRoom(connectionId, room.id, role, Math.min(room.expiresAt, nowSeconds() + CONNECTION_TTL_SECONDS));
-                const topics = await deps.store.listTopics(room.id, nowSeconds());
+                await deps.store.joinRoom(connectionId, room.id, role, message.browserId, Math.min(room.expiresAt, nowSeconds() + CONNECTION_TTL_SECONDS));
+                const [topics, posts] = await Promise.all([deps.store.listTopics(room.id, nowSeconds()), deps.store.listPosts(room.id)]);
                 await deps.send(connectionId, {
                     type: "joined",
                     requestId: message.requestId,
@@ -108,6 +142,66 @@ export function createRouter(deps: Dependencies) {
                     topics,
                     ...(role === "admin" && { joinKey: room.joinKey }),
                 });
+                // 投稿は 1 メッセージの上限に収まるよう分けて送る（古い順）
+                const views = posts.sort((a, b) => a.createdAt - b.createdAt).map(toView);
+                for (let i = 0; i < views.length; i += POSTS_PER_MESSAGE) {
+                    await deps.send(connectionId, { type: "posts", posts: views.slice(i, i + POSTS_PER_MESSAGE) });
+                }
+                return;
+            }
+
+            case "post": {
+                const { room } = await currentRoom(connectionId);
+                const deleteKey = deps.randomToken();
+                const post: PostRecord = {
+                    id: deps.randomToken(),
+                    // 投稿は今のトピックに入れる
+                    topicId: room.currentTopicId,
+                    kind: message.kind,
+                    body: message.body,
+                    nickname: room.nameMode === "anonymous" ? null : message.nickname,
+                    likes: 0,
+                    pinned: false,
+                    deleteKeyHash: hash(deleteKey),
+                    createdAt: deps.now(),
+                };
+                const result = await deps.store.addPost(room.id, post, room.expiresAt);
+                if (result !== "added") {
+                    throw new ActionError(result);
+                }
+                await deps.send(connectionId, { type: "posted", requestId: message.requestId, postId: post.id, deleteKey });
+                await broadcast(room.id, { type: "postAdded", post: toView(post) });
+                return;
+            }
+
+            case "deletePost": {
+                const { room } = await currentRoom(connectionId);
+                if (!(await deps.store.deletePost(room.id, message.postId, hash(message.key)))) {
+                    // 鍵が違うときも、投稿がないのと同じに扱う
+                    throw new ActionError("post_not_found");
+                }
+                await deps.send(connectionId, { type: "ok", requestId: message.requestId });
+                await broadcast(room.id, { type: "postDeleted", postId: message.postId });
+                return;
+            }
+
+            case "like":
+            case "unlike": {
+                const { connection, room } = await currentRoom(connectionId);
+                if (!connection.browserId) {
+                    throw new ActionError("not_joined");
+                }
+                const result =
+                    message.action === "like"
+                        ? await deps.store.like(room.id, message.postId, connection.browserId, room.expiresAt)
+                        : await deps.store.unlike(room.id, message.postId, connection.browserId);
+                if (result.status === "not_found") {
+                    throw new ActionError("post_not_found");
+                }
+                await deps.send(connectionId, { type: "ok", requestId: message.requestId });
+                const liked: ServerMessage = { type: "postLiked", postId: message.postId, likes: result.likes };
+                // 数が変わったときだけ全員に送る（すでにいいね済みなどのときは、押した人の表示だけ合わせる）
+                await (result.status === "changed" ? broadcast(room.id, liked) : deps.send(connectionId, liked));
                 return;
             }
         }
@@ -149,6 +243,11 @@ export function createRouter(deps: Dependencies) {
     async function sendError(connectionId: string, requestId: string | null, code: ErrorCode, message?: string): Promise<void> {
         await deps.send(connectionId, { type: "error", requestId, code, message: message ?? ERROR_MESSAGES[code] });
     }
+}
+
+// 取り消し用の鍵のハッシュは画面に送らない
+function toView({ deleteKeyHash: _deleteKeyHash, ...post }: PostRecord): PostView {
+    return post;
 }
 
 export function hash(value: string): string {

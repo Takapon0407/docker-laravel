@@ -1,17 +1,34 @@
+import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import type { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { DeleteCommand, GetCommand, PutCommand, QueryCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
-import type { Role } from "../shared/protocol.ts";
-import type { BoardStore, ConnectionRecord, RoomRecord, TopicRecord } from "./store.ts";
+import { LIMITS, type PostKind, type Role } from "../shared/protocol.ts";
+import type { BoardStore, ConnectionRecord, LikeResult, PostRecord, RoomRecord, TopicRecord } from "./store.ts";
 
 // テーブル 1 つに、PK / SK で種類を分けて置く
 //   ROOM#<id>        META             ルーム
 //   ROOM#<id>        TOPIC#<id>       トピック
+//   ROOM#<id>        POST#<id>        投稿（トピックは属性に持つ。#252 の設計から変えた：どの操作も投稿 ID だけで引けるように）
+//   ROOM#<id>        LIKE#<投稿>#<ブラウザ ID>  いいね（二重のいいねを防ぐ）
 //   ROOM#<id>        CONN#<接続 ID>   ルームに入っている接続（変更を送る相手）
-//   CONN#<接続 ID>   META             接続（IP・入っているルーム）
+//   CONN#<接続 ID>   META             接続（IP・入っているルーム・ブラウザ ID）
 const roomKey = (roomId: string) => ({ PK: `ROOM#${roomId}`, SK: "META" });
 const topicKey = (roomId: string, topicId: string) => ({ PK: `ROOM#${roomId}`, SK: `TOPIC#${topicId}` });
 const memberKey = (roomId: string, connectionId: string) => ({ PK: `ROOM#${roomId}`, SK: `CONN#${connectionId}` });
 const connectionKey = (connectionId: string) => ({ PK: `CONN#${connectionId}`, SK: "META" });
+const postKey = (roomId: string, postId: string) => ({ PK: `ROOM#${roomId}`, SK: `POST#${postId}` });
+const likeKey = (roomId: string, postId: string, browserId: string) => ({ PK: `ROOM#${roomId}`, SK: `LIKE#${postId}#${browserId}` });
+
+// トランザクションの何番目の条件で失敗したか（条件で失敗したものがなければ -1）
+function failedCondition(error: unknown): number {
+    if (!(error instanceof TransactionCanceledException)) {
+        throw error;
+    }
+    const index = (error.CancellationReasons ?? []).findIndex((reason) => reason.Code === "ConditionalCheckFailed");
+    if (index === -1) {
+        throw error;
+    }
+    return index;
+}
 
 export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string): BoardStore {
     async function getConnection(connectionId: string): Promise<ConnectionRecord | null> {
@@ -23,7 +40,64 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
             ip: typeof Item.ip === "string" ? Item.ip : null,
             ...(typeof Item.roomId === "string" && { roomId: Item.roomId }),
             ...((Item.role === "participant" || Item.role === "admin") && { role: Item.role as Role }),
+            ...(typeof Item.browserId === "string" && { browserId: Item.browserId }),
         };
+    }
+
+    // PK が同じで SK が prefix で始まる項目を、ページを分けてすべて読む
+    async function queryAll(pk: string, prefix: string, consistent = false): Promise<Record<string, unknown>[]> {
+        const items: Record<string, unknown>[] = [];
+        let startKey: Record<string, unknown> | undefined;
+        do {
+            const result = await db.send(
+                new QueryCommand({
+                    TableName: tableName,
+                    KeyConditionExpression: "PK = :pk AND begins_with(SK, :prefix)",
+                    ExpressionAttributeValues: { ":pk": pk, ":prefix": prefix },
+                    ExclusiveStartKey: startKey,
+                    ConsistentRead: consistent,
+                }),
+            );
+            items.push(...(result.Items ?? []));
+            startKey = result.LastEvaluatedKey;
+        } while (startKey);
+        return items;
+    }
+
+    async function likesOf(roomId: string, postId: string): Promise<number | null> {
+        const { Item } = await db.send(new GetCommand({ TableName: tableName, Key: postKey(roomId, postId), ConsistentRead: true }));
+        return Item ? Number(Item.likes) : null;
+    }
+
+    // いいねの登録・削除と、投稿のいいねの数の増減を 1 つのトランザクションで行う
+    async function changeLike(roomId: string, postId: string, browserId: string, delta: 1 | -1, expiresAt: number): Promise<LikeResult> {
+        const like = likeKey(roomId, postId, browserId);
+        try {
+            await db.send(
+                new TransactWriteCommand({
+                    TransactItems: [
+                        delta === 1
+                            ? { Put: { TableName: tableName, Item: { ...like, expiresAt }, ConditionExpression: "attribute_not_exists(PK)" } }
+                            : { Delete: { TableName: tableName, Key: like, ConditionExpression: "attribute_exists(PK)" } },
+                        {
+                            Update: {
+                                TableName: tableName,
+                                Key: postKey(roomId, postId),
+                                UpdateExpression: "ADD likes :delta",
+                                ConditionExpression: "attribute_exists(PK)",
+                                ExpressionAttributeValues: { ":delta": delta },
+                            },
+                        },
+                    ],
+                }),
+            );
+        } catch (error) {
+            // 1 番目（いいね）の条件で失敗：すでにいいね済み（いいねしていない）。2 番目：投稿がない
+            const likes = failedCondition(error) === 0 ? await likesOf(roomId, postId) : null;
+            return likes === null ? { status: "not_found" } : { status: "unchanged", likes };
+        }
+        const likes = await likesOf(roomId, postId);
+        return likes === null ? { status: "not_found" } : { status: "changed", likes };
     }
 
     return {
@@ -51,30 +125,19 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
                 return null;
             }
             const { PK: _pk, SK: _sk, ...attributes } = Item;
-            return { id: roomId, ...attributes } as RoomRecord;
+            // 投稿の数を持つ前に作ったルームは 0 として扱う
+            return { id: roomId, postCount: 0, ...attributes } as RoomRecord;
         },
 
         async listTopics(roomId, expiresAt) {
             const topics: TopicRecord[] = [];
-            let startKey: Record<string, unknown> | undefined;
-            do {
-                const result = await db.send(
-                    new QueryCommand({
-                        TableName: tableName,
-                        KeyConditionExpression: "PK = :pk AND begins_with(SK, :prefix)",
-                        ExpressionAttributeValues: { ":pk": `ROOM#${roomId}`, ":prefix": "TOPIC#" },
-                        ExclusiveStartKey: startKey,
-                    }),
-                );
-                for (const item of result.Items ?? []) {
-                    // TTL の削除は遅れることがあるため、期限切れは読むときにも除く
-                    if (typeof item.expiresAt === "number" && item.expiresAt < expiresAt) {
-                        continue;
-                    }
-                    topics.push({ id: String(item.SK).slice("TOPIC#".length), title: String(item.title), order: Number(item.order) });
+            for (const item of await queryAll(`ROOM#${roomId}`, "TOPIC#")) {
+                // TTL の削除は遅れることがあるため、期限切れは読むときにも除く
+                if (typeof item.expiresAt === "number" && item.expiresAt < expiresAt) {
+                    continue;
                 }
-                startKey = result.LastEvaluatedKey;
-            } while (startKey);
+                topics.push({ id: String(item.SK).slice("TOPIC#".length), title: String(item.title), order: Number(item.order) });
+            }
             return topics.sort((a, b) => a.order - b.order);
         },
 
@@ -84,7 +147,7 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
 
         getConnection,
 
-        async joinRoom(connectionId, roomId, role, expiresAt) {
+        async joinRoom(connectionId, roomId, role, browserId, expiresAt) {
             const current = await getConnection(connectionId);
             await db.send(
                 new TransactWriteCommand({
@@ -98,14 +161,20 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
                             Update: {
                                 TableName: tableName,
                                 Key: connectionKey(connectionId),
-                                UpdateExpression: "SET roomId = :roomId, #role = :role",
+                                UpdateExpression: "SET roomId = :roomId, #role = :role, browserId = :browserId",
                                 ExpressionAttributeNames: { "#role": "role" },
-                                ExpressionAttributeValues: { ":roomId": roomId, ":role": role },
+                                ExpressionAttributeValues: { ":roomId": roomId, ":role": role, ":browserId": browserId },
                             },
                         },
                     ],
                 }),
             );
+        },
+
+        async listMembers(roomId, now) {
+            return (await queryAll(`ROOM#${roomId}`, "CONN#"))
+                .filter((item) => !(typeof item.expiresAt === "number" && item.expiresAt < now))
+                .map((item) => ({ connectionId: String(item.SK).slice("CONN#".length), role: item.role as Role }));
         },
 
         async deleteConnection(connectionId) {
@@ -114,6 +183,89 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
                 await db.send(new DeleteCommand({ TableName: tableName, Key: memberKey(current.roomId, connectionId) }));
             }
             await db.send(new DeleteCommand({ TableName: tableName, Key: connectionKey(connectionId) }));
+        },
+
+        async addPost(roomId, post, expiresAt) {
+            const { id, ...attributes } = post;
+            try {
+                await db.send(
+                    new TransactWriteCommand({
+                        TransactItems: [
+                            {
+                                Update: {
+                                    TableName: tableName,
+                                    Key: roomKey(roomId),
+                                    UpdateExpression: "ADD postCount :one",
+                                    // 投稿の数を持つ前に作ったルームは、まだ postCount がない
+                                    ConditionExpression: "accepting = :true AND (attribute_not_exists(postCount) OR postCount < :max)",
+                                    ExpressionAttributeValues: { ":one": 1, ":true": true, ":max": LIMITS.posts },
+                                },
+                            },
+                            { Put: { TableName: tableName, Item: { ...postKey(roomId, id), ...attributes, expiresAt } } },
+                        ],
+                    }),
+                );
+            } catch (error) {
+                failedCondition(error);
+                // どちらの条件で断られたかは、ルームを読み直して確かめる
+                const { Item } = await db.send(new GetCommand({ TableName: tableName, Key: roomKey(roomId), ConsistentRead: true }));
+                return Item?.accepting === true ? "too_many_posts" : "not_accepting";
+            }
+            return "added";
+        },
+
+        async listPosts(roomId) {
+            return (await queryAll(`ROOM#${roomId}`, "POST#")).map((item) => ({
+                id: String(item.SK).slice("POST#".length),
+                topicId: String(item.topicId),
+                kind: item.kind as PostKind,
+                body: String(item.body),
+                nickname: typeof item.nickname === "string" ? item.nickname : null,
+                likes: Number(item.likes ?? 0),
+                pinned: item.pinned === true,
+                deleteKeyHash: String(item.deleteKeyHash),
+                createdAt: Number(item.createdAt),
+            }));
+        },
+
+        async deletePost(roomId, postId, deleteKeyHash) {
+            try {
+                await db.send(
+                    new TransactWriteCommand({
+                        TransactItems: [
+                            {
+                                Delete: {
+                                    TableName: tableName,
+                                    Key: postKey(roomId, postId),
+                                    ConditionExpression: "deleteKeyHash = :hash",
+                                    ExpressionAttributeValues: { ":hash": deleteKeyHash },
+                                },
+                            },
+                            {
+                                Update: {
+                                    TableName: tableName,
+                                    Key: roomKey(roomId),
+                                    UpdateExpression: "ADD postCount :minusOne",
+                                    ConditionExpression: "attribute_exists(PK)",
+                                    ExpressionAttributeValues: { ":minusOne": -1 },
+                                },
+                            },
+                        ],
+                    }),
+                );
+            } catch (error) {
+                failedCondition(error);
+                return false;
+            }
+            return true;
+        },
+
+        like(roomId, postId, browserId, expiresAt) {
+            return changeLike(roomId, postId, browserId, 1, expiresAt);
+        },
+
+        unlike(roomId, postId, browserId) {
+            return changeLike(roomId, postId, browserId, -1, 0);
         },
     };
 }
