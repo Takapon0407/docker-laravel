@@ -154,7 +154,10 @@ document.addEventListener("DOMContentLoaded", () => {
             case "roleChanged":
                 if (message.role === "participant") {
                     // ほかの主催者が主催者用 URL を作り直した。残っていた鍵はもう使えない
-                    forgetAdminKey(storage, link!.roomId);
+                    // （同じブラウザの別のタブで作り直したときは、新しい鍵が残っているので消さない）
+                    if (loadAdminKey(storage, link!.roomId) === adminKey) {
+                        forgetAdminKey(storage, link!.roomId);
+                    }
                     // 再接続したときに古い主催者の鍵で入ろうとしないよう、アドレスバーは共有用 URL にする
                     if (joinKey !== null) {
                         linkKey = joinKey;
