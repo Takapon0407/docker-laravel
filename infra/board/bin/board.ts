@@ -1,5 +1,6 @@
 import { App } from "aws-cdk-lib";
 import { BoardStack } from "../lib/board-stack.ts";
+import { BoardCiStack } from "../lib/ci-stack.ts";
 
 // 別のアカウント・リージョンに誤ってデプロイしないよう固定する
 const env = { account: "945611748417", region: "ap-northeast-1" };
@@ -19,3 +20,6 @@ new BoardStack(app, "BoardStack-prod", {
     stage: "prod",
     originSecret: { parameterName: "/tektektech/board/prod/origin-secret" },
 });
+
+// GitHub Actions 用の IAM ロール。CI からはデプロイせず、管理者が手でデプロイする
+new BoardCiStack(app, "BoardCiStack", { env, repository: "Takapon0407/docker-laravel" });
