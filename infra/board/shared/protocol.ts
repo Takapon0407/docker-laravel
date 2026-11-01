@@ -11,12 +11,25 @@ export const LIMITS = {
     title: 50,
     topicTitle: 40,
     topics: 20,
+    post: 300,
+    nickname: 20,
+    // 1 ルームの投稿の数（取り消し・削除したものは数えない）
+    posts: 500,
 } as const;
+
+export type PostKind = "question" | "comment";
 
 export type ClientMessage =
     | { action: "ping"; requestId: string }
     | { action: "createRoom"; requestId: string; title: string; retention: Retention; nameMode: NameMode; topics: string[] }
-    | { action: "join"; requestId: string; roomId: string; key: string };
+    // browserId はブラウザごとに作って残しておく乱数（いいねを 1 投稿 1 回にするため）
+    | { action: "join"; requestId: string; roomId: string; key: string; browserId: string }
+    // nickname は空なら null（完全に匿名のルームでは無視する）
+    | { action: "post"; requestId: string; kind: PostKind; body: string; nickname: string | null }
+    // key は投稿したときに返した取り消し用の鍵
+    | { action: "deletePost"; requestId: string; postId: string; key: string }
+    | { action: "like"; requestId: string; postId: string }
+    | { action: "unlike"; requestId: string; postId: string };
 
 export type Role = "participant" | "admin";
 
@@ -36,15 +49,49 @@ export interface TopicView {
     order: number;
 }
 
+export interface PostView {
+    id: string;
+    topicId: string;
+    kind: PostKind;
+    body: string;
+    nickname: string | null;
+    likes: number;
+    pinned: boolean;
+    // UNIX ミリ秒
+    createdAt: number;
+}
+
+// 参加したときに、投稿を何件ずつに分けて送るか（API Gateway の 1 メッセージ 128KB の上限に収める）
+export const POSTS_PER_MESSAGE = 50;
+
 export type ServerMessage =
     // debug は dev 環境でだけ付ける（接続がどう見えているかの確認用）
     | { type: "pong"; requestId: string; debug?: { ip: string | null } }
     | { type: "roomCreated"; requestId: string; roomId: string; joinKey: string; adminKey: string }
     // joinKey は主催者にだけ返す（共有用 URL を表示するため）
+    // 投稿は joined のあとに posts で分けて送る
     | { type: "joined"; requestId: string; role: Role; room: RoomView; topics: TopicView[]; joinKey?: string }
+    // deleteKey は投稿した人にだけ返す（取り消しに使う）
+    | { type: "posted"; requestId: string; postId: string; deleteKey: string }
+    // 結果に中身がない操作（取り消し・いいねなど）の成功
+    | { type: "ok"; requestId: string }
+    // ここから下は、同じルームの全員に送る（requestId なし）
+    | { type: "posts"; posts: PostView[] }
+    | { type: "postAdded"; post: PostView }
+    | { type: "postDeleted"; postId: string }
+    | { type: "postLiked"; postId: string; likes: number }
     | { type: "error"; requestId: string | null; code: ErrorCode; message: string };
 
-export type ErrorCode = "invalid_message" | "unknown_action" | "validation_error" | "room_not_found" | "internal_error";
+export type ErrorCode =
+    | "invalid_message"
+    | "unknown_action"
+    | "validation_error"
+    | "room_not_found"
+    | "not_joined"
+    | "not_accepting"
+    | "too_many_posts"
+    | "post_not_found"
+    | "internal_error";
 
 const REQUEST_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 // ルーム ID と鍵は 16 バイトの乱数を base64url にしたもの（22 文字）
@@ -105,16 +152,69 @@ export function parseClientMessage(body: string | null | undefined): ParseResult
         }
 
         case "join": {
-            const { roomId, key } = fields;
-            if (typeof roomId !== "string" || !TOKEN_PATTERN.test(roomId) || typeof key !== "string" || !TOKEN_PATTERN.test(key)) {
+            const { roomId, key, browserId } = fields;
+            if (!isToken(browserId)) {
+                return { ok: false, requestId, code: "invalid_message" };
+            }
+            if (!isToken(roomId) || !isToken(key)) {
                 return { ok: false, requestId, code: "room_not_found" };
             }
-            return { ok: true, message: { action, requestId, roomId, key } };
+            return { ok: true, message: { action, requestId, roomId, key, browserId } };
+        }
+
+        case "post": {
+            const { kind } = fields;
+            if (kind !== "question" && kind !== "comment") {
+                return invalid("「質問」か「コメント」を選んでください");
+            }
+            const body = typeof fields.body === "string" ? cleanText(fields.body) : "";
+            if (body === "" || length(body) > LIMITS.post) {
+                return invalid(`本文は 1〜${LIMITS.post} 文字で入力してください`);
+            }
+            if (fields.nickname !== null && fields.nickname !== undefined && typeof fields.nickname !== "string") {
+                return invalid("ニックネームが正しくありません");
+            }
+            // ニックネームは 1 行にする
+            const nickname = typeof fields.nickname === "string" ? cleanText(fields.nickname).replace(/\n/g, " ") : "";
+            if (length(nickname) > LIMITS.nickname) {
+                return invalid(`ニックネームは ${LIMITS.nickname} 文字までです`);
+            }
+            return { ok: true, message: { action, requestId, kind, body, nickname: nickname === "" ? null : nickname } };
+        }
+
+        case "deletePost": {
+            const { postId, key } = fields;
+            if (!isToken(postId) || !isToken(key)) {
+                return { ok: false, requestId, code: "post_not_found" };
+            }
+            return { ok: true, message: { action, requestId, postId, key } };
+        }
+
+        case "like":
+        case "unlike": {
+            const { postId } = fields;
+            if (!isToken(postId)) {
+                return { ok: false, requestId, code: "post_not_found" };
+            }
+            return { ok: true, message: { action, requestId, postId } };
         }
 
         default:
             return { ok: false, requestId, code: "unknown_action" };
     }
+}
+
+function isToken(value: unknown): value is string {
+    return typeof value === "string" && TOKEN_PATTERN.test(value);
+}
+
+// 改行を \n にそろえ、改行以外の制御文字を除いて、前後の空白を除く
+// （制御文字は JSON で 6 バイトになり、1 メッセージの上限の見積もりが崩れるため）
+function cleanText(text: string): string {
+    return text
+        .replace(/\r\n?/g, "\n")
+        .replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, "")
+        .trim();
 }
 
 // エラーの種類ごとの、画面に出す文言
@@ -123,5 +223,9 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
     unknown_action: "その操作はできません",
     validation_error: "入力内容を確認してください",
     room_not_found: "ルームが見つかりません。URL が正しいか、保存期間が過ぎていないか確認してください",
+    not_joined: "ルームに入っていません。ページを開き直してください",
+    not_accepting: "今は投稿を受け付けていません",
+    too_many_posts: `このルームの投稿が上限（${LIMITS.posts} 件）に達しました`,
+    post_not_found: "投稿が見つかりません。すでに削除されたかもしれません",
     internal_error: "エラーが発生しました。時間をおいてもう一度お試しください",
 };

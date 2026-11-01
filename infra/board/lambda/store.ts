@@ -1,4 +1,4 @@
-import type { NameMode, Retention, Role } from "../shared/protocol.ts";
+import type { NameMode, PostKind, Retention, Role } from "../shared/protocol.ts";
 
 // DynamoDB に置くデータ（キーの形は dynamo-store.ts と Issue #252 を参照）
 // 時刻は、expiresAt（TTL に使う）だけ UNIX 秒、ほかは UNIX ミリ秒
@@ -16,6 +16,8 @@ export interface RoomRecord {
     adminKeyHash: string;
     createdAt: number;
     expiresAt: number;
+    // 投稿の数（上限を確かめるため。取り消し・削除で減らす）
+    postCount: number;
 }
 
 export interface TopicRecord {
@@ -24,12 +26,36 @@ export interface TopicRecord {
     order: number;
 }
 
+export interface PostRecord {
+    id: string;
+    topicId: string;
+    kind: PostKind;
+    body: string;
+    nickname: string | null;
+    likes: number;
+    pinned: boolean;
+    // 取り消し用の鍵のハッシュ（SHA-256）
+    deleteKeyHash: string;
+    createdAt: number;
+}
+
 export interface ConnectionRecord {
     ip: string | null;
-    // 参加しているルーム（join する前は未設定）
+    // 参加しているルームと、いいねに使うブラウザ ID（join する前は未設定）
     roomId?: string;
     role?: Role;
+    browserId?: string;
 }
+
+// 変更を送る相手
+export interface MemberRecord {
+    connectionId: string;
+    role: Role;
+}
+
+// いいね・取り消しの結果
+//   changed: いいねの数が変わった / unchanged: すでにいいね済み（いいねしていない） / not_found: 投稿がない
+export type LikeResult = { status: "changed"; likes: number } | { status: "unchanged"; likes: number } | { status: "not_found" };
 
 export interface BoardStore {
     // ルームと最初のトピックをまとめて作る
@@ -40,7 +66,16 @@ export interface BoardStore {
     saveConnection(connectionId: string, connection: ConnectionRecord, expiresAt: number): Promise<void>;
     getConnection(connectionId: string): Promise<ConnectionRecord | null>;
     // 接続をルームに入れる（ほかのルームに入っていたら、そちらからは抜ける）
-    joinRoom(connectionId: string, roomId: string, role: Role, expiresAt: number): Promise<void>;
+    joinRoom(connectionId: string, roomId: string, role: Role, browserId: string, expiresAt: number): Promise<void>;
+    listMembers(roomId: string, now: number): Promise<MemberRecord[]>;
     // 接続の情報と、ルームの接続一覧からの登録を消す
     deleteConnection(connectionId: string): Promise<void>;
+
+    // 受付中で、投稿が上限より少ないときだけ追加する（ルームの投稿の数も増やす）
+    addPost(roomId: string, post: PostRecord, expiresAt: number): Promise<"added" | "not_accepting" | "too_many_posts">;
+    listPosts(roomId: string): Promise<PostRecord[]>;
+    // 取り消し用の鍵のハッシュが合うときだけ消す（ルームの投稿の数も減らす）。消せたら true
+    deletePost(roomId: string, postId: string, deleteKeyHash: string): Promise<boolean>;
+    like(roomId: string, postId: string, browserId: string, expiresAt: number): Promise<LikeResult>;
+    unlike(roomId: string, postId: string, browserId: string): Promise<LikeResult>;
 }

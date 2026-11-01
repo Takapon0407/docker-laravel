@@ -1,11 +1,24 @@
 import { BoardClient, BoardRequestError, type Status } from "@/lib/board-client";
 import { browserStorage, buildRoomUrl, forgetAdminKey, loadAdminKey, parseRoomHash, saveAdminKey, websocketUrl } from "@/lib/board-link";
-import type { RoomView, ServerMessage, TopicView } from "../../../../../../infra/board/shared/protocol.ts";
+import {
+    loadBrowserId,
+    loadDeleteKeys,
+    loadLikes,
+    loadNickname,
+    saveDeleteKeys,
+    saveLikes,
+    saveNickname,
+    sortPosts,
+    type SortOrder,
+} from "@/lib/board-posts";
+import { length, LIMITS, type PostKind, type PostView, type RoomView, type ServerMessage, type TopicView } from "../../../../../../infra/board/shared/protocol.ts";
 import { showPopupNotification } from "../../util/notification";
 
 type Joined = Extract<ServerMessage, { type: "joined" }>;
 
 const dateFormat = new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+const timeFormat = new Intl.DateTimeFormat("ja-JP", { hour: "2-digit", minute: "2-digit" });
+const KIND_LABELS: Record<PostKind, string> = { question: "質問", comment: "コメント" };
 
 function element<T extends HTMLElement>(id: string): T {
     return document.getElementById(id) as T;
@@ -24,13 +37,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const storage = browserStorage();
+    const browserId = loadBrowserId(storage);
+    const deleteKeys = loadDeleteKeys(storage, link.roomId);
+    const likes = loadLikes(storage, link.roomId);
     const configured = document.querySelector<HTMLMetaElement>('meta[name="board-websocket-url"]')?.content;
     let joinedOnce = false;
+
+    // ルームの状態（join のたびに取り直し、ほかの人の操作の通知で更新する）
+    let room: RoomView | null = null;
+    let topics: TopicView[] = [];
+    const posts = new Map<string, PostView>();
+    // 見ているトピック（最初は今のトピック）
+    let viewingTopicId: string | null = null;
+    let sortOrder: SortOrder = "new";
+    // いいね・取り消しの返事を待っている投稿（二重に押せないようにする）
+    const busy = new Set<string>();
 
     const client = new BoardClient({
         url: websocketUrl(configured, window.location),
         // 再接続したときも入り直して、最新の状態を取り直す
         onOpen: () => void join(),
+        onPush: receive,
         onStatus: showStatus,
     });
     client.connect();
@@ -65,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ルームが見つからない・鍵が違うときは null
     async function request(key: string): Promise<Joined | null> {
         try {
-            const message = await client.request({ action: "join", roomId: link!.roomId, key });
+            const message = await client.request({ action: "join", roomId: link!.roomId, key, browserId });
             return message.type === "joined" ? message : null;
         } catch (error) {
             if (error instanceof BoardRequestError && error.code === "room_not_found") {
@@ -75,13 +102,47 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // ほかの人の操作の通知（投稿は join の返事のあとに分けて届く）
+    function receive(message: ServerMessage): void {
+        switch (message.type) {
+            case "posts":
+                message.posts.forEach((post) => posts.set(post.id, post));
+                break;
+            case "postAdded":
+                posts.set(message.post.id, message.post);
+                break;
+            case "postDeleted":
+                posts.delete(message.postId);
+                forgetPost(message.postId);
+                break;
+            case "postLiked": {
+                const post = posts.get(message.postId);
+                if (post) {
+                    posts.set(post.id, { ...post, likes: message.likes });
+                }
+                break;
+            }
+            default:
+                return;
+        }
+        scheduleRenderPosts();
+    }
+
     function render(joined: Joined, usedAdminKey: string | null): void {
         joinedOnce = true;
         statusEl.hidden = true;
         errorSection.hidden = true;
         roomEl.hidden = false;
+        room = joined.room;
+        topics = joined.topics;
+        // 入り直したときは、このあと届く投稿で置き換える
+        posts.clear();
+        if (!topics.some((topic) => topic.id === viewingTopicId)) {
+            viewingTopicId = room.currentTopicId;
+        }
         renderRoom(joined.room);
-        renderTopics(joined.topics, joined.room.currentTopicId);
+        renderCompose();
+        scheduleRenderPosts();
 
         const isAdmin = joined.role === "admin" && usedAdminKey !== null && joined.joinKey !== undefined;
         element<HTMLElement>("board-role-badge").hidden = !isAdmin;
@@ -105,7 +166,102 @@ document.addEventListener("DOMContentLoaded", () => {
         element<HTMLElement>("board-room-expires").textContent = `${dateFormat.format(room.expiresAt)} まで（過ぎると自動で削除されます）`;
     }
 
-    function renderTopics(topics: TopicView[], currentTopicId: string): void {
+    // ----- 投稿フォーム -----
+
+    const form = element<HTMLFormElement>("board-post-form");
+    const nicknameInput = element<HTMLInputElement>("board-nickname");
+    const bodyInput = element<HTMLTextAreaElement>("board-post-body");
+    const countEl = element<HTMLElement>("board-post-count");
+    const postError = element<HTMLParagraphElement>("board-post-error");
+    const submit = element<HTMLButtonElement>("board-post-submit");
+    nicknameInput.value = loadNickname(storage);
+
+    function renderCompose(): void {
+        if (!room) {
+            return;
+        }
+        form.hidden = !room.accepting;
+        element<HTMLElement>("board-closed").hidden = room.accepting;
+        element<HTMLElement>("board-nickname-field").hidden = room.nameMode === "anonymous";
+        const current = topics.find((topic) => topic.id === room!.currentTopicId);
+        element<HTMLElement>("board-post-topic").textContent = current ? `「${current.title}」に投稿されます` : "";
+        updateCount();
+    }
+
+    function updateCount(): void {
+        const count = length(bodyInput.value.trim());
+        countEl.textContent = `${count} / ${LIMITS.post}`;
+        countEl.classList.toggle("is-over", count > LIMITS.post);
+    }
+
+    bodyInput.addEventListener("input", updateCount);
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        postError.textContent = "";
+        const body = bodyInput.value.trim();
+        if (body === "") {
+            postError.textContent = "本文を入力してください";
+            bodyInput.focus();
+            return;
+        }
+        if (length(body) > LIMITS.post) {
+            postError.textContent = `本文は ${LIMITS.post} 文字までです`;
+            return;
+        }
+        const kind = (form.querySelector<HTMLInputElement>('input[name="kind"]:checked')?.value ?? "question") as PostKind;
+        const nickname = room?.nameMode === "anonymous" ? null : nicknameInput.value.trim() || null;
+
+        submit.disabled = true;
+        client
+            .request({ action: "post", kind, body, nickname })
+            .then((message) => {
+                if (message.type !== "posted") {
+                    throw new Error(`unexpected message: ${message.type}`);
+                }
+                deleteKeys.set(message.postId, message.deleteKey);
+                saveDeleteKeys(storage, link!.roomId, deleteKeys);
+                saveNickname(storage, nickname ?? "");
+                bodyInput.value = "";
+                updateCount();
+                // 投稿したトピックを表示する
+                if (room && viewingTopicId !== room.currentTopicId) {
+                    viewingTopicId = room.currentTopicId;
+                }
+                scheduleRenderPosts();
+            })
+            .catch((error: unknown) => {
+                postError.textContent = error instanceof BoardRequestError ? error.message : "投稿できませんでした。もう一度お試しください";
+            })
+            .finally(() => {
+                submit.disabled = false;
+            });
+    });
+
+    // ----- 投稿の一覧 -----
+
+    const list = element<HTMLUListElement>("board-post-list");
+    const emptyEl = element<HTMLElement>("board-posts-empty");
+    let renderScheduled = false;
+
+    // 分けて届いた投稿をまとめて描くため、次の描画のタイミングまで待つ
+    function scheduleRenderPosts(): void {
+        if (renderScheduled) {
+            return;
+        }
+        renderScheduled = true;
+        requestAnimationFrame(() => {
+            renderScheduled = false;
+            renderTopics();
+            renderPosts();
+        });
+    }
+
+    function renderTopics(): void {
+        const counts = new Map<string, number>();
+        for (const post of posts.values()) {
+            counts.set(post.topicId, (counts.get(post.topicId) ?? 0) + 1);
+        }
         element<HTMLUListElement>("board-topic-tabs").replaceChildren(
             ...topics.map((topic) => {
                 const li = document.createElement("li");
@@ -113,17 +269,170 @@ document.addEventListener("DOMContentLoaded", () => {
                 const button = document.createElement("button");
                 button.type = "button";
                 button.className = "nav-link";
-                const isCurrent = topic.id === currentTopicId;
-                button.classList.toggle("active", isCurrent);
+                button.dataset.topicId = topic.id;
+                const isViewing = topic.id === viewingTopicId;
+                button.classList.toggle("active", isViewing);
+                button.setAttribute("aria-pressed", String(isViewing));
                 button.textContent = topic.title;
-                if (isCurrent) {
-                    button.setAttribute("aria-current", "true");
+                const count = document.createElement("span");
+                count.className = "board-topic-count";
+                count.textContent = String(counts.get(topic.id) ?? 0);
+                button.append(count);
+                if (topic.id === room?.currentTopicId) {
+                    // 投稿が入るトピック
+                    button.classList.add("is-current");
+                    button.title = "今のトピック";
                 }
                 li.append(button);
                 return li;
             }),
         );
     }
+
+    function renderPosts(): void {
+        const visible = sortPosts(
+            [...posts.values()].filter((post) => post.topicId === viewingTopicId),
+            sortOrder,
+        );
+        emptyEl.hidden = visible.length > 0;
+        list.replaceChildren(...visible.map(renderPost));
+    }
+
+    function renderPost(post: PostView): HTMLLIElement {
+        const li = document.createElement("li");
+        li.className = "board-post";
+        li.classList.toggle("is-pinned", post.pinned);
+
+        const meta = document.createElement("div");
+        meta.className = "board-post-meta";
+        const kind = document.createElement("span");
+        kind.className = `board-post-kind is-${post.kind}`;
+        kind.textContent = KIND_LABELS[post.kind];
+        meta.append(kind);
+        if (room?.nameMode !== "anonymous") {
+            const name = document.createElement("span");
+            name.className = "board-post-name";
+            name.textContent = post.nickname ?? "匿名";
+            meta.append(name);
+        }
+        const time = document.createElement("time");
+        time.dateTime = new Date(post.createdAt).toISOString();
+        time.textContent = timeFormat.format(post.createdAt);
+        meta.append(time);
+        if (post.pinned) {
+            const pinned = document.createElement("span");
+            pinned.className = "board-post-pinned";
+            pinned.textContent = "ピン留め";
+            meta.append(pinned);
+        }
+
+        // 本文は textContent で入れる（HTML として解釈しない）
+        const body = document.createElement("p");
+        body.className = "board-post-body";
+        body.textContent = post.body;
+
+        const actions = document.createElement("div");
+        actions.className = "board-post-actions";
+        const liked = likes.has(post.id);
+        const like = document.createElement("button");
+        like.type = "button";
+        like.className = "btn btn-sm board-like";
+        like.classList.toggle("is-liked", liked);
+        like.setAttribute("aria-pressed", String(liked));
+        like.setAttribute("aria-label", liked ? "いいねを取り消す" : "いいね");
+        like.dataset.action = liked ? "unlike" : "like";
+        like.dataset.postId = post.id;
+        like.disabled = busy.has(post.id);
+        like.textContent = `${liked ? "♥" : "♡"} ${post.likes}`;
+        actions.append(like);
+        if (deleteKeys.has(post.id)) {
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "btn btn-link btn-sm board-post-delete";
+            remove.dataset.action = "delete";
+            remove.dataset.postId = post.id;
+            remove.disabled = busy.has(post.id);
+            remove.textContent = "取り消す";
+            actions.append(remove);
+        }
+
+        li.append(meta, body, actions);
+        return li;
+    }
+
+    element<HTMLUListElement>("board-topic-tabs").addEventListener("click", (event) => {
+        const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-topic-id]");
+        if (button) {
+            viewingTopicId = button.dataset.topicId!;
+            scheduleRenderPosts();
+        }
+    });
+
+    document.querySelectorAll<HTMLInputElement>('input[name="sort"]').forEach((input) => {
+        input.addEventListener("change", () => {
+            sortOrder = input.value as SortOrder;
+            scheduleRenderPosts();
+        });
+    });
+
+    list.addEventListener("click", (event) => {
+        const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-action]");
+        const postId = button?.dataset.postId;
+        if (!button || !postId || busy.has(postId)) {
+            return;
+        }
+        if (button.dataset.action === "delete") {
+            if (window.confirm("この投稿を取り消しますか？")) {
+                act(postId, { action: "deletePost", postId, key: deleteKeys.get(postId)! }, () => {
+                    posts.delete(postId);
+                    forgetPost(postId);
+                });
+            }
+            return;
+        }
+        const action = button.dataset.action === "unlike" ? "unlike" : "like";
+        act(postId, { action, postId }, () => {
+            // いいねの数は、サーバーからの postLiked で更新する
+            if (action === "like") {
+                likes.add(postId);
+            } else {
+                likes.delete(postId);
+            }
+            saveLikes(storage, link!.roomId, likes);
+        });
+    });
+
+    // いいね・取り消しを送り、成功したら onSuccess で表示を変える
+    function act(postId: string, message: Parameters<BoardClient["request"]>[0], onSuccess: () => void): void {
+        busy.add(postId);
+        scheduleRenderPosts();
+        client
+            .request(message)
+            .then(onSuccess)
+            .catch((error: unknown) => {
+                if (error instanceof BoardRequestError && error.code === "post_not_found") {
+                    posts.delete(postId);
+                    forgetPost(postId);
+                }
+                showPopupNotification(error instanceof BoardRequestError ? error.message : "操作できませんでした");
+            })
+            .finally(() => {
+                busy.delete(postId);
+                scheduleRenderPosts();
+            });
+    }
+
+    // 消えた投稿の取り消し用の鍵・いいねは、ブラウザからも消す
+    function forgetPost(postId: string): void {
+        if (deleteKeys.delete(postId)) {
+            saveDeleteKeys(storage, link!.roomId, deleteKeys);
+        }
+        if (likes.delete(postId)) {
+            saveLikes(storage, link!.roomId, likes);
+        }
+    }
+
+    // ----- 接続の状態・エラー -----
 
     function showStatus(status: Status): void {
         // エラーを出したあと（切断したときなど）は、接続の状態を出さない

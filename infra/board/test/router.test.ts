@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { ServerMessage } from "../shared/protocol.ts";
+import { LIMITS, POSTS_PER_MESSAGE } from "../shared/protocol.ts";
 import { CONNECTION_TTL_SECONDS, createRouter, DEFAULT_TOPIC_TITLE, hash, viewerIp, type WebSocketEvent } from "../lambda/router.ts";
 import { createMemoryStore } from "./memory-store.ts";
 
 const NOW = Date.UTC(2026, 10, 1, 12, 0, 0);
 const NOW_SECONDS = NOW / 1000;
+const BROWSER = "browser".padEnd(22, "0");
 
 function setUp({ secret = null, debug = false }: { secret?: string | null; debug?: boolean } = {}) {
     const sent: [string, ServerMessage][] = [];
@@ -95,7 +97,7 @@ test("join：管理用の鍵なら主催者（共有用の鍵も返す）、参�
     const t = setUp();
     const created = await createRoom(t, { topics: ["A スライド"] });
 
-    await t.send("admin", { action: "join", requestId: "j1", roomId: created.roomId, key: created.adminKey });
+    await t.send("admin", { action: "join", requestId: "j1", browserId: BROWSER, roomId: created.roomId, key: created.adminKey });
     const admin = t.last();
     assert.ok(admin?.type === "joined");
     assert.equal(admin.role, "admin");
@@ -110,7 +112,7 @@ test("join：管理用の鍵なら主催者（共有用の鍵も返す）、参�
     });
     assert.deepEqual(admin.topics.map((x) => x.title), ["A スライド"]);
 
-    await t.send("guest", { action: "join", requestId: "j2", roomId: created.roomId, key: created.joinKey });
+    await t.send("guest", { action: "join", requestId: "j2", browserId: BROWSER, roomId: created.roomId, key: created.joinKey });
     const guest = t.last();
     assert.ok(guest?.type === "joined");
     assert.equal(guest.role, "participant");
@@ -127,12 +129,12 @@ test("join：接続の登録の期限は、接続の上限とルームの期限�
     const t = setUp();
     const created = await createRoom(t, { retention: "24h" });
 
-    await t.send("guest", { action: "join", requestId: "j", roomId: created.roomId, key: created.joinKey });
+    await t.send("guest", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.joinKey });
     assert.equal(t.memory.members.get(created.roomId)!.get("guest")!.expiresAt, NOW_SECONDS + CONNECTION_TTL_SECONDS);
 
     // ルームの期限の 1 時間前に入ったときは、ルームの期限まで
     t.advance((24 - 1) * 60 * 60 * 1000);
-    await t.send("late", { action: "join", requestId: "j", roomId: created.roomId, key: created.joinKey });
+    await t.send("late", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.joinKey });
     assert.equal(t.memory.members.get(created.roomId)!.get("late")!.expiresAt, NOW_SECONDS + 24 * 60 * 60);
 });
 
@@ -140,7 +142,7 @@ test("join：鍵の違い・存在しないルーム・期限切れは、どれ�
     const t = setUp();
     const created = await createRoom(t, { retention: "24h" });
     const join = async (roomId: string, key: string) => {
-        await t.send("guest", { action: "join", requestId: "j", roomId, key });
+        await t.send("guest", { action: "join", requestId: "j", browserId: BROWSER, roomId, key });
         const m = t.last();
         return m?.type === "error" ? m.code : m?.type;
     };
@@ -159,8 +161,8 @@ test("別のルームに入り直すと、前のルームの接続一覧から�
     const a = await createRoom(t);
     const b = await createRoom(t);
 
-    await t.send("guest", { action: "join", requestId: "j", roomId: a.roomId, key: a.joinKey });
-    await t.send("guest", { action: "join", requestId: "j", roomId: b.roomId, key: b.joinKey });
+    await t.send("guest", { action: "join", requestId: "j", browserId: BROWSER, roomId: a.roomId, key: a.joinKey });
+    await t.send("guest", { action: "join", requestId: "j", browserId: BROWSER, roomId: b.roomId, key: b.joinKey });
 
     assert.equal(t.memory.members.get(a.roomId)!.has("guest"), false);
     assert.equal(t.memory.members.get(b.roomId)!.has("guest"), true);
@@ -174,7 +176,7 @@ test("想定外のエラーは internal_error として返し、中身は返さ�
     const original = console.error;
     console.error = () => {};
     try {
-        await t.send("guest", { action: "join", requestId: "j", roomId: "r".repeat(22), key: "k".repeat(22) });
+        await t.send("guest", { action: "join", requestId: "j", browserId: BROWSER, roomId: "r".repeat(22), key: "k".repeat(22) });
     } finally {
         console.error = original;
     }
@@ -209,7 +211,7 @@ test("$connect で閲覧者の IP を保存し、$disconnect で接続とルー�
     await t.call("$connect", "guest", { headers: { "CloudFront-Viewer-Address": "198.51.100.10:46532" } });
     assert.equal(t.memory.connections.get("guest")?.ip, "198.51.100.10");
     assert.equal(t.memory.connections.get("guest")?.expiresAt, NOW_SECONDS + CONNECTION_TTL_SECONDS);
-    await t.send("guest", { action: "join", requestId: "j", roomId: created.roomId, key: created.joinKey });
+    await t.send("guest", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.joinKey });
 
     const before = t.sent.length;
     assert.equal((await t.call("$disconnect", "guest")).statusCode, 200);
@@ -241,4 +243,155 @@ test("閲覧者の IP は CloudFront のヘッダーを優先し、なければ 
     direct.requestContext.identity = { sourceIp: "203.0.113.5" };
     assert.equal(viewerIp(direct), "203.0.113.5");
     assert.equal(viewerIp(event({})), null);
+});
+
+// ルームを作り、主催者（owner）と参加者（guest1・guest2）が入った状態にする
+async function roomWithMembers(overrides: Record<string, unknown> = {}) {
+    const t = setUp();
+    const created = await createRoom(t, overrides);
+    await t.send("owner", { action: "join", requestId: "j", browserId: "owner".padEnd(22, "0"), roomId: created.roomId, key: created.adminKey });
+    for (const guest of ["guest1", "guest2"]) {
+        await t.send(guest, { action: "join", requestId: "j", browserId: guest.padEnd(22, "0"), roomId: created.roomId, key: created.joinKey });
+    }
+    t.sent.length = 0;
+    const post = async (connectionId: string, fields: Record<string, unknown> = {}) => {
+        await t.send(connectionId, { action: "post", requestId: "p", kind: "question", body: "質問です", nickname: "たか", ...fields });
+        const posted = t.sent.find(([id, m]) => id === connectionId && m.type === "posted")?.[1];
+        assert.ok(posted?.type === "posted", JSON.stringify(t.sent));
+        t.sent.length = 0;
+        return posted;
+    };
+    // 最後の送信で、各接続が受け取ったメッセージ
+    const received = (connectionId: string) => t.sent.filter(([id]) => id === connectionId).map(([, m]) => m);
+    return { t, created, post, received };
+}
+
+test("post：今のトピックに入れ、投稿した人に取り消し用の鍵を返し、全員に送る", async () => {
+    const { t, created, received } = await roomWithMembers({ topics: ["A", "B"] });
+
+    await t.send("guest1", { action: "post", requestId: "p1", kind: "question", body: "質問です", nickname: "たか" });
+
+    const [posted, added] = received("guest1");
+    assert.ok(posted?.type === "posted");
+    assert.equal(posted.requestId, "p1");
+    const room = t.memory.rooms.get(created.roomId)!;
+    const expected = { id: posted.postId, topicId: room.currentTopicId, kind: "question", body: "質問です", nickname: "たか", likes: 0, pinned: false, createdAt: NOW };
+    assert.deepEqual(added, { type: "postAdded", post: expected });
+    for (const other of ["owner", "guest2"]) {
+        assert.deepEqual(received(other), [{ type: "postAdded", post: expected }]);
+    }
+    // 取り消し用の鍵はハッシュだけ保存し、ほかの人には送らない
+    const stored = t.memory.posts.get(created.roomId)!.get(posted.postId)!;
+    assert.equal(stored.deleteKeyHash, hash(posted.deleteKey));
+    assert.doesNotMatch(JSON.stringify(t.sent.filter(([id]) => id !== "guest1")), new RegExp(posted.deleteKey));
+    assert.equal(room.postCount, 1);
+});
+
+test("post：完全に匿名のルームでは、ニックネームを保存しない", async () => {
+    const { t, created, post } = await roomWithMembers({ nameMode: "anonymous" });
+
+    const posted = await post("guest1", { nickname: "たか" });
+
+    assert.equal(t.memory.posts.get(created.roomId)!.get(posted.postId)!.nickname, null);
+});
+
+test("post：ルームに入っていない・受付を締め切っている・投稿が上限のときは断る", async () => {
+    const { t, created, received } = await roomWithMembers();
+    const tryPost = async (connectionId: string) => {
+        t.sent.length = 0;
+        await t.send(connectionId, { action: "post", requestId: "p", kind: "comment", body: "本文", nickname: null });
+        const m = received(connectionId)[0];
+        return m?.type === "error" ? m.code : m?.type;
+    };
+
+    assert.equal(await tryPost("stranger"), "not_joined");
+
+    const room = t.memory.rooms.get(created.roomId)!;
+    room.postCount = LIMITS.posts;
+    assert.equal(await tryPost("guest1"), "too_many_posts");
+
+    room.accepting = false;
+    assert.equal(await tryPost("guest1"), "not_accepting");
+    // 断ったときは、ほかの人に何も送らない
+    assert.deepEqual(received("guest2"), []);
+});
+
+test("post：ルームの期限が切れていたら room_not_found", async () => {
+    const { t, received } = await roomWithMembers({ retention: "24h" });
+
+    t.advance(24 * 60 * 60 * 1000);
+    await t.send("guest1", { action: "post", requestId: "p", kind: "comment", body: "本文", nickname: null });
+
+    const m = received("guest1")[0];
+    assert.equal(m?.type === "error" && m.code, "room_not_found");
+});
+
+test("deletePost：取り消し用の鍵が合えば消して全員に送る。違えば post_not_found", async () => {
+    const { t, created, post, received } = await roomWithMembers();
+    const posted = await post("guest1");
+
+    await t.send("guest2", { action: "deletePost", requestId: "d1", postId: posted.postId, key: "x".repeat(22) });
+    const denied = received("guest2")[0];
+    assert.equal(denied?.type === "error" && denied.code, "post_not_found");
+    assert.equal(t.memory.posts.get(created.roomId)!.has(posted.postId), true);
+    t.sent.length = 0;
+
+    await t.send("guest1", { action: "deletePost", requestId: "d2", postId: posted.postId, key: posted.deleteKey });
+    assert.deepEqual(received("guest1"), [
+        { type: "ok", requestId: "d2" },
+        { type: "postDeleted", postId: posted.postId },
+    ]);
+    assert.deepEqual(received("owner"), [{ type: "postDeleted", postId: posted.postId }]);
+    assert.equal(t.memory.posts.get(created.roomId)!.has(posted.postId), false);
+    assert.equal(t.memory.rooms.get(created.roomId)!.postCount, 0);
+});
+
+test("like / unlike：ブラウザごとに 1 回。数が変わったら全員に送る", async () => {
+    const { t, post, received } = await roomWithMembers();
+    const { postId } = await post("guest1");
+    const act = async (connectionId: string, action: "like" | "unlike") => {
+        t.sent.length = 0;
+        await t.send(connectionId, { action, requestId: "l", postId });
+    };
+
+    await act("guest2", "like");
+    assert.deepEqual(received("guest2"), [{ type: "ok", requestId: "l" }, { type: "postLiked", postId, likes: 1 }]);
+    assert.deepEqual(received("owner"), [{ type: "postLiked", postId, likes: 1 }]);
+
+    // 同じブラウザの 2 回目は数を変えず、押した人の表示だけ合わせる
+    await act("guest2", "like");
+    assert.deepEqual(received("guest2"), [{ type: "ok", requestId: "l" }, { type: "postLiked", postId, likes: 1 }]);
+    assert.deepEqual(received("owner"), []);
+
+    await act("owner", "like");
+    assert.deepEqual(received("guest1"), [{ type: "postLiked", postId, likes: 2 }]);
+
+    await act("guest2", "unlike");
+    assert.deepEqual(received("guest1"), [{ type: "postLiked", postId, likes: 1 }]);
+});
+
+test("like：ない投稿には post_not_found", async () => {
+    const { t, received } = await roomWithMembers();
+
+    await t.send("guest1", { action: "like", requestId: "l", postId: "n".repeat(22) });
+
+    const m = received("guest1")[0];
+    assert.equal(m?.type === "error" && m.code, "post_not_found");
+});
+
+test("join：それまでの投稿を、古い順に分けて送る（取り消し用の鍵のハッシュは送らない）", async () => {
+    const { t, created, post } = await roomWithMembers();
+    const count = POSTS_PER_MESSAGE + 3;
+    for (let i = 0; i < count; i++) {
+        await post("guest1", { body: `投稿 ${i}` });
+        t.advance(1000);
+    }
+
+    await t.send("late", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.joinKey });
+
+    const messages = t.sent.filter(([id]) => id === "late").map(([, m]) => m);
+    assert.deepEqual(messages.map((m) => m.type), ["joined", "posts", "posts"]);
+    const posts = messages.flatMap((m) => (m.type === "posts" ? m.posts : []));
+    assert.deepEqual(posts.map((p) => p.body), Array.from({ length: count }, (_, i) => `投稿 ${i}`));
+    assert.equal(JSON.stringify(messages).includes("deleteKeyHash"), false);
 });
