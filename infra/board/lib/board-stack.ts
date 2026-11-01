@@ -104,7 +104,7 @@ export class BoardStack extends Stack {
             defaultRouteOptions: { integration },
         });
         // ブラウザが送る操作（shared/protocol.ts の action）ごとにルートを作る。それ以外は $default でエラーを返す
-        for (const action of ["ping", "createRoom", "join", "post", "deletePost", "like", "unlike"]) {
+        for (const action of ["ping", "createRoom", "join", "post", "deletePost", "like", "unlike", "addTopic", "renameTopic", "setTopic"]) {
             api.addRoute(action, { integration });
         }
 

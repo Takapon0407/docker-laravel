@@ -62,6 +62,10 @@ export interface BoardStore {
     createRoom(room: RoomRecord, topics: TopicRecord[]): Promise<void>;
     getRoom(roomId: string): Promise<RoomRecord | null>;
     listTopics(roomId: string, expiresAt: number): Promise<TopicRecord[]>;
+    putTopic(roomId: string, topic: TopicRecord, expiresAt: number): Promise<void>;
+    // トピックがあるときだけ名前を変える。変えられたら true
+    renameTopic(roomId: string, topicId: string, title: string): Promise<boolean>;
+    setCurrentTopic(roomId: string, topicId: string): Promise<void>;
 
     saveConnection(connectionId: string, connection: ConnectionRecord, expiresAt: number): Promise<void>;
     getConnection(connectionId: string): Promise<ConnectionRecord | null>;
