@@ -602,6 +602,69 @@ test("rotateKeys admin：古い主催者用 URL では主催者になれない�
     assert.equal(fresh?.type === "joined" && fresh.role, "admin");
 });
 
+test("rotateKeys admin：途中で 1 人を参加者に戻せなくても、古い鍵の主催者は全員、主催者の操作ができない", async () => {
+    const { t, created, received } = await roomWithMembers();
+    for (const owner of ["owner2", "owner3"]) {
+        await t.send(owner, { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.adminKey });
+    }
+    // owner2 を戻そうとしたところで DynamoDB のトランザクションが失敗した（その間に接続が切れたなど）
+    const demote = t.memory.store.demote;
+    t.memory.store.demote = async (connectionId, roomId) => {
+        if (connectionId === "owner2") {
+            throw Object.assign(new Error("Transaction cancelled"), { name: "TransactionCanceledException" });
+        }
+        await demote(connectionId, roomId);
+    };
+    t.sent.length = 0;
+
+    await t.send("owner", { action: "rotateKeys", requestId: "k", target: "admin" });
+    assert.equal(received("owner")[0]?.type, "keysRotated");
+    // ほかの人は続けて参加者に戻す
+    assert.deepEqual(received("owner3"), [{ type: "roleChanged", role: "participant" }]);
+    assert.equal(t.memory.connections.get("owner2")!.role, "admin");
+
+    for (const owner of ["owner2", "owner3"]) {
+        t.sent.length = 0;
+        await t.send(owner, { action: "setAccepting", requestId: "s", accepting: false });
+        const denied = received(owner)[0];
+        assert.equal(denied?.type === "error" && denied.code, "forbidden", owner);
+    }
+    // 作り直した主催者は続けて操作できる。共有用 URL を作り直しても、古い鍵の主催者には新しい鍵を送らない
+    t.sent.length = 0;
+    await t.send("owner", { action: "rotateKeys", requestId: "k2", target: "join" });
+    assert.equal(received("owner")[0]?.type, "keysRotated");
+    assert.deepEqual(received("owner2"), []);
+});
+
+test("rotateKeys admin：作り直す前の鍵で確かめた join があとから書き込まれても、主催者の操作はできない", async () => {
+    const { t, created, received } = await roomWithMembers();
+    // late が古い鍵を確かめてから書き込むまでの間に、owner が主催者用 URL を作り直す
+    const joinRoom = t.memory.store.joinRoom;
+    t.memory.store.joinRoom = async (connectionId, ...rest) => {
+        if (connectionId === "late") {
+            await t.send("owner", { action: "rotateKeys", requestId: "k", target: "admin" });
+        }
+        await joinRoom(connectionId, ...rest);
+    };
+    await t.send("late", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.adminKey });
+    const joined = received("late")[0];
+    assert.equal(joined?.type === "joined" && joined.role, "admin");
+    t.sent.length = 0;
+
+    await t.send("late", { action: "setAccepting", requestId: "s", accepting: false });
+    const denied = received("late")[0];
+    assert.equal(denied?.type === "error" && denied.code, "forbidden");
+    assert.equal(t.memory.rooms.get(created.roomId)!.accepting, true);
+});
+
+test("join：参加者として入り直したら、主催者の鍵は残らない", async () => {
+    const { t, created } = await roomWithMembers();
+    await t.send("owner", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.joinKey });
+
+    assert.equal(t.memory.connections.get("owner")!.adminKeyHash, undefined);
+    assert.equal(t.memory.members.get(created.roomId)!.get("owner")!.adminKeyHash, undefined);
+});
+
 test("post：同じブラウザからは 10 秒に 1 回。時間がたてば投稿できる", async () => {
     const { t, post, received } = await roomWithMembers();
     // 時間枠の始まりにそろえる

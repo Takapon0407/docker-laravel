@@ -10,7 +10,7 @@ import type { BoardStore, ConnectionRecord, LikeResult, PostRecord, RoomRecord, 
 //   ROOM#<id>        POST#<id>        投稿（トピックは属性に持つ。#252 の設計から変えた：どの操作も投稿 ID だけで引けるように）
 //   ROOM#<id>        LIKE#<投稿>#<ブラウザ ID>  いいね（二重のいいねを防ぐ）
 //   ROOM#<id>        CONN#<接続 ID>   ルームに入っている接続（変更を送る相手）
-//   CONN#<接続 ID>   META             接続（IP・入っているルーム・ブラウザ ID）
+//   CONN#<接続 ID>   META             接続（IP・入っているルーム・ブラウザ ID・主催者として入った鍵のハッシュ）
 //   RATE#<対象>#<時間枠の始まり>  -    レート制限のカウンター
 const roomKey = (roomId: string) => ({ PK: `ROOM#${roomId}`, SK: "META" });
 const topicKey = (roomId: string, topicId: string) => ({ PK: `ROOM#${roomId}`, SK: `TOPIC#${topicId}` });
@@ -42,6 +42,7 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
             ...(typeof Item.roomId === "string" && { roomId: Item.roomId }),
             ...((Item.role === "participant" || Item.role === "admin") && { role: Item.role as Role }),
             ...(typeof Item.browserId === "string" && { browserId: Item.browserId }),
+            ...(typeof Item.adminKeyHash === "string" && { adminKeyHash: Item.adminKeyHash }),
         };
     }
 
@@ -203,8 +204,9 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
 
         getConnection,
 
-        async joinRoom(connectionId, roomId, role, browserId, expiresAt) {
+        async joinRoom(connectionId, roomId, role, adminKeyHash, browserId, expiresAt) {
             const current = await getConnection(connectionId);
+            const keyHash = adminKeyHash === null ? {} : { adminKeyHash };
             await db.send(
                 new TransactWriteCommand({
                     TransactItems: [
@@ -212,14 +214,20 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
                         ...(current?.roomId && current.roomId !== roomId
                             ? [{ Delete: { TableName: tableName, Key: memberKey(current.roomId, connectionId) } }]
                             : []),
-                        { Put: { TableName: tableName, Item: { ...memberKey(roomId, connectionId), role, expiresAt } } },
+                        { Put: { TableName: tableName, Item: { ...memberKey(roomId, connectionId), role, ...keyHash, expiresAt } } },
                         {
                             Update: {
                                 TableName: tableName,
                                 Key: connectionKey(connectionId),
-                                UpdateExpression: "SET roomId = :roomId, #role = :role, browserId = :browserId",
+                                // 参加者として入り直したら、主催者の鍵は消す
+                                UpdateExpression: `SET roomId = :roomId, #role = :role, browserId = :browserId${adminKeyHash === null ? " REMOVE adminKeyHash" : ", adminKeyHash = :adminKeyHash"}`,
                                 ExpressionAttributeNames: { "#role": "role" },
-                                ExpressionAttributeValues: { ":roomId": roomId, ":role": role, ":browserId": browserId },
+                                ExpressionAttributeValues: {
+                                    ":roomId": roomId,
+                                    ":role": role,
+                                    ":browserId": browserId,
+                                    ...(adminKeyHash !== null && { ":adminKeyHash": adminKeyHash }),
+                                },
                             },
                         },
                     ],
@@ -230,37 +238,82 @@ export function createDynamoStore(db: DynamoDBDocumentClient, tableName: string)
         async listMembers(roomId, now) {
             return (await queryAll(`ROOM#${roomId}`, "CONN#"))
                 .filter((item) => !(typeof item.expiresAt === "number" && item.expiresAt < now))
-                .map((item) => ({ connectionId: String(item.SK).slice("CONN#".length), role: item.role as Role }));
+                .map((item) => ({
+                    connectionId: String(item.SK).slice("CONN#".length),
+                    role: item.role as Role,
+                    ...(typeof item.adminKeyHash === "string" && { adminKeyHash: item.adminKeyHash }),
+                }));
         },
 
-        async setRole(connectionId, roomId, role) {
+        async rotateAdminKey(roomId, connectionId, adminKeyHash) {
             await db.send(
                 new TransactWriteCommand({
                     TransactItems: [
                         {
                             Update: {
                                 TableName: tableName,
-                                Key: memberKey(roomId, connectionId),
-                                UpdateExpression: "SET #role = :role",
+                                Key: roomKey(roomId),
+                                UpdateExpression: "SET adminKeyHash = :adminKeyHash",
                                 ConditionExpression: "attribute_exists(PK)",
-                                ExpressionAttributeNames: { "#role": "role" },
-                                ExpressionAttributeValues: { ":role": role },
+                                ExpressionAttributeValues: { ":adminKeyHash": adminKeyHash },
+                            },
+                        },
+                        {
+                            Update: {
+                                TableName: tableName,
+                                Key: memberKey(roomId, connectionId),
+                                UpdateExpression: "SET adminKeyHash = :adminKeyHash",
+                                ConditionExpression: "attribute_exists(PK)",
+                                ExpressionAttributeValues: { ":adminKeyHash": adminKeyHash },
                             },
                         },
                         {
                             Update: {
                                 TableName: tableName,
                                 Key: connectionKey(connectionId),
-                                UpdateExpression: "SET #role = :role",
-                                // 同じルームに入っている間だけ（別のルームに入り直していたら変えない）
+                                UpdateExpression: "SET adminKeyHash = :adminKeyHash",
                                 ConditionExpression: "roomId = :roomId",
-                                ExpressionAttributeNames: { "#role": "role" },
-                                ExpressionAttributeValues: { ":role": role, ":roomId": roomId },
+                                ExpressionAttributeValues: { ":adminKeyHash": adminKeyHash, ":roomId": roomId },
                             },
                         },
                     ],
                 }),
             );
+        },
+
+        async demote(connectionId, roomId) {
+            try {
+                await db.send(
+                    new TransactWriteCommand({
+                        TransactItems: [
+                            {
+                                Update: {
+                                    TableName: tableName,
+                                    Key: memberKey(roomId, connectionId),
+                                    UpdateExpression: "SET #role = :role REMOVE adminKeyHash",
+                                    ConditionExpression: "attribute_exists(PK)",
+                                    ExpressionAttributeNames: { "#role": "role" },
+                                    ExpressionAttributeValues: { ":role": "participant" },
+                                },
+                            },
+                            {
+                                Update: {
+                                    TableName: tableName,
+                                    Key: connectionKey(connectionId),
+                                    UpdateExpression: "SET #role = :role REMOVE adminKeyHash",
+                                    // 同じルームに入っている間だけ（別のルームに入り直していたら変えない）
+                                    ConditionExpression: "roomId = :roomId",
+                                    ExpressionAttributeNames: { "#role": "role" },
+                                    ExpressionAttributeValues: { ":role": "participant", ":roomId": roomId },
+                                },
+                            },
+                        ],
+                    }),
+                );
+            } catch (error) {
+                // 接続が切れた・別のルームに移ったあと（もう主催者ではない）
+                failedCondition(error);
+            }
         },
 
         async deleteConnection(connectionId) {

@@ -9,6 +9,7 @@ import {
     type ClientMessage,
     type ErrorCode,
     type PostView,
+    type Role,
     type ServerMessage,
 } from "../shared/protocol.ts";
 import type { BoardStore, ConnectionRecord, PostRecord, RoomRecord, TopicRecord } from "./store.ts";
@@ -90,7 +91,7 @@ export function createRouter(deps: Dependencies) {
     // 主催者として join した接続だけ通す
     async function adminRoom(connectionId: string): Promise<RoomRecord> {
         const { connection, room } = await currentRoom(connectionId);
-        if (connection.role !== "admin") {
+        if (!isAdmin(connection, room)) {
             throw new ActionError("forbidden");
         }
         return room;
@@ -163,7 +164,9 @@ export function createRouter(deps: Dependencies) {
                     }
                 }
 
-                await deps.store.joinRoom(connectionId, room.id, role, message.browserId, Math.min(room.expiresAt, nowSeconds() + CONNECTION_TTL_SECONDS));
+                // 主催者は、確かめた鍵のハッシュも持たせる（このあと主催者用 URL が作り直されていたら、主催者の操作は断られる）
+                const adminKeyHash = role === "admin" ? room.adminKeyHash : null;
+                await deps.store.joinRoom(connectionId, room.id, role, adminKeyHash, message.browserId, Math.min(room.expiresAt, nowSeconds() + CONNECTION_TTL_SECONDS));
                 const [topics, posts] = await Promise.all([deps.store.listTopics(room.id, nowSeconds()), deps.store.listPosts(room.id)]);
                 await deps.send(connectionId, {
                     type: "joined",
@@ -289,16 +292,26 @@ export function createRouter(deps: Dependencies) {
                     const joinKey = deps.randomToken();
                     await deps.store.updateRoom(room.id, { joinKey });
                     await deps.send(connectionId, { type: "keysRotated", requestId: message.requestId, joinKey });
-                    await Promise.all(members.map((member) => deps.send(member.connectionId, { type: "joinKeyChanged", joinKey })));
+                    // 古い主催者用 URL で入ったまま参加者に戻せていない接続には送らない
+                    await Promise.all(members.filter((member) => isAdmin(member, room)).map((member) => deps.send(member.connectionId, { type: "joinKeyChanged", joinKey })));
                     return;
                 }
                 // 主催者用 URL が漏れたときのため、ほかの主催者はすぐに参加者にする（新しい URL を受け取ったら入り直す）
+                // 主催者の操作は、入ったときの鍵がルームの鍵と同じかで確かめるので、鍵を変えた時点で古い鍵の主催者は操作できなくなる。
+                // 参加者に戻すのは表示を合わせるためで、途中で接続が切れた人がいても、ほかの人は続けて戻す
                 const adminKey = deps.randomToken();
-                await deps.store.updateRoom(room.id, { adminKeyHash: hash(adminKey) });
+                await deps.store.rotateAdminKey(room.id, connectionId, hash(adminKey));
                 await deps.send(connectionId, { type: "keysRotated", requestId: message.requestId, joinKey: room.joinKey, adminKey });
-                for (const member of members) {
-                    await deps.store.setRole(member.connectionId, room.id, "participant");
-                    await deps.send(member.connectionId, { type: "roleChanged", role: "participant" });
+                const results = await Promise.allSettled(
+                    members.map(async (member) => {
+                        await deps.store.demote(member.connectionId, room.id);
+                        await deps.send(member.connectionId, { type: "roleChanged", role: "participant" });
+                    }),
+                );
+                for (const result of results) {
+                    if (result.status === "rejected") {
+                        console.error(result.reason);
+                    }
                 }
                 return;
             }
@@ -394,6 +407,11 @@ function toView({ deleteKeyHash: _deleteKeyHash, ...post }: PostRecord): PostVie
 
 export function hash(value: string): string {
     return createHash("sha256").update(value).digest("hex");
+}
+
+// 主催者として入っていて、そのときの鍵がいまのルームの鍵と同じか
+function isAdmin(record: { role?: Role; adminKeyHash?: string }, room: RoomRecord): boolean {
+    return record.role === "admin" && record.adminKeyHash !== undefined && equals(record.adminKeyHash, room.adminKeyHash);
 }
 
 function equals(a: string, b: string): boolean {
