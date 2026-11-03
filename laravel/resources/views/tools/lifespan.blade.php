@@ -53,11 +53,12 @@
         {{-- 選んだときだけ localStorage に残す（ホーム画面やブックマークから開いたとき、すぐ結果を出すため） --}}
         <div class="form-check mt-3">
             <input class="form-check-input" type="checkbox" id="lifespan-remember">
-            <label class="form-check-label" for="lifespan-remember">この端末に覚える（次に開いたとき、すぐに結果を出します）</label>
+            <label class="form-check-label" for="lifespan-remember">この端末に覚える</label>
         </div>
         {{-- 何のために残すのかがわからないと怪しく見えるため、使いどころと、送らないことをあわせて書く --}}
-        <p class="lifespan-help mt-2 mb-0">「この端末に覚える」は、ブックマークやホーム画面から何度も開いて確かめるときに、毎回入力する手間を減らしたい方向けの機能です。必要なときだけお使いください。選んだときだけ、誕生日と性別をこのブラウザの中に残します（サーバーには送らず、ほかの人からは見えません。チェックを外すと消します）。</p>
-        <p class="lifespan-help mt-1 mb-0">入力された誕生日は、ブラウザの中だけで計算に使い、送信しません。</p>
+        <p class="lifespan-help mt-2 mb-0">「この端末に覚える」は、ブックマークやホーム画面から何度も開いて確かめるときに、毎回入力する手間を減らしたい方向けの機能です。<br>
+            選んだときだけ、誕生日と性別をこのブラウザに保存します（チェックを外すと消えます）。<br>
+            ※チェックの有無に関わらず、入力した内容はブラウザの中だけで計算に使い、サーバーには送られません。</p>
         <p class="lifespan-error" id="lifespan-error" role="alert" hidden></p>
     </section>
 
