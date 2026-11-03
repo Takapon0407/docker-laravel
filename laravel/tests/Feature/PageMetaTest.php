@@ -62,5 +62,6 @@ class PageMetaTest extends TestCase
         // 割り勘は入力をサーバーに送らないツールとして、絞り込んでも残す
         $tools->assertSee('<li data-storage="local">', false);
         $tools->assertSee('id="tools-filter-local"', false);
+        $tools->assertSee('id="tools-filter-server"', false);
     }
 }

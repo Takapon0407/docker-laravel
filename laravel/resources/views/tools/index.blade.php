@@ -1,6 +1,6 @@
 @extends('layouts.common')
 @section('title', '便利ツール')
-@section('description', '割り勘の計算や、勉強会で使える匿名の質問ボードなど、ブラウザですぐに使える便利ツールの一覧です。入力したデータを外に送らない「端末内で完結」のツールだけに絞り込めます。')
+@section('description', '割り勘の計算や、勉強会で使える匿名の質問ボードなど、ブラウザですぐに使える便利ツールの一覧です。入力したデータを外に送らない「端末内で完結」のツールと、「サーバーに保存」するツールで絞り込めます。')
 @section('content')
 
 <div class="container tools-container">
@@ -15,6 +15,8 @@
             <label class="btn btn-outline-success" for="tools-filter-all">すべて</label>
             <input type="radio" class="btn-check" name="tools-filter" id="tools-filter-local" value="local">
             <label class="btn btn-outline-success" for="tools-filter-local">端末内で完結</label>
+            <input type="radio" class="btn-check" name="tools-filter" id="tools-filter-server" value="server">
+            <label class="btn btn-outline-success" for="tools-filter-server">サーバーに保存</label>
         </div>
     </fieldset>
 

@@ -62,7 +62,7 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 - nginx は `index.php` 以外の `.php` を 404、ドットファイルを 403 にする。セキュリティヘッダーは `docker/nginx/security-headers.conf` にまとめ、**location 内で `add_header` を書くときはこのファイルも include する**（書かないと server レベルのヘッダーが消える）。`/build/assets/` の `Cache-Control` は 404 に付かないよう `always` なし
 - 本番の opcache は `validate_timestamps=0`（コードはイメージの中で変わらない）。Blade のコンパイル済みビューはコンテナ内の `/tmp/views`
 - `config/cache.php` は `serializable_classes => false`（**キャッシュにオブジェクトを入れられない**）。enum などは値（文字列）にして保存する
-- 便利ツールはヘッダーの「Tools」→ `/tools`（`tools/index.blade.php`）からたどる。ツールを増やしたら一覧にカードを足し、`data-storage`（`local`：入力をサーバーに送らない / `server`：サーバーに保存する）とデータの扱いの表示も付ける（「端末内で完結」の絞り込みに使う）
+- 便利ツールはヘッダーの「Tools」→ `/tools`（`tools/index.blade.php`）からたどる。ツールを増やしたら一覧にカードを足し、`data-storage`（`local`：入力をサーバーに送らない / `server`：サーバーに保存する）とデータの扱いの表示も付ける（「端末内で完結」「サーバーに保存」の絞り込みに使う）
 - `/tools/*` の便利ツールは計算をブラウザ内だけで行う（サーバーに入力を送らない。匿名質問ボードの投稿だけは例外で、`infra/board` の WebSocket に送る）。DOM に依存しないロジックは `resources/ts/lib/` に置いてテストし、ページの TS（`resources/ts/laravel/tools/`）から使う（`resources/ts/laravel/` 以下は全部 Vite のエントリーになるため）
 - `config/` は変更したものだけを置き、ほかは Laravel の既定値を使う。`/hobbies` のゲーム一覧は `config/hobbies.php` のデータ
 - Sass は `components/`・`base/`・`pages/` に分け、サイトの緑は `_variables.scss` の `$main-color`。見出しのフォントは `.font-heading`（Google Fonts の Mochiy Pop One。漢字も含む）。Bootstrap 5 のクラスを使う（Bootstrap 4 のクラスは効かない）

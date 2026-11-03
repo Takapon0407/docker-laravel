@@ -42,8 +42,9 @@
     margin-bottom: 0.5rem;
 }
 
-// 「端末内で完結」を選んだら、サーバーに保存するツールを隠す
-.tools-container:has(#tools-filter-local:checked) .tools-list > [data-storage="server"] {
+// 「端末内で完結」を選んだらサーバーに保存するツールを、「サーバーに保存」を選んだら端末内で完結するツールを隠す
+.tools-container:has(#tools-filter-local:checked) .tools-list > [data-storage="server"],
+.tools-container:has(#tools-filter-server:checked) .tools-list > [data-storage="local"] {
     display: none;
 }
 
