@@ -24,6 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let worker = createWorker();
     let requestId = 0;
+    // 動かしている入力（結果は、送ったときの入力で描く。打っている途中の新しい入力で描くと、印の位置がずれる）
+    let pendingInput: RegexInput | null = null;
     let timeout: number | undefined;
     let debounce: number | undefined;
 
@@ -35,7 +37,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
             window.clearTimeout(timeout);
-            render(event.data.result, currentInput());
+            if (pendingInput) {
+                render(event.data.result, pendingInput);
+                pendingInput = null;
+            }
         });
         return created;
     }
@@ -53,14 +58,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const input = currentInput();
         flagsView.textContent = `/${input.flags.join("")}`;
         replaceFields.hidden = !replaceEnabled.checked;
+        // 動かしている途中の結果・止める処理は、新しい入力では使わない
+        const id = ++requestId;
+        window.clearTimeout(timeout);
         if (input.pattern === "") {
+            pendingInput = null;
             render(null, input);
             return;
         }
-        const request: RegexRequest = { id: ++requestId, input };
-        window.clearTimeout(timeout);
+        pendingInput = input;
+        const request: RegexRequest = { id, input };
         timeout = window.setTimeout(() => {
+            if (id !== requestId) {
+                return;
+            }
             // 終わらないので Worker ごと止めて作り直す
+            pendingInput = null;
             worker.terminate();
             worker = createWorker();
             render({ ok: false, message: `${TIMEOUT_MS / 1000} 秒たっても終わらないため止めました。繰り返しが入れ子になっていないか（(a+)+ など）確かめてください` }, input);

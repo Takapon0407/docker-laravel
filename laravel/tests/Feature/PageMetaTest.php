@@ -69,13 +69,13 @@ class PageMetaTest extends TestCase
         $tools->assertSee('<link rel="canonical" href="'.url('/tools').'">', false);
         $tools->assertSee('href="'.route('tools.warikan').'"', false);
         // 割り勘は入力をサーバーに送らないツールとして、絞り込んでも残す
-        $tools->assertSeeInOrder(['data-purpose="general" data-storage="local"', 'href="'.route('tools.warikan').'"'], false);
+        $this->assertToolCard($tools, 'data-purpose="general" data-storage="local"', route('tools.warikan'));
         $tools->assertSee('id="tools-filter-local"', false);
         $tools->assertSee('id="tools-filter-server"', false);
         $tools->assertSee('id="tools-purpose-dev"', false);
 
         // 寿命の計算：一般向け・端末内で完結。出典の統計へのリンクを載せる
-        $tools->assertSeeInOrder(['data-purpose="general" data-storage="local"', 'href="'.route('tools.lifespan').'"'], false);
+        $this->assertToolCard($tools, 'data-purpose="general" data-storage="local"', route('tools.lifespan'));
         $lifespan = $this->get(route('tools.lifespan'));
         $lifespan->assertOk();
         $lifespan->assertSee('<title>寿命の計算 | てくてくテック</title>', false);
@@ -91,7 +91,7 @@ class PageMetaTest extends TestCase
             'tools.datetime' => '日時の変換（UTC / JST）',
             'tools.regex' => '正規表現チェック',
         ] as $route => $title) {
-            $tools->assertSeeInOrder(['data-purpose="dev" data-storage="local"', 'href="'.route($route).'"'], false);
+            $this->assertToolCard($tools, 'data-purpose="dev" data-storage="local"', route($route));
             $page = $this->get(route($route));
             $page->assertOk();
             $page->assertSee('<title>'.$title.' | てくてくテック</title>', false);

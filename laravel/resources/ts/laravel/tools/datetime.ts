@@ -92,9 +92,10 @@ function createValues(list: HTMLElement, prefix: string): (epochMs: number | nul
         copy.dataset.copyTarget = dd.id;
         copy.textContent = "コピー";
         copy.setAttribute("aria-label", `${label}をコピー`);
-        const wrapper = document.createElement("div");
-        wrapper.append(copy);
-        list.append(dt, dd, wrapper);
+        // <dl> の中に置けるのは dt / dd だけなので、ボタンも dd に入れる
+        const action = document.createElement("dd");
+        action.append(copy);
+        list.append(dt, dd, action);
         return dd;
     });
     setUpCopyButtons(list);
