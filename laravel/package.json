@@ -9,12 +9,12 @@
     },
     "devDependencies": {
         "laravel-vite-plugin": "^3.2.0",
-        "sass": "^1.106.0",
+        "sass": "^1.107.1",
         "vite": "^8.3.5"
     },
     "dependencies": {
         "bootstrap": "^5.3.8",
-        "swiper": "^14.3.0",
+        "swiper": "^14.4.0",
         "uqr": "0.1.3"
     }
 }
