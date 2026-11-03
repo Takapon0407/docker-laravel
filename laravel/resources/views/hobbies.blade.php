@@ -11,7 +11,7 @@
     {{-- ========== メインタブ ========== --}}
     <ul class="nav nav-tabs hobby-main-tabs mb-4" id="hobbyTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active font-cherry" id="tab-photo-btn"
+            <button class="nav-link active font-heading" id="tab-photo-btn"
                 data-bs-toggle="tab" data-bs-target="#tab-photo"
                 type="button" role="tab"
                 aria-controls="tab-photo" aria-selected="true">
@@ -19,7 +19,7 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link font-cherry" id="tab-music-btn"
+            <button class="nav-link font-heading" id="tab-music-btn"
                 data-bs-toggle="tab" data-bs-target="#tab-music"
                 type="button" role="tab"
                 aria-controls="tab-music" aria-selected="false">
@@ -27,7 +27,7 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link font-cherry" id="tab-games-btn"
+            <button class="nav-link font-heading" id="tab-games-btn"
                 data-bs-toggle="tab" data-bs-target="#tab-games"
                 type="button" role="tab"
                 aria-controls="tab-games" aria-selected="false">
@@ -42,30 +42,30 @@
         <div class="tab-pane fade show active" id="tab-photo" role="tabpanel" aria-labelledby="tab-photo-btn">
 
             <div class="content-box">
-                <h2 class="font-cherry">よこのしゃしん</h2>
+                <h2 class="font-heading">よこのしゃしん</h2>
                 <div class="sub-content">
                     <x-photo-swiper :photos="$landscapePhotos" />
                 </div>
             </div>
 
             <div class="content-box">
-                <h2 class="font-cherry">たてのしゃしん</h2>
+                <h2 class="font-heading">たてのしゃしん</h2>
                 <div class="sub-content">
                     <x-photo-swiper :photos="$portraitPhotos" />
                 </div>
             </div>
 
             <div class="content-box">
-                <h2 class="font-cherry">もってるカメラ・レンズ</h2>
+                <h2 class="font-heading">もってるカメラ・レンズ</h2>
                 <div class="sub-content">
                     <div class="sub-left-content">
-                        <h3 class="font-cherry">カメラ</h3>
+                        <h3 class="font-heading">カメラ</h3>
                         <ul>
                             <li>Sony α7R3</li>
                         </ul>
                     </div>
                     <div class="sub-right-content">
-                        <h3 class="font-cherry">レンズ</h3>
+                        <h3 class="font-heading">レンズ</h3>
                         <ul>
                             <li>SEL1635Z</li>
                             <li>SEL50F18</li>
@@ -81,7 +81,7 @@
         <div class="tab-pane fade" id="tab-music" role="tabpanel" aria-labelledby="tab-music-btn">
 
             <div class="content-box">
-                <h2 class="font-cherry">がっき</h2>
+                <h2 class="font-heading">がっき</h2>
                 <div class="sub-content">
                     <ul class="hobby-list">
                         <li>🎹 ピアノ</li>
@@ -93,7 +93,7 @@
             </div>
 
             <div class="content-box">
-                <h2 class="font-cherry">DAW</h2>
+                <h2 class="font-heading">DAW</h2>
                 <div class="sub-content">
                     <ul class="hobby-list">
                         <li>🎛️ Cubase 9</li>
@@ -109,7 +109,7 @@
 
             {{-- 今やっているゲーム --}}
             <div class="content-box">
-                <h2 class="font-cherry">やっているげーむ</h2>
+                <h2 class="font-heading">やっているげーむ</h2>
                 <div class="sub-content">
                     <div class="sub-left-content">
                         <ul>
@@ -123,12 +123,12 @@
 
             {{-- 昔やったゲーム（プラットフォームタブ） --}}
             <div class="content-box">
-                <h2 class="font-cherry">やっていたげーむ</h2>
+                <h2 class="font-heading">やっていたげーむ</h2>
 
                 <ul class="nav nav-pills platform-tabs mb-3 flex-wrap" id="platformTabs" role="tablist">
                     @foreach ($pastGames as $id => $platform)
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link {{ $loop->first ? 'active' : '' }} font-cherry"
+                            <button class="nav-link {{ $loop->first ? 'active' : '' }} font-heading"
                                 id="platform-{{ $id }}-btn"
                                 data-bs-toggle="pill" data-bs-target="#platform-{{ $id }}"
                                 type="button" role="tab"
@@ -155,7 +155,7 @@
 
             {{-- ミニゲームコーナー --}}
             <div class="content-box">
-                <h2 class="font-cherry">いんすたんとげーむおきば</h2>
+                <h2 class="font-heading">いんすたんとげーむおきば</h2>
                 <div class="sub-content">
                     <div class="sub-left-content">
                         <ul>
@@ -168,7 +168,7 @@
 
             {{-- 自作ゲームコーナー --}}
             <div class="content-box">
-                <h2 class="font-cherry">じさくげーむおきば</h2>
+                <h2 class="font-heading">じさくげーむおきば</h2>
                 <div class="sub-content">
                     <div class="sub-left-content">
                         <ul>

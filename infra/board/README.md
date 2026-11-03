@@ -115,4 +115,4 @@ aws sns subscribe --topic-arn <AlarmTopicArn> --protocol email --notification-en
 | API Gateway | 1 秒に 20 件（瞬間的には 40 件）。全ルーム・全接続で 1 つ | `lib/board-stack.ts` |
 
 - IP は CloudFront が付ける `CloudFront-Viewer-Address` から取る（閲覧者が同じ名前のヘッダーを送っても CloudFront が上書きすることを dev で確かめた）。IP の形でない値は使わず、IPv6 は /64 ごとにまとめて数える
-- API Gateway の流量制限は IP ごとではないため、多くの IP から一斉に送られると全ルームが止まりうる。必要になったら CloudFront に WAF のレートベースのルールを付ける
+- API Gateway の流量制限は IP ごとではないため、多くの IP から一斉に送られると全ルームが止まりうる。本番のディストリビューションには WAF（コア保護）が付いているが、WAF が見るのは WebSocket の接続開始（HTTP Upgrade）のリクエストだけで、つないだあとのメッセージは数えない。WAF のレートベースのルールで抑えられるのは接続開始（接続試行）の回数だけ（Lambda の「同じ IP から 1 分に 60 回」と同じ目的）

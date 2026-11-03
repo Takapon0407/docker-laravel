@@ -1,0 +1,71 @@
+.tools-container {
+    max-width: 720px;
+    padding: 1.5rem 1rem 3rem;
+}
+
+.tools-title {
+    font-size: 2rem;
+    text-align: center;
+    color: $main-color;
+    margin-bottom: 1rem;
+}
+
+.tools-lead {
+    color: #555;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.tools-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 1rem;
+}
+
+// カード全体をリンクにする
+.tools-card {
+    display: block;
+    background: #fff;
+    border-radius: 12px;
+    border-left: 6px solid $main-color;
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    color: inherit;
+    text-decoration: none;
+    transition: box-shadow 0.15s, transform 0.15s;
+
+    &:hover,
+    &:focus-visible {
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+        transform: translateY(-2px);
+    }
+}
+
+.tools-card-title {
+    font-size: 1.3rem;
+    color: color-mix(in srgb, #{$main-color} 80%, #000);
+    margin-bottom: 0.5rem;
+}
+
+.tools-card-text {
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.tools-card-note {
+    font-size: 0.85rem;
+    color: #777;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tools-card {
+        transition: none;
+
+        &:hover,
+        &:focus-visible {
+            transform: none;
+        }
+    }
+}

@@ -25,10 +25,10 @@
     <meta name="theme-color" content="#55c501"/>
     <link rel="apple-touch-icon" href="@yield('apple-touch-icon', asset('icons/apple-touch-icon.png'))">
     <link rel="manifest" href="@yield('manifest', asset('manifest.json'))">
-    {{-- 見出しのフォント（Cherry Bomb One） --}}
+    {{-- 見出しのフォント（Mochiy Pop One） --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
     @vite(['resources/sass/app.scss', 'resources/ts/laravel/util/header.ts'])
     {{-- ページごとの CSS / JS は @push('head') で追加する --}}
     @stack('head')
