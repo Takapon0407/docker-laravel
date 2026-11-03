@@ -26,7 +26,10 @@ class BoardPageTest extends TestCase
     {
         config(['board.enabled' => true]);
 
-        $this->get('/tools')->assertSee('href="'.route('tools.board').'"', false);
+        $tools = $this->get('/tools');
+        $tools->assertSee('href="'.route('tools.board').'"', false);
+        // サーバーに保存するツールとして扱い、「サーバーに送らないものだけ」の絞り込みで隠れるようにする
+        $tools->assertSee('<li data-storage="server">', false);
     }
 
     /**

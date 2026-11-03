@@ -59,5 +59,8 @@ class PageMetaTest extends TestCase
         $tools->assertSee('<title>便利ツール | てくてくテック</title>', false);
         $tools->assertSee('<link rel="canonical" href="'.url('/tools').'">', false);
         $tools->assertSee('href="'.route('tools.warikan').'"', false);
+        // 割り勘は入力をサーバーに送らないツールとして、絞り込んでも残す
+        $tools->assertSee('<li data-storage="local">', false);
+        $tools->assertSee('id="tools-filter-local"', false);
     }
 }
