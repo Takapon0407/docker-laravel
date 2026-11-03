@@ -32,7 +32,7 @@ class PageMetaTest extends TestCase
         $top->assertSee('<title>てくてくテック</title>', false);
         $top->assertSee('<link rel="canonical" href="'.url('/').'">', false);
         $top->assertSee('<meta property="og:title" content="てくてくテック">', false);
-        $top->assertSee('<meta name="description" content="Laravel・React・AWSを中心にWebサービスを開発しているエンジニア、たかぽんのポートフォリオです。', false);
+        $top->assertSee('<meta name="description" content="Webエンジニア・たかぽんのポートフォリオサイトです。', false);
         // ヘッダーのロゴもサイト名と同じ表記にそろえる
         $top->assertDontSee('てくてくてっく');
 
