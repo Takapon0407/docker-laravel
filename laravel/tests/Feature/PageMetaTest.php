@@ -63,5 +63,18 @@ class PageMetaTest extends TestCase
         $tools->assertSeeInOrder(['data-storage="local"', 'href="'.route('tools.warikan').'"'], false);
         $tools->assertSee('id="tools-filter-local"', false);
         $tools->assertSee('id="tools-filter-server"', false);
+
+        // 開発向けのツール：一覧から「端末内で完結」としてたどれ、ページごとのタイトルを出す
+        foreach ([
+            'tools.json' => 'JSON 整形',
+            'tools.datetime' => '日時の変換（UTC / JST）',
+            'tools.regex' => '正規表現チェック',
+        ] as $route => $title) {
+            $tools->assertSeeInOrder(['data-storage="local"', 'href="'.route($route).'"'], false);
+            $page = $this->get(route($route));
+            $page->assertOk();
+            $page->assertSee('<title>'.$title.' | てくてくテック</title>', false);
+            $page->assertSee('<link rel="canonical" href="'.route($route).'">', false);
+        }
     }
 }

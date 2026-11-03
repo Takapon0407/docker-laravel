@@ -18,6 +18,9 @@ Route::prefix('games')->name('games.')->group(function () {
 Route::prefix('tools')->name('tools.')->group(function () {
     Route::view('/', 'tools.index')->name('index');
     Route::view('/warikan', 'tools.warikan')->name('warikan');
+    Route::view('/json', 'tools.json')->name('json');
+    Route::view('/datetime', 'tools.datetime')->name('datetime');
+    Route::view('/regex', 'tools.regex')->name('regex');
     Route::get('/board', [BoardController::class, 'create'])->name('board');
     Route::get('/board/room', [BoardController::class, 'room'])->name('board.room');
 });

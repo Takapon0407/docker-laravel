@@ -55,6 +55,25 @@
     display: none;
 }
 
+// 絞り込んで中のツールがなくなった種類は、見出しごと隠す
+.tools-container:has(#tools-filter-local:checked) .tools-section:not(:has([data-storage="local"])),
+.tools-container:has(#tools-filter-server:checked) .tools-section:not(:has([data-storage="server"])) {
+    display: none;
+}
+
+.tools-section + .tools-section {
+    margin-top: 2rem;
+}
+
+.tools-section-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #555;
+    border-bottom: 2px solid color-mix(in srgb, #{$main-color} 40%, #fff);
+    padding-bottom: 0.4rem;
+    margin-bottom: 1rem;
+}
+
 .tools-list {
     list-style: none;
     padding: 0;
