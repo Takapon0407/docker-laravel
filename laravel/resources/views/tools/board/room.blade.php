@@ -120,6 +120,8 @@
             <ul class="board-post-list" id="board-post-list"></ul>
             {{-- 見えていないところに新しい投稿が届いたとき --}}
             <button type="button" class="btn btn-success btn-sm board-new-posts" id="board-new-posts" hidden></button>
+            {{-- ボタンの表示・非表示はスクリーンリーダーに伝わらないことがあるので、件数は常にある領域で読み上げる --}}
+            <p class="visually-hidden" id="board-new-posts-announcement" aria-live="polite"></p>
         </section>
     </div>
 </div>

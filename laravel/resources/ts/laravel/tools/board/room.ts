@@ -515,6 +515,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 見えていないところに届いた新しい投稿（画面に入ったら消す）
     const unseen = new Set<string>();
     const newPostsButton = element<HTMLButtonElement>("board-new-posts");
+    const newPostsAnnouncement = element<HTMLElement>("board-new-posts-announcement");
     const seenObserver = new IntersectionObserver((entries) => {
         for (const entry of entries) {
             if (entry.isIntersecting) {
@@ -594,8 +595,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderNewPosts(): void {
+        const label = `新しい投稿 ${unseen.size} 件`;
+        // 見えている投稿が変わるたびに呼ばれるので、件数が変わったときだけ読み上げる（すべて見たら空にする）
+        const announcement = unseen.size === 0 ? "" : label;
+        if (newPostsAnnouncement.textContent !== announcement) {
+            newPostsAnnouncement.textContent = announcement;
+        }
         newPostsButton.hidden = unseen.size === 0;
-        newPostsButton.textContent = `新しい投稿 ${unseen.size} 件`;
+        newPostsButton.textContent = label;
     }
 
     function renderPost(post: PostView): HTMLLIElement {
