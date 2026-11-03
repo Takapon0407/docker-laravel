@@ -156,10 +156,18 @@ test("setAccepting / rotateKeys / pin：値が正しくなければ断る", () =
     for (const body of [
         { action: "setAccepting", requestId: "r", accepting: "false" },
         { action: "rotateKeys", requestId: "r", target: "both" },
+        // 参加者を退出させられるのは、共有用 URL を作り直すときだけ
+        { action: "rotateKeys", requestId: "r", target: "admin", removeParticipants: true },
+        { action: "rotateKeys", requestId: "r", target: "join", removeParticipants: "yes" },
+        { action: "rotateKeys", requestId: "r", target: "join", removeParticipants: false },
     ]) {
         const result = parseClientMessage(JSON.stringify(body));
         assert.equal(result.ok === false && result.code, "invalid_message", JSON.stringify(body));
     }
+    assert.deepEqual(parseClientMessage(JSON.stringify({ action: "rotateKeys", requestId: "r", target: "join", removeParticipants: true })), {
+        ok: true,
+        message: { action: "rotateKeys", requestId: "r", target: "join", removeParticipants: true },
+    });
     const pin = parseClientMessage(JSON.stringify({ action: "pin", requestId: "r", postId: "short" }));
     assert.equal(pin.ok === false && pin.code, "post_not_found");
 });

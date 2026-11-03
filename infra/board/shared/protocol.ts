@@ -44,7 +44,8 @@ export type ClientMessage =
     | { action: "unpin"; requestId: string; postId: string }
     | { action: "setAccepting"; requestId: string; accepting: boolean }
     // join：共有用 URL、admin：主催者用 URL を作り直す
-    | { action: "rotateKeys"; requestId: string; target: "join" | "admin" };
+    // removeParticipants：共有用 URL を作り直すとき、入っている参加者も全員退出させる（共有用 URL で枠を埋められたとき）
+    | { action: "rotateKeys"; requestId: string; target: "join" | "admin"; removeParticipants?: true };
 
 export type Role = "participant" | "admin";
 
@@ -106,6 +107,8 @@ export type ServerMessage =
     | { type: "joinKeyChanged"; joinKey: string }
     // ほかの主催者が主催者用 URL を作り直したため、参加者になった
     | { type: "roleChanged"; role: Role }
+    // 主催者が参加者を全員退出させた（参加者に送ってから接続を切る）
+    | { type: "removed" }
     | { type: "error"; requestId: string | null; code: ErrorCode; message: string };
 
 export type ErrorCode =
@@ -230,11 +233,15 @@ export function parseClientMessage(body: string | null | undefined): ParseResult
         }
 
         case "rotateKeys": {
-            const { target } = fields;
+            const { target, removeParticipants } = fields;
             if (target !== "join" && target !== "admin") {
                 return { ok: false, requestId, code: "invalid_message" };
             }
-            return { ok: true, message: { action, requestId, target } };
+            // 退出させられるのは、共有用 URL を作り直すときだけ
+            if (removeParticipants !== undefined && !(removeParticipants === true && target === "join")) {
+                return { ok: false, requestId, code: "invalid_message" };
+            }
+            return { ok: true, message: { action, requestId, target, ...(removeParticipants === true && { removeParticipants }) } };
         }
 
         case "pin":
