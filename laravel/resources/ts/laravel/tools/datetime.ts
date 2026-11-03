@@ -1,5 +1,6 @@
 import { formatInstant, parseInstant, type BaseZone, type InputKind } from "@/lib/datetime";
 import { setUpCopyButtons } from "../util/copy";
+import { flash } from "../util/flash";
 
 const KIND_LABELS: Record<InputKind, string> = {
     "unix-seconds": "UNIX 時間（秒）として読みました",
@@ -54,12 +55,14 @@ document.addEventListener("DOMContentLoaded", () => {
         error.hidden = true;
         kind.textContent = parsed.kind === "without-offset" ? `${zone === "jst" ? "JST" : "UTC"} の時刻として読みました` : KIND_LABELS[parsed.kind];
         showResult(parsed.epochMs);
+        // 入力・読み方を変えたら、結果が変わったことを知らせる
+        flash(result);
     }
 
     input.addEventListener("input", renderInput);
     document.querySelectorAll<HTMLInputElement>('input[name="datetime-zone"]').forEach((radio) => radio.addEventListener("change", renderInput));
     (document.getElementById("datetime-fill-now") as HTMLButtonElement).addEventListener("click", () => {
-        input.value = String(Math.floor(Date.now() / 1000));
+        input.value = new Date().toISOString();
         renderInput();
     });
 

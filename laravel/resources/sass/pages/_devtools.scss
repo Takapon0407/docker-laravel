@@ -76,8 +76,8 @@ textarea.devtool-code {
     overflow-x: auto;
 }
 
-// 設定を変えて結果が変わったとき、一瞬だけ背景を光らせる
-textarea.devtool-code.is-updated {
+// 結果が変わったとき、一瞬だけ背景を光らせる（util/flash.ts で付ける）
+.is-updated {
     animation: devtool-updated 0.8s ease-out;
 }
 
@@ -86,12 +86,12 @@ textarea.devtool-code.is-updated {
         background-color: color-mix(in srgb, #{$main-color} 25%, #fff);
     }
     to {
-        background-color: #fff;
+        background-color: transparent;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    textarea.devtool-code.is-updated {
+    .is-updated {
         animation: none;
     }
 }
@@ -116,6 +116,8 @@ textarea.devtool-code.is-updated {
     gap: 0.5rem 0.75rem;
     align-items: center;
     margin: 0;
+    // 光らせたときの背景の角を丸める
+    border-radius: 8px;
 
     dt {
         font-weight: normal;

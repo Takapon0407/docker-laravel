@@ -1,5 +1,6 @@
 import { formatJson, type Indent } from "@/lib/json-format";
 import { setUpCopyButtons } from "../util/copy";
+import { flash } from "../util/flash";
 
 document.addEventListener("DOMContentLoaded", () => {
     const input = document.getElementById("json-input") as HTMLTextAreaElement;
@@ -30,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 : `${indent.selectedOptions[0]?.textContent ?? ""}で整形しました（${result.text.split("\n").length.toLocaleString()} 行）`;
             showError(null);
             if (settingsChanged) {
-                flash();
+                flash(output);
             }
             return;
         }
@@ -44,13 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
         error.textContent = message ?? "";
         errorOffset = offset;
         jump.hidden = offset === null;
-    }
-
-    function flash(): void {
-        output.classList.remove("is-updated");
-        // 続けて切り替えたときも、もう一度光らせる（クラスを外したことをブラウザに反映させてから付け直す）
-        void output.offsetWidth;
-        output.classList.add("is-updated");
     }
 
     input.addEventListener("input", () => render());

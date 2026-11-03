@@ -63,7 +63,7 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 - 本番の opcache は `validate_timestamps=0`（コードはイメージの中で変わらない）。Blade のコンパイル済みビューはコンテナ内の `/tmp/views`
 - `config/cache.php` は `serializable_classes => false`（**キャッシュにオブジェクトを入れられない**）。enum などは値（文字列）にして保存する
 - 便利ツールはヘッダーの「Tools」→ `/tools`（`tools/index.blade.php`）からたどる。ツールを増やしたら一覧の種類（ふだん使い / 開発向け）の中にカードを足し、`data-storage`（`local`：入力をサーバーに送らない / `server`：サーバーに保存する）とデータの扱いの表示も付ける（「端末内で完結」「サーバーに保存」の絞り込みに使う）
-- 開発向けのツールは見た目を `pages/_devtools.scss`（`.devtool-*`）で共通にする。正規表現は時間のかかるパターンで固まらないよう Web Worker（`lib/regex-worker.ts`）で動かし、1 秒で止める。コピーのボタンは `util/copy.ts` の `data-copy-target`
+- 開発向けのツールは見た目を `pages/_devtools.scss`（`.devtool-*`）で共通にする。正規表現は時間のかかるパターンで固まらないよう Web Worker（`lib/regex-worker.ts`）で動かし、1 秒で止める。コピーのボタンは `util/copy.ts` の `data-copy-target`、結果が変わったことを知らせる光らせ方は `util/flash.ts`
 - `/tools/*` の便利ツールは計算をブラウザ内だけで行う（サーバーに入力を送らない。匿名質問ボードの投稿だけは例外で、`infra/board` の WebSocket に送る）。DOM に依存しないロジックは `resources/ts/lib/` に置いてテストし、ページの TS（`resources/ts/laravel/tools/`）から使う（`resources/ts/laravel/` 以下は全部 Vite のエントリーになるため）
 - `config/` は変更したものだけを置き、ほかは Laravel の既定値を使う。`/hobbies` のゲーム一覧は `config/hobbies.php` のデータ
 - Sass は `components/`・`base/`・`pages/` に分け、サイトの緑は `_variables.scss` の `$main-color`。見出しのフォントは `.font-heading`（Google Fonts の Mochiy Pop One。漢字も含む）。Bootstrap 5 のクラスを使う（Bootstrap 4 のクラスは効かない）
