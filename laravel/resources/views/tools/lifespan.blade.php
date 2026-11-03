@@ -6,6 +6,8 @@
 @endpush
 @section('content')
 
+<div id="notification" class="notification" role="status" aria-live="polite" aria-atomic="true"></div>
+
 {{-- 計算はブラウザ内だけで行う（誕生日はサーバーに送らない・保存しない） --}}
 <div class="container lifespan-container">
     <h1 class="lifespan-title font-heading">寿命の計算</h1>
@@ -63,26 +65,30 @@
         </section>
     @endforeach
 
-    {{-- 押したときの結果で文章を作り、X の投稿画面を開く（X の API は使わない）。
+    {{-- 押したときの結果で文章を作り、確認の画面を見せてから、スマホの共有メニュー（Web Share API）で共有する。
+         ブラウザの X のページではアプリのログインが使えないため、共有メニューから X などのアプリを選んでもらう。
+         共有メニューがないブラウザでは、文章をコピーしてもらう。
          日まで出すと誕生日を逆算できてしまうため、文章は「あと約 ◯ 年」の年数だけにする --}}
     <div class="lifespan-share" id="lifespan-share" hidden>
-        <button type="button" class="btn btn-dark" id="lifespan-share-open">X に投稿する</button>
-        <p class="lifespan-help mt-2 mb-0">投稿する前に、渡す文章を確かめる画面が出ます。</p>
+        <button type="button" class="btn btn-dark" id="lifespan-share-open">共有する</button>
+        <p class="lifespan-help mt-2 mb-0">共有する前に、渡す文章を確かめる画面が出ます。</p>
     </div>
 
-    {{-- 投稿する前の確認（ブラウザ標準の dialog。Esc で閉じる） --}}
+    {{-- 共有する前の確認（ブラウザ標準の dialog。Esc で閉じる） --}}
     <dialog class="lifespan-dialog" id="lifespan-share-dialog" aria-labelledby="lifespan-share-title">
-        <h2 class="lifespan-heading" id="lifespan-share-title">X に投稿する前に</h2>
+        <h2 class="lifespan-heading" id="lifespan-share-title">共有する前に</h2>
         <p class="lifespan-dialog-warning">
-            投稿する文章から、<strong>あなたのおおよその年齢がわかります</strong>。
+            共有する文章から、<strong>あなたのおおよその年齢がわかります</strong>。
             誕生日や日数は入れませんが、平均寿命の値は公開されているため、「あと約 ◯ 年」から年齢を逆算できます。
-            SNS への投稿は誰でも見られ、消しても残ることがあります。公開してよいか確かめてから投稿してください。
+            SNS への投稿は誰でも見られ、消しても残ることがあります。公開してよいか確かめてから共有してください。
         </p>
-        <p class="lifespan-help mb-1">X に渡す文章</p>
+        <p class="lifespan-help mb-1">共有する文章</p>
         <pre class="lifespan-dialog-preview" id="lifespan-share-preview"></pre>
         <div class="lifespan-dialog-actions">
             <button type="button" class="btn btn-outline-secondary" id="lifespan-share-cancel">キャンセル</button>
-            <a class="btn btn-dark" id="lifespan-share-x" href="https://x.com/intent/post" target="_blank" rel="noopener noreferrer">X の投稿画面を開く</a>
+            {{-- 共有メニューを使えるブラウザでは「共有する」、使えなければ「文章をコピーする」を出す --}}
+            <button type="button" class="btn btn-dark" id="lifespan-share-send" hidden>共有する</button>
+            <button type="button" class="btn btn-dark" id="lifespan-share-copy" hidden>文章をコピーする</button>
         </div>
     </dialog>
 
