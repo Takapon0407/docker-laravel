@@ -145,3 +145,13 @@ export function birthYearCandidates(age: number, nowMs: number, month: number | 
     const year = birthdayPassed ? passed : notYet;
     return year >= 1900 ? [year] : [];
 }
+
+// X などに投稿する文章（秒は投稿するころにはずれるので、年と日まで）
+export function shareText(results: { label: string; years: number; result: Remaining }[]): string {
+    return results
+        .map(({ label, years, result }) => {
+            const span = `${result.breakdown.years} 年 ${result.breakdown.days} 日`;
+            return result.passed ? `${label}の平均寿命（${years} 年）を ${span}超えています。` : `${label}の平均寿命（${years} 年）まで、あと ${span}。`;
+        })
+        .join("\n");
+}

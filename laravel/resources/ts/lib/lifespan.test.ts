@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { birthYearCandidates, breakdown, daysInMonth, expectedEnd, LIFE_EXPECTANCY, parseBirthday, remaining, todayInJapan } from "./lifespan.ts";
+import { birthYearCandidates, breakdown, daysInMonth, expectedEnd, LIFE_EXPECTANCY, parseBirthday, remaining, shareText, todayInJapan } from "./lifespan.ts";
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
@@ -86,4 +86,16 @@ test("年齢から生まれた年の候補：誕生日が分からなければ 2
     // 1900 年より前の年は出さない
     assert.deepEqual(birthYearCandidates(126, NOW), [1900]);
     assert.deepEqual(birthYearCandidates(130, NOW), []);
+});
+
+test("投稿する文章は、年と日まで。過ぎていれば「超えています」にする", () => {
+    const zero = { hours: 3, minutes: 4, seconds: 5 };
+    const totals = { years: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
+    assert.equal(
+        shareText([
+            { label: "日本", years: 84.34, result: { passed: false, breakdown: { years: 47, days: 271, ...zero }, totals, progress: 0.4 } },
+            { label: "世界", years: 73.2, result: { passed: true, breakdown: { years: 2, days: 5, ...zero }, totals, progress: 1 } },
+        ]),
+        "日本の平均寿命（84.34 年）まで、あと 47 年 271 日。\n世界の平均寿命（73.2 年）を 2 年 5 日超えています。",
+    );
 });

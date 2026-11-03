@@ -1,4 +1,4 @@
-import { birthYearCandidates, daysInMonth, expectedEnd, LIFE_EXPECTANCY, parseBirthday, remaining, todayInJapan, type Region, type Sex } from "@/lib/lifespan";
+import { birthYearCandidates, daysInMonth, expectedEnd, LIFE_EXPECTANCY, parseBirthday, remaining, shareText, todayInJapan, type Region, type Sex } from "@/lib/lifespan";
 
 const number = new Intl.NumberFormat("ja-JP");
 const dateFormat = new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "short", timeZone: "Asia/Tokyo" });
@@ -69,6 +69,28 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
+    const share = document.getElementById("lifespan-share") as HTMLElement;
+    const shareLink = document.getElementById("lifespan-share-x") as HTMLAnchorElement;
+    const REGION_LABELS: Record<Region, string> = { japan: "日本", world: "世界" };
+
+    // 押した瞬間の結果で文章を作ってから、X の投稿画面を開く
+    shareLink.addEventListener("click", () => {
+        const now = Date.now();
+        const birthMs = parseBirthday(birthdayValue(), now);
+        if (birthMs === null) {
+            return;
+        }
+        const sex = (document.querySelector<HTMLInputElement>('input[name="lifespan-sex"]:checked')?.value ?? "unspecified") as Sex;
+        const text = shareText(
+            (["japan", "world"] as const).map((region) => {
+                const { years } = LIFE_EXPECTANCY[region][sex];
+                return { label: REGION_LABELS[region], years, result: remaining(birthMs, expectedEnd(birthMs, years), now) };
+            }),
+        );
+        const params = new URLSearchParams({ text, url: `${window.location.origin}${window.location.pathname}` });
+        shareLink.href = `https://x.com/intent/post?${params.toString()}`;
+    });
+
     function birthdayValue(): string {
         const [year, month, day] = [selected(yearSelect), selected(monthSelect), selected(daySelect)];
         if (year === null || month === null || day === null) {
@@ -100,6 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const birthMs = value === "" ? null : parseBirthday(value, now);
         error.hidden = value === "" || birthMs !== null;
         error.textContent = "今日より後の日は選べません";
+        share.hidden = birthMs === null;
         for (const card of cards) {
             card.hidden = birthMs === null;
             if (birthMs === null) {
