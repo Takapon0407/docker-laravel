@@ -54,6 +54,15 @@ class PageMetaTest extends TestCase
         $top->assertSee('<link rel="manifest" href="'.asset('manifest.json').'">', false);
         $top->assertSee('<link rel="apple-touch-icon" href="'.asset('icons/apple-touch-icon.png').'">', false);
 
+        // プライバシーポリシー・免責事項：全ページの下からたどれる
+        $privacy = $this->get('/privacy');
+        $privacy->assertOk();
+        $privacy->assertSee('<title>プライバシーポリシー・免責事項 | てくてくテック</title>', false);
+        $privacy->assertSee('<link rel="canonical" href="'.url('/privacy').'">', false);
+        foreach ([$top, $hobbies, $warikan] as $page) {
+            $page->assertSee('<a href="'.route('privacy').'">プライバシーポリシー・免責事項</a>', false);
+        }
+
         $tools = $this->get('/tools');
         $tools->assertOk();
         $tools->assertSee('<title>便利ツール | てくてくテック</title>', false);

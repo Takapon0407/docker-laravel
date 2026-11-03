@@ -10,6 +10,8 @@ Route::permanentRedirect('/profile', '/');
 
 Route::get('/hobbies', [HobbiesController::class, 'show'])->name('hobbies');
 
+Route::view('/privacy', 'privacy')->name('privacy');
+
 Route::prefix('games')->name('games.')->group(function () {
     Route::view('/tetris', 'games.tetris')->name('tetris');
     Route::view('/puyo', 'games.puyo')->name('puyo');
