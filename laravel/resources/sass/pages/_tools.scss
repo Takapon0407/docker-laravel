@@ -42,7 +42,7 @@
     margin-bottom: 0.5rem;
 }
 
-// 「サーバーに送らないものだけ」を選んだら、サーバーに保存するツールを隠す
+// 「端末内で完結」を選んだら、サーバーに保存するツールを隠す
 .tools-container:has(#tools-filter-local:checked) .tools-list > [data-storage="server"] {
     display: none;
 }

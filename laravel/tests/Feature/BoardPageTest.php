@@ -28,7 +28,7 @@ class BoardPageTest extends TestCase
 
         $tools = $this->get('/tools');
         $tools->assertSee('href="'.route('tools.board').'"', false);
-        // サーバーに保存するツールとして扱い、「サーバーに送らないものだけ」の絞り込みで隠れるようにする
+        // サーバーに保存するツールとして扱い、「端末内で完結」の絞り込みで隠れるようにする
         $tools->assertSee('<li data-storage="server">', false);
     }
 

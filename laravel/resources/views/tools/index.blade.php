@@ -1,6 +1,6 @@
 @extends('layouts.common')
 @section('title', '便利ツール')
-@section('description', '割り勘の計算や、勉強会で使える匿名の質問ボードなど、ブラウザですぐに使える便利ツールの一覧です。入力したデータをサーバーに送らないツールだけに絞り込めます。')
+@section('description', '割り勘の計算や、勉強会で使える匿名の質問ボードなど、ブラウザですぐに使える便利ツールの一覧です。入力したデータを外に送らない「端末内で完結」のツールだけに絞り込めます。')
 @section('content')
 
 <div class="container tools-container">
@@ -14,7 +14,7 @@
             <input type="radio" class="btn-check" name="tools-filter" id="tools-filter-all" value="all" checked>
             <label class="btn btn-outline-success" for="tools-filter-all">すべて</label>
             <input type="radio" class="btn-check" name="tools-filter" id="tools-filter-local" value="local">
-            <label class="btn btn-outline-success" for="tools-filter-local">サーバーに送らないものだけ</label>
+            <label class="btn btn-outline-success" for="tools-filter-local">端末内で完結</label>
         </div>
     </fieldset>
 
@@ -26,7 +26,7 @@
                 <p class="tools-card-text">
                     合計金額と人数から、1 人あたりの金額を計算します。先輩・後輩などグループごとの比率や、固定額の人、1 人ずつ金額を決める割り方にも対応しています。
                 </p>
-                <span class="tools-storage is-local">サーバーに送らない：計算はブラウザの中だけで行います</span>
+                <span class="tools-storage is-local">端末内で完結：計算はブラウザの中だけで行います</span>
             </a>
         </li>
         @if (config('board.enabled'))
@@ -36,7 +36,7 @@
                     <p class="tools-card-text">
                         勉強会などで使える、匿名の質問・コメントボードです。ルームを作って URL や QR コードを配ると、参加者がその場で投稿できます。
                     </p>
-                    <span class="tools-storage is-server">サーバーに保存：投稿はみんなに届けるため保存し、ルームの保存期間（最長 30 日）が過ぎると自動で消えます</span>
+                    <span class="tools-storage is-server">サーバーに保存：投稿はルームの保存期間（最長 30 日）が過ぎると自動で消えます</span>
                 </a>
             </li>
         @endif
