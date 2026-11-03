@@ -75,8 +75,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const shareLink = document.getElementById("lifespan-share-x") as HTMLAnchorElement;
     const REGION_LABELS: Record<Region, string> = { japan: "日本", world: "世界" };
 
-    // 押した瞬間の結果で文章を作ってから、X の投稿画面を開く
-    shareLink.addEventListener("click", () => {
+    const dialog = document.getElementById("lifespan-share-dialog") as HTMLDialogElement;
+    const preview = document.getElementById("lifespan-share-preview") as HTMLElement;
+
+    // 「X に投稿する」を押したら、その時点の結果で文章を作り、確認の画面で見せる（X はまだ開かない）
+    (document.getElementById("lifespan-share-open") as HTMLButtonElement).addEventListener("click", () => {
         const now = Date.now();
         const birthMs = parseBirthday(birthdayValue(), now);
         if (birthMs === null) {
@@ -89,8 +92,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 return { label: REGION_LABELS[region], years, result: remaining(birthMs, expectedEnd(birthMs, years), now) };
             }),
         );
-        const params = new URLSearchParams({ text, url: `${window.location.origin}${window.location.pathname}` });
-        shareLink.href = `https://x.com/intent/post?${params.toString()}`;
+        const url = `${window.location.origin}${window.location.pathname}`;
+        preview.textContent = `${text}\n${url}`;
+        shareLink.href = `https://x.com/intent/post?${new URLSearchParams({ text, url }).toString()}`;
+        dialog.showModal();
+    });
+    // 「X の投稿画面を開く」は新しいタブで開き、確認の画面は閉じる
+    shareLink.addEventListener("click", () => dialog.close());
+    (document.getElementById("lifespan-share-cancel") as HTMLButtonElement).addEventListener("click", () => dialog.close());
+    // 画面の外側（暗いところ）を押しても閉じる（dialog の余白を押したときは閉じないよう、押した位置で確かめる）
+    dialog.addEventListener("click", (event) => {
+        const rect = dialog.getBoundingClientRect();
+        const inside = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
+        if (event.target === dialog && !inside) {
+            dialog.close();
+        }
     });
 
     function birthdayValue(): string {

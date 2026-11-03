@@ -72,6 +72,9 @@ class PageMetaTest extends TestCase
         $lifespan->assertSee('<title>寿命の計算 | てくてくテック</title>', false);
         $lifespan->assertSee('href="https://www.mhlw.go.jp/toukei/saikin/hw/life/life25/index.html"', false);
         $lifespan->assertSee('href="https://population.un.org/wpp/"', false);
+        // X に投稿する前に、おおよその年齢がわかることを確かめる画面を出す
+        $lifespan->assertSee('id="lifespan-share-dialog"', false);
+        $lifespan->assertSee('あなたのおおよその年齢がわかります', false);
 
         // 開発向けのツール：一覧から「端末内で完結」としてたどれ、ページごとのタイトルを出す
         foreach ([

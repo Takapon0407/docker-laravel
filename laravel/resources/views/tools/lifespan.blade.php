@@ -66,9 +66,25 @@
     {{-- 押したときの結果で文章を作り、X の投稿画面を開く（X の API は使わない）。
          日まで出すと誕生日を逆算できてしまうため、文章は「あと約 ◯ 年」の年数だけにする --}}
     <div class="lifespan-share" id="lifespan-share" hidden>
-        <a class="btn btn-dark" id="lifespan-share-x" href="https://x.com/intent/post" target="_blank" rel="noopener noreferrer">X に投稿する</a>
-        <p class="lifespan-help mt-2 mb-0">押したときだけ、「あと約 ◯ 年」という年数だけの文章を X に渡します。誕生日や日数は入れませんが、残りの年数から、おおよその年齢はわかります。</p>
+        <button type="button" class="btn btn-dark" id="lifespan-share-open">X に投稿する</button>
+        <p class="lifespan-help mt-2 mb-0">投稿する前に、渡す文章を確かめる画面が出ます。</p>
     </div>
+
+    {{-- 投稿する前の確認（ブラウザ標準の dialog。Esc で閉じる） --}}
+    <dialog class="lifespan-dialog" id="lifespan-share-dialog" aria-labelledby="lifespan-share-title">
+        <h2 class="lifespan-heading" id="lifespan-share-title">X に投稿する前に</h2>
+        <p class="lifespan-dialog-warning">
+            投稿する文章から、<strong>あなたのおおよその年齢がわかります</strong>。
+            誕生日や日数は入れませんが、平均寿命の値は公開されているため、「あと約 ◯ 年」から年齢を逆算できます。
+            SNS への投稿は誰でも見られ、消しても残ることがあります。公開してよいか確かめてから投稿してください。
+        </p>
+        <p class="lifespan-help mb-1">X に渡す文章</p>
+        <pre class="lifespan-dialog-preview" id="lifespan-share-preview"></pre>
+        <div class="lifespan-dialog-actions">
+            <button type="button" class="btn btn-outline-secondary" id="lifespan-share-cancel">キャンセル</button>
+            <a class="btn btn-dark" id="lifespan-share-x" href="https://x.com/intent/post" target="_blank" rel="noopener noreferrer">X の投稿画面を開く</a>
+        </div>
+    </dialog>
 
     <section class="lifespan-card lifespan-sources">
         <h2 class="lifespan-heading">使っている統計</h2>

@@ -143,6 +143,43 @@
     margin-bottom: 1.25rem;
 }
 
+.lifespan-dialog {
+    max-width: min(32rem, calc(100vw - 2rem));
+    border: none;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+
+    &::backdrop {
+        background: rgba(0, 0, 0, 0.45);
+    }
+}
+
+.lifespan-dialog-warning {
+    background: #fff1e0;
+    color: #6b3400;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.lifespan-dialog-preview {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.75rem;
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.lifespan-dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
 .lifespan-sources ul {
     padding-left: 1.25rem;
     margin-bottom: 0.75rem;
