@@ -63,10 +63,11 @@
         </section>
     @endforeach
 
-    {{-- 押したときの結果で文章を作り、X の投稿画面を開く（X の API は使わない。誕生日は文章に入れない） --}}
+    {{-- 押したときの結果で文章を作り、X の投稿画面を開く（X の API は使わない）。
+         日まで出すと誕生日を逆算できてしまうため、文章は「あと約 ◯ 年」の年数だけにする --}}
     <div class="lifespan-share" id="lifespan-share" hidden>
         <a class="btn btn-dark" id="lifespan-share-x" href="https://x.com/intent/post" target="_blank" rel="noopener noreferrer">X に投稿する</a>
-        <p class="lifespan-help mt-2 mb-0">押したときだけ、残りの年数の文章を X に渡します（誕生日は入れません）。</p>
+        <p class="lifespan-help mt-2 mb-0">押したときだけ、「あと約 ◯ 年」という年数だけの文章を X に渡します。誕生日や日数は入れませんが、残りの年数から、おおよその年齢はわかります。</p>
     </div>
 
     <section class="lifespan-card lifespan-sources">

@@ -146,12 +146,17 @@ export function birthYearCandidates(age: number, nowMs: number, month: number | 
     return year >= 1900 ? [year] : [];
 }
 
-// X などに投稿する文章（秒は投稿するころにはずれるので、年と日まで）
+// X などに投稿する文章
+// 「あと 48 年 271 日」と日まで出すと、投稿した日時と平均寿命から誕生日が 1〜2 日の幅で逆算できてしまうため、
+// 年数だけ（四捨五入した「約 ◯ 年」）にする。ここからわかるのは、おおよその年齢くらい
 export function shareText(results: { label: string; years: number; result: Remaining }[]): string {
     return results
         .map(({ label, years, result }) => {
-            const span = `${result.breakdown.years} 年 ${result.breakdown.days} 日`;
-            return result.passed ? `${label}の平均寿命（${years} 年）を ${span}超えています。` : `${label}の平均寿命（${years} 年）まで、あと ${span}。`;
+            const rounded = Math.round(result.totals.years);
+            if (result.passed) {
+                return rounded < 1 ? `${label}の平均寿命（${years} 年）を超えたところです。` : `${label}の平均寿命（${years} 年）を約 ${rounded} 年超えています。`;
+            }
+            return rounded < 1 ? `${label}の平均寿命（${years} 年）まで、あと 1 年未満。` : `${label}の平均寿命（${years} 年）まで、あと約 ${rounded} 年。`;
         })
         .join("\n");
 }

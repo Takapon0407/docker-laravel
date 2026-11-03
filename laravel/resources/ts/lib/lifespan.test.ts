@@ -88,14 +88,23 @@ test("年齢から生まれた年の候補：誕生日が分からなければ 2
     assert.deepEqual(birthYearCandidates(130, NOW), []);
 });
 
-test("投稿する文章は、年と日まで。過ぎていれば「超えています」にする", () => {
-    const zero = { hours: 3, minutes: 4, seconds: 5 };
-    const totals = { years: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
+test("投稿する文章は年数だけ（四捨五入）にして、日まで出さない（誕生日を逆算できないように）", () => {
+    const breakdown = { years: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
+    const totals = (years: number) => ({ years, days: 0, hours: 0, minutes: 0, seconds: 0 });
+    const text = shareText([
+        { label: "日本", years: 84.34, result: { passed: false, breakdown, totals: totals(48.7), progress: 0.4 } },
+        { label: "世界", years: 73.2, result: { passed: true, breakdown, totals: totals(2.3), progress: 1 } },
+        { label: "日本", years: 81.35, result: { passed: false, breakdown, totals: totals(0.4), progress: 0.99 } },
+        { label: "世界", years: 70.5, result: { passed: true, breakdown, totals: totals(0.2), progress: 1 } },
+    ]);
     assert.equal(
-        shareText([
-            { label: "日本", years: 84.34, result: { passed: false, breakdown: { years: 47, days: 271, ...zero }, totals, progress: 0.4 } },
-            { label: "世界", years: 73.2, result: { passed: true, breakdown: { years: 2, days: 5, ...zero }, totals, progress: 1 } },
-        ]),
-        "日本の平均寿命（84.34 年）まで、あと 47 年 271 日。\n世界の平均寿命（73.2 年）を 2 年 5 日超えています。",
+        text,
+        [
+            "日本の平均寿命（84.34 年）まで、あと約 49 年。",
+            "世界の平均寿命（73.2 年）を約 2 年超えています。",
+            "日本の平均寿命（81.35 年）まで、あと 1 年未満。",
+            "世界の平均寿命（70.5 年）を超えたところです。",
+        ].join("\n"),
     );
+    assert.doesNotMatch(text, /日。|\d+ 日/);
 });
