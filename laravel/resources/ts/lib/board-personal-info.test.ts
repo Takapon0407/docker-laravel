@@ -33,3 +33,17 @@ test("よくある数字の書き方は拾わない（日付・時刻・金額�
         assert.deepEqual(detectPersonalInfo(text), [], text);
     }
 });
+
+test("古いブラウザでも読み込めるよう、否定の後読みを使わない", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const source = await readFile(new URL("./board-personal-info.ts", import.meta.url), "utf8");
+    assert.doesNotMatch(source.replace(/^\s*\/\/.*$/gm, ""), /\(\?<[=!]/);
+});
+
+test("文の途中・先頭・記号のあとにある番号も見つけ、ほかの数字の続きは拾わない", () => {
+    assert.deepEqual(detectPersonalInfo("090-1234-5678"), ["phone"]);
+    assert.deepEqual(detectPersonalInfo("電話:090-1234-5678"), ["phone"]);
+    assert.deepEqual(detectPersonalInfo("(090-1234-5678)"), ["phone"]);
+    assert.deepEqual(detectPersonalInfo("1-123-4567"), []);
+    assert.deepEqual(detectPersonalInfo("12090-1234-5678"), []);
+});

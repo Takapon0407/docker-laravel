@@ -19,14 +19,17 @@ function normalize(text: string): string {
         .replace(/　/g, " ");
 }
 
+// 否定の後読み (?<!...) は Safari 16.4 より前で正規表現の書き方そのものがエラーになり、ボードのスクリプトごと読み込めなくなるため使わない。
+// 「前がほかの数字やハイフンではない」は、直前の 1 文字（または文字列の先頭）を (^|[^\d-]) で一緒に読んで確かめる
 export function detectPersonalInfo(text: string): PersonalInfoKind[] {
     const normalized = normalize(text);
     const found = new Set<PersonalInfoKind>();
 
     // 0 から始まり、数字が 10〜11 桁の並び（090-1234-5678 / 03(1234)5678 / 0312345678）、+81 から始まる国際の書き方
-    for (const match of normalized.matchAll(/(?<![\d-])(?:\+81[-\s]?|0)\d[\d\-\s()]{6,14}\d(?![\d-])/g)) {
-        const digits = match[0].replace(/\D/g, "");
-        const national = match[0].startsWith("+81") ? `0${digits.slice(2)}` : digits;
+    for (const match of normalized.matchAll(/(^|[^\d-])((?:\+81[-\s]?|0)\d[\d\-\s()]{6,14}\d)(?![\d-])/g)) {
+        const number = match[2]!;
+        const digits = number.replace(/\D/g, "");
+        const national = number.startsWith("+81") ? `0${digits.slice(2)}` : digits;
         if (national.length === 10 || national.length === 11) {
             found.add("phone");
         }
@@ -35,7 +38,7 @@ export function detectPersonalInfo(text: string): PersonalInfoKind[] {
         found.add("email");
     }
     // 〒123-4567 / 〒1234567 / 123-4567（ほかの数字の並びの一部は除く）
-    if (/〒\s*\d{3}-?\d{4}(?!\d)|(?<![\d-])\d{3}-\d{4}(?![\d-])/.test(normalized)) {
+    if (/〒\s*\d{3}-?\d{4}(?!\d)|(^|[^\d-])\d{3}-\d{4}(?![\d-])/.test(normalized)) {
         found.add("postal");
     }
     return (["phone", "email", "postal"] as const).filter((kind) => found.has(kind));
