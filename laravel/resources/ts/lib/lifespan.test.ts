@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { birthYearCandidates, breakdown, daysInMonth, expectedEnd, LIFE_EXPECTANCY, parseBirthday, remaining, shareText, todayInJapan } from "./lifespan.ts";
+import { birthYearCandidates, breakdown, daysInMonth, expectedEnd, LIFE_EXPECTANCY, parseBirthday, parseSaved, remaining, shareText, todayInJapan } from "./lifespan.ts";
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
@@ -107,4 +107,11 @@ test("投稿する文章は年数だけ（四捨五入）にして、日まで�
         ].join("\n"),
     );
     assert.doesNotMatch(text, /日。|\d+ 日/);
+});
+
+test("覚えた入力は、正しい誕生日と性別のときだけ読み、壊れた値・おかしな値は覚えていないものとする", () => {
+    assert.deepEqual(parseSaved('{"birthday":"1994-04-01","sex":"male"}', NOW), { birthday: "1994-04-01", sex: "male" });
+    for (const json of [null, "", "{", "null", "[]", '"1994-04-01"', '{"birthday":"1994-04-01"}', '{"birthday":"1994-02-30","sex":"male"}', '{"birthday":"2030-01-01","sex":"female"}', '{"birthday":"1994-04-01","sex":"other"}', '{"birthday":19940401,"sex":"male"}']) {
+        assert.equal(parseSaved(json, NOW), null, String(json));
+    }
 });
