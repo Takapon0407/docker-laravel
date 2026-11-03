@@ -77,6 +77,7 @@ textarea.devtool-code {
 }
 
 // 結果が変わったとき、一瞬だけ背景を光らせる（util/flash.ts で付ける）
+// 光り終わりの色は --flash-base（白いカードそのものを光らせるときは #fff にして、後ろの色が透けないようにする）
 .is-updated {
     animation: devtool-updated 0.8s ease-out;
 }
@@ -86,7 +87,7 @@ textarea.devtool-code {
         background-color: color-mix(in srgb, #{$main-color} 25%, #fff);
     }
     to {
-        background-color: transparent;
+        background-color: var(--flash-base, transparent);
     }
 }
 

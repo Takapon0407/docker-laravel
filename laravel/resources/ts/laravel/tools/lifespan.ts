@@ -1,5 +1,7 @@
 import { birthYearCandidates, daysInMonth, expectedEnd, LIFE_EXPECTANCY, parseBirthday, remaining, shareText, todayInJapan, type Region, type Sex } from "@/lib/lifespan";
 
+import { flash } from "../util/flash";
+
 const number = new Intl.NumberFormat("ja-JP");
 const dateFormat = new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "short", timeZone: "Asia/Tokyo" });
 
@@ -62,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 button.addEventListener("click", () => {
                     yearSelect.value = String(year);
                     updateDays();
-                    render();
+                    render(true);
                 });
                 return button;
             }),
@@ -115,7 +117,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }),
     );
 
-    function render(): void {
+    // changed：誕生日・性別を変えたとき（結果のカードを一瞬光らせる。1 秒ごとの書き換えでは光らせない）
+    function render(changed = false): void {
         const sex = (document.querySelector<HTMLInputElement>('input[name="lifespan-sex"]:checked')?.value ?? "unspecified") as Sex;
         const now = Date.now();
         const value = birthdayValue();
@@ -127,6 +130,9 @@ document.addEventListener("DOMContentLoaded", () => {
             card.hidden = birthMs === null;
             if (birthMs === null) {
                 continue;
+            }
+            if (changed) {
+                flash(card);
             }
             const expectancy = LIFE_EXPECTANCY[card.dataset.lifespanRegion as Region][sex];
             const end = expectedEnd(birthMs, expectancy.years);
@@ -160,16 +166,16 @@ document.addEventListener("DOMContentLoaded", () => {
         select.addEventListener("change", () => {
             updateDays();
             updateCandidates();
-            render();
+            render(true);
         });
     }
     ageInput.addEventListener("input", updateCandidates);
-    document.querySelectorAll<HTMLInputElement>('input[name="lifespan-sex"]').forEach((radio) => radio.addEventListener("change", render));
+    document.querySelectorAll<HTMLInputElement>('input[name="lifespan-sex"]').forEach((radio) => radio.addEventListener("change", () => render(true)));
     updateDays();
     render();
     // 秒が変わるタイミングにそろえて書き換える
     window.setTimeout(() => {
         render();
-        window.setInterval(render, 1000);
+        window.setInterval(() => render(), 1000);
     }, 1000 - (Date.now() % 1000));
 });
