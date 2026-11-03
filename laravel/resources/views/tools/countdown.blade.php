@@ -1,17 +1,17 @@
 @extends('layouts.common')
 @section('title', 'カウントダウン')
-@section('description', '今年の残り時間と、これから 1 年の祝日・自分で決めた記念日などまで、あと何日かを表示します。自分で足した日は、お使いのブラウザの中にだけ残します。')
-{{-- ホーム画面にはカウントダウンのアプリとして追加する（アイコンから開くと、足した日がすぐ見られる） --}}
+@section('description', '今年の残り時間と、これから 1 年の祝日・マイ記念日（自分で決めた日）まで、あと何日かを表示します。マイ記念日は、お使いのブラウザの中にだけ残します。')
+{{-- ホーム画面にはカウントダウンのアプリとして追加する（アイコンから開くと、マイ記念日がすぐ見られる） --}}
 @section('manifest', asset('manifest-countdown.json'))
 @push('head')
     @vite('resources/ts/laravel/tools/countdown.ts')
 @endpush
 @section('content')
 
-{{-- 計算はブラウザ内だけで行う（自分で足した日はサーバーに送らず、localStorage にだけ残す） --}}
+{{-- 計算はブラウザ内だけで行う（マイ記念日はサーバーに送らず、localStorage にだけ残す） --}}
 <div class="container countdown-container">
     <h1 class="countdown-title font-heading">カウントダウン</h1>
-    <p class="countdown-lead">今年の残りと、祝日や自分で決めた日まで、あとどれくらいかを表示します。</p>
+    <p class="countdown-lead">今年の残りと、祝日やマイ記念日まで、あとどれくらいかを表示します。</p>
 
     {{-- 1 秒ごとに書き換える。読み上げが続かないよう aria-live は付けない --}}
     <section class="countdown-card">
@@ -39,9 +39,13 @@
     </section>
 
     <section class="countdown-card">
-        <h2 class="countdown-heading">自分で決めた日</h2>
-        <ul class="countdown-list" id="countdown-custom"></ul>
-        <p class="countdown-help" id="countdown-custom-empty">まだありません。誕生日や記念日など、毎年くる日を足せます。</p>
+        <h2 class="countdown-heading">マイ記念日</h2>
+        {{-- 何のためにブラウザに残すのかがわからないと怪しく見えるため、使い方・残す理由・送らないことを先に書く --}}
+        <p class="countdown-help">
+            マイ記念日では最大 20 件、好きな日時を設定し、その日まで残り何日かを確認することができます。<br>
+            設定された「名前」「日付」はお使いのブラウザに一時的に保存され、再度このページを訪れた時、同じブラウザであれば入力せずに確認ができます。<br>
+            また、入力内容はサーバーには送られず、開発者を含め他の人からは見えませんので、安心してご利用ください。
+        </p>
         <form class="countdown-form" id="countdown-form" novalidate>
             <div class="countdown-form-name">
                 <label class="form-label" for="countdown-name">名前</label>
@@ -56,11 +60,11 @@
                 <select class="form-select" id="countdown-day" required><option value="">--</option></select>
                 <span>日</span>
             </div>
-            <button type="submit" class="btn btn-dark countdown-form-submit">足す</button>
+            <button type="submit" class="btn btn-dark countdown-form-submit">追加</button>
         </form>
         <p class="countdown-error" id="countdown-error" role="alert" hidden></p>
-        {{-- 何のために残すのかがわからないと怪しく見えるため、使いどころと、送らないことをあわせて書く --}}
-        <p class="countdown-help mt-2 mb-0">足した日は、ブックマークやホーム画面から何度も開いて確かめるときに、毎回入れ直す手間がないよう、この端末のブラウザの中にだけ残します。サーバーには送らず、ほかの人からは見えません（最大 20 件。「消す」でいつでも消せます）。</p>
+        <ul class="countdown-list countdown-custom-list" id="countdown-custom"></ul>
+        <p class="countdown-help countdown-custom-empty mb-0" id="countdown-custom-empty">まだありません。誕生日や記念日など、毎年くる日を追加できます。</p>
     </section>
 </div>
 

@@ -165,6 +165,12 @@
     }
 }
 
+// マイ記念日の一覧は入力欄の下に出す
+.countdown-custom-list,
+.countdown-custom-empty {
+    margin-top: 1rem;
+}
+
 .countdown-error {
     color: #b02a37;
     margin: 0.5rem 0 0;

@@ -34,10 +34,10 @@ return [
     [
         'route' => 'tools.countdown',
         'title' => 'カウントダウン',
-        'description' => '今年の残り時間と、これから 1 年の祝日や、自分で決めた記念日などまで、あと何日かを表示します。',
+        'description' => '今年の残り時間と、これから 1 年の祝日や、マイ記念日まで、あと何日かを表示します。',
         'purpose' => 'general',
         'storage' => 'local',
-        'storage_note' => '自分で足した日は、ブラウザの中にだけ残します',
+        'storage_note' => 'マイ記念日は、ブラウザの中にだけ残します',
     ],
     [
         'route' => 'tools.json',

@@ -1,6 +1,6 @@
 import { clock, type Clock, type CustomDay, isValidCustomDay, MAX_CUSTOM_DAYS, nextOccurrence, parseCustomDays, upcomingHolidays, yearRemaining } from "@/lib/countdown";
 
-// 自分で足した日
+// マイ記念日
 const STORAGE_KEY = "countdown:v1";
 
 const dateFormat = new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "short", timeZone: "Asia/Tokyo" });
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 日付が変わったときと、自分の日を足した・消したときだけ一覧を作り直す
+    // 日付が変わったときと、マイ記念日を追加・削除したときだけ一覧を作り直す
     function renderLists(now: number): void {
         const holidays = upcomingHolidays(now).map((holiday) => listItem(holiday.name, holiday.startMs, holiday.daysLeft));
         holidayList.replaceChildren(...holidays.slice(0, HOLIDAYS_SHOWN));
@@ -114,8 +114,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const remove = document.createElement("button");
                 remove.type = "button";
                 remove.className = "btn btn-outline-secondary btn-sm countdown-item-remove";
-                remove.textContent = "消す";
-                remove.setAttribute("aria-label", `${day.name}を消す`);
+                remove.textContent = "削除";
+                remove.setAttribute("aria-label", `${day.name}を削除`);
                 remove.addEventListener("click", () => {
                     const rest = days.filter((_, i) => i !== index);
                     if (saveDays(rest)) {
@@ -173,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (monthSelect.value === "" || daySelect.value === "" || !isValidCustomDay(day)) {
             message = "月と日を選んでください";
         } else if (days.length >= MAX_CUSTOM_DAYS) {
-            message = `足せるのは ${MAX_CUSTOM_DAYS} 件までです`;
+            message = `追加できるのは ${MAX_CUSTOM_DAYS} 件までです`;
         } else if (!saveDays([...days, day])) {
             message = "このブラウザでは保存できませんでした";
         }
