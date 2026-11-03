@@ -1,6 +1,7 @@
 import { birthYearCandidates, daysInMonth, expectedEnd, LIFE_EXPECTANCY, parseBirthday, remaining, shareText, todayInJapan, type Region, type Sex } from "@/lib/lifespan";
 
 import { flash } from "../util/flash";
+import { showPopupNotification } from "../util/notification";
 
 const number = new Intl.NumberFormat("ja-JP");
 const dateFormat = new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "short", timeZone: "Asia/Tokyo" });
@@ -72,13 +73,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const share = document.getElementById("lifespan-share") as HTMLElement;
-    const shareLink = document.getElementById("lifespan-share-x") as HTMLAnchorElement;
     const REGION_LABELS: Record<Region, string> = { japan: "日本", world: "世界" };
 
     const dialog = document.getElementById("lifespan-share-dialog") as HTMLDialogElement;
     const preview = document.getElementById("lifespan-share-preview") as HTMLElement;
+    const sendButton = document.getElementById("lifespan-share-send") as HTMLButtonElement;
+    const copyButton = document.getElementById("lifespan-share-copy") as HTMLButtonElement;
+    // 共有メニュー（Web Share API）が使えるブラウザでは共有、使えなければコピー
+    const canShare = typeof navigator.share === "function";
+    sendButton.hidden = !canShare;
+    copyButton.hidden = canShare;
+    // 確認の画面で見せている文章（押したときの結果）
+    let sharing: { text: string; url: string } | null = null;
 
-    // 「X に投稿する」を押したら、その時点の結果で文章を作り、確認の画面で見せる（X はまだ開かない）
+    // 「共有する」を押したら、その時点の結果で文章を作り、確認の画面で見せる（まだ共有しない）
     (document.getElementById("lifespan-share-open") as HTMLButtonElement).addEventListener("click", () => {
         const now = Date.now();
         const birthMs = parseBirthday(birthdayValue(), now);
@@ -92,13 +100,36 @@ document.addEventListener("DOMContentLoaded", () => {
                 return { label: REGION_LABELS[region], years, result: remaining(birthMs, expectedEnd(birthMs, years), now) };
             }),
         );
-        const url = `${window.location.origin}${window.location.pathname}`;
-        preview.textContent = `${text}\n${url}`;
-        shareLink.href = `https://x.com/intent/post?${new URLSearchParams({ text, url }).toString()}`;
+        sharing = { text, url: `${window.location.origin}${window.location.pathname}` };
+        preview.textContent = `${sharing.text}\n${sharing.url}`;
         dialog.showModal();
     });
-    // 「X の投稿画面を開く」は新しいタブで開き、確認の画面は閉じる
-    shareLink.addEventListener("click", () => dialog.close());
+    sendButton.addEventListener("click", () => {
+        if (!sharing) {
+            return;
+        }
+        const data = sharing;
+        dialog.close();
+        navigator.share(data).catch((error: unknown) => {
+            // 共有メニューを閉じただけのときは何もしない
+            if (!(error instanceof DOMException && error.name === "AbortError")) {
+                showPopupNotification("共有できませんでした");
+            }
+        });
+    });
+    copyButton.addEventListener("click", () => {
+        if (!sharing) {
+            return;
+        }
+        const data = sharing;
+        navigator.clipboard.writeText(`${data.text}\n${data.url}`).then(
+            () => {
+                dialog.close();
+                showPopupNotification("文章をコピーしました");
+            },
+            () => showPopupNotification("コピーできませんでした"),
+        );
+    });
     (document.getElementById("lifespan-share-cancel") as HTMLButtonElement).addEventListener("click", () => dialog.close());
     // 画面の外側（暗いところ）を押しても閉じる（dialog の余白を押したときは閉じないよう、押した位置で確かめる）
     dialog.addEventListener("click", (event) => {
