@@ -16,16 +16,23 @@
     margin-bottom: 1.5rem;
 }
 
-.tools-filter {
+// 用途・データの扱いの 2 つの絞り込みを横に並べる（狭い画面では縦に並ぶ）
+.tools-filters {
     // 絞り込みは :has() で行うため、対応していないブラウザではボタンごと出さない
     // （押しても絞り込まれず、「端末内で完結」のつもりでサーバーに保存するツールを選んでしまわないように）
     display: none;
-    text-align: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem 1.5rem;
     margin-bottom: 1.25rem;
 
     @supports selector(:has(*)) {
-        display: block;
+        display: flex;
     }
+}
+
+.tools-filter {
+    text-align: center;
 
     // ボタンの緑を Bootstrap の success ではなくサイトの緑にする（割り勘・質問ボードと同じ）
     .btn-outline-success {
@@ -49,29 +56,48 @@
     margin-bottom: 0.5rem;
 }
 
-// 「端末内で完結」を選んだらサーバーに保存するツールを、「サーバーに保存」を選んだら端末内で完結するツールを隠す
-.tools-container:has(#tools-filter-local:checked) .tools-list > [data-storage="server"],
-.tools-container:has(#tools-filter-server:checked) .tools-list > [data-storage="local"] {
+// 選んだ用途・データの扱いに合わないツールを隠す（両方を選んだときは、両方に合うものだけが残る）
+$tools-filters: (
+    purpose: (general, dev),
+    storage: (local, server),
+);
+$tools-filter-ids: (
+    purpose: "tools-purpose",
+    storage: "tools-filter",
+);
+
+@each $attribute, $values in $tools-filters {
+    @each $value in $values {
+        .tools-container:has(##{map-get($tools-filter-ids, $attribute)}-#{$value}:checked) .tools-list > li:not([data-#{$attribute}="#{$value}"]) {
+            display: none;
+        }
+    }
+}
+
+// 条件に合うツールがないときだけ「条件に合うツールはありません」を出す
+.tools-empty {
     display: none;
+    text-align: center;
+    color: #777;
+    padding: 1.5rem 0;
 }
 
-// 絞り込んで中のツールがなくなった種類は、見出しごと隠す
-.tools-container:has(#tools-filter-local:checked) .tools-section:not(:has([data-storage="local"])),
-.tools-container:has(#tools-filter-server:checked) .tools-section:not(:has([data-storage="server"])) {
-    display: none;
-}
-
-.tools-section + .tools-section {
-    margin-top: 2rem;
-}
-
-.tools-section-title {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: #555;
-    border-bottom: 2px solid color-mix(in srgb, #{$main-color} 40%, #fff);
-    padding-bottom: 0.4rem;
-    margin-bottom: 1rem;
+@each $purpose in (all, general, dev) {
+    @each $storage in (all, local, server) {
+        @if not ($purpose == all and $storage == all) {
+            $match: "";
+            @if $purpose != all {
+                $match: $match + '[data-purpose="#{$purpose}"]';
+            }
+            @if $storage != all {
+                $match: $match + '[data-storage="#{$storage}"]';
+            }
+            .tools-container:has(#tools-purpose-#{$purpose}:checked):has(#tools-filter-#{$storage}:checked):not(:has(.tools-list > li#{$match}))
+                .tools-empty {
+                display: block;
+            }
+        }
+    }
 }
 
 .tools-list {
@@ -112,22 +138,41 @@
     margin-bottom: 0.5rem;
 }
 
-// データの扱い（どこに保存されるか）
-.tools-storage {
-    display: inline-block;
-    font-size: 0.85rem;
-    border-radius: 6px;
-    padding: 0.2rem 0.6rem;
+// 分類のラベル（用途・データの扱い）
+.tools-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.5rem;
+}
+
+.tools-tag {
+    // base/_common.scss の li { width: 100% } を打ち消して、文字の幅にする
+    width: auto;
+    font-size: 0.75rem;
+    border-radius: 999px;
+    padding: 0.1rem 0.6rem;
+    background: #f0f1f3;
+    color: #555;
 
     &.is-local {
         background: color-mix(in srgb, #{$main-color} 12%, #fff);
         color: color-mix(in srgb, #{$main-color} 60%, #000);
     }
 
+    // サーバーに保存するツールは、目に留まるよう暖色にする
     &.is-server {
-        background: #f0f1f3;
-        color: #555;
+        background: #fff1e0;
+        color: #9a4a00;
     }
+}
+
+.tools-card-note {
+    font-size: 0.85rem;
+    color: #777;
+    margin-bottom: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

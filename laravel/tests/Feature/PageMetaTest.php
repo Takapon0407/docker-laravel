@@ -60,9 +60,10 @@ class PageMetaTest extends TestCase
         $tools->assertSee('<link rel="canonical" href="'.url('/tools').'">', false);
         $tools->assertSee('href="'.route('tools.warikan').'"', false);
         // 割り勘は入力をサーバーに送らないツールとして、絞り込んでも残す
-        $tools->assertSeeInOrder(['data-storage="local"', 'href="'.route('tools.warikan').'"'], false);
+        $tools->assertSeeInOrder(['data-purpose="general" data-storage="local"', 'href="'.route('tools.warikan').'"'], false);
         $tools->assertSee('id="tools-filter-local"', false);
         $tools->assertSee('id="tools-filter-server"', false);
+        $tools->assertSee('id="tools-purpose-dev"', false);
 
         // 開発向けのツール：一覧から「端末内で完結」としてたどれ、ページごとのタイトルを出す
         foreach ([
@@ -70,7 +71,7 @@ class PageMetaTest extends TestCase
             'tools.datetime' => '日時の変換（UTC / JST）',
             'tools.regex' => '正規表現チェック',
         ] as $route => $title) {
-            $tools->assertSeeInOrder(['data-storage="local"', 'href="'.route($route).'"'], false);
+            $tools->assertSeeInOrder(['data-purpose="dev" data-storage="local"', 'href="'.route($route).'"'], false);
             $page = $this->get(route($route));
             $page->assertOk();
             $page->assertSee('<title>'.$title.' | てくてくテック</title>', false);
