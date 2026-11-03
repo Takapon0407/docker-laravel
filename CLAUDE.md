@@ -5,7 +5,7 @@
 ## 概要
 
 - ポートフォリオサイト（https://tektektech-portfolio.com/）。Laravel 13 / PHP 8.5、フロントは Blade ＋ TypeScript ＋ Sass（Vite でビルド）
-- **閲覧専用のサイト**：DB・ログイン・フォームはない。ページは `/`（プロフィール）・`/hobbies`・`/games/{tetris,puyo}`・`/tools`（便利ツールの一覧）・`/tools/warikan`・`/tools/board`（匿名質問ボード）・`/tools/lifespan`（寿命の計算）・`/tools/{json,datetime,regex}`（開発向け）・`/privacy`（プライバシーポリシー・免責事項。全ページのフッターからリンク）だけ
+- **閲覧専用のサイト**：DB・ログイン・フォームはない。ページは `/`（プロフィール）・`/hobbies`・`/games/{tetris,puyo}`・`/tools`（便利ツールの一覧）・`/tools/warikan`・`/tools/board`（匿名質問ボード）・`/tools/lifespan`（寿命の計算）・`/tools/countdown`（今年の残り・祝日・マイ記念日まで）・`/tools/{json,datetime,regex}`（開発向け）・`/privacy`（プライバシーポリシー・免責事項。全ページのフッターからリンク）だけ
 - 匿名質問ボードだけはサーバー側の処理があるが、Laravel とは別の **`infra/board`（CDK：API Gateway の WebSocket ＋ Lambda ＋ DynamoDB）**。Laravel はページを返すだけで、ブラウザが WebSocket で直接やり取りする。詳細は `infra/board/README.md`
 - `/hobbies` の写真は S3 から取得する。S3 への PUT 時に Lambda が幅・高さをメタデータとして付け、`HobbiesController` が `headObject` で読んで縦横を判定する
 
@@ -64,11 +64,13 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 - `config/cache.php` は `serializable_classes => false`（**キャッシュにオブジェクトを入れられない**）。enum などは値（文字列）にして保存する
 - **扱うデータを変えたら `privacy.blade.php` も直す**（ツールを足す・保存するものや期間を変える・外部のサービスを増やすなど）。日付も更新する
 - 便利ツールはヘッダーの「Tools」→ `/tools`（`tools/index.blade.php`）からたどる。一覧は `config/tools.php` のデータで、ツールを増やしたらここに足す。`purpose`（`general`：一般向け / `dev`：開発向け）と `storage`（`local`：入力をサーバーに送らない＝端末内で完結 / `server`：サーバーに保存する）がカードのラベルと絞り込みに使われ、`storage_note` にデータの扱いを書く
-- 寿命の計算の平均寿命は `lib/lifespan.ts` の `LIFE_EXPECTANCY`（日本：厚労省の簡易生命表、世界：国連の World Population Prospects）。新しい統計が出たら、値と `tools/lifespan.blade.php` の出典（リンク・年）をあわせて更新する
+- 寿命の計算の平均寿命は `lib/lifespan.ts` の `LIFE_EXPECTANCY`（日本：厚労省の簡易生命表、世界：国連の World Population Prospects）。新しい統計が出たら、値と `tools/lifespan.blade.php` の出典（リンク・年）をあわせて更新する。「この端末に覚える」を選んだときだけ、誕生日と性別を localStorage（`lifespan:v1`）に残す。ホーム画面には専用の `manifest-lifespan.json` で追加する
+- カウントダウンの祝日は `lib/holidays.ts` で祝日法の今の決まり（2022〜2099 年）から計算する。祝日法が変わったら直す。春分・秋分は近似式なので、官報の発表と違ったら直す。マイ記念日は localStorage（`countdown:v1`）。今の季節は気象庁の決まり（春 3〜5 月・夏 6〜8 月・秋 9〜11 月・冬 12〜2 月）
 - 開発向けのツールは見た目を `pages/_devtools.scss`（`.devtool-*`）で共通にする。正規表現は時間のかかるパターンで固まらないよう Web Worker（`lib/regex-worker.ts`）で動かし、1 秒で止める。コピーのボタンは `util/copy.ts` の `data-copy-target`、結果が変わったことを知らせる光らせ方は `util/flash.ts`
 - `/tools/*` の便利ツールは計算をブラウザ内だけで行う（サーバーに入力を送らない。匿名質問ボードの投稿だけは例外で、`infra/board` の WebSocket に送る）。DOM に依存しないロジックは `resources/ts/lib/` に置いてテストし、ページの TS（`resources/ts/laravel/tools/`）から使う（`resources/ts/laravel/` 以下は全部 Vite のエントリーになるため）
 - `config/` は変更したものだけを置き、ほかは Laravel の既定値を使う。`/hobbies` のゲーム一覧は `config/hobbies.php` のデータ
 - Sass は `components/`・`base/`・`pages/` に分け、サイトの緑は `_variables.scss` の `$main-color`。見出しのフォントは `.font-heading`（Google Fonts の Mochiy Pop One。漢字も含む）。Bootstrap 5 のクラスを使う（Bootstrap 4 のクラスは効かない）
+- `/` のスキルスタック・略歴・資格は、就活用のクエリ（`config/profile.php`。今は `/?for=recruit`）が付いたときだけ HTML に出す（ツールなどから来た人に見せないため。秘密ではない）。その表示は `noindex`
 - `/` と `/profile` は同じ内容のため `/profile` は `/` へ 301。ページのタイトル・説明は `@section('title')` / `@section('description')`
 
 ## ハマりどころ

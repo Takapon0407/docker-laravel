@@ -12,6 +12,9 @@
     <title>{{ $pageTitle }}</title>
     <meta name="description" content="{{ $description }}">
     <link rel="canonical" href="{{ url()->current() }}">
+    @hasSection('robots')
+        <meta name="robots" content="@yield('robots')">
+    @endif
     {{-- SNS で共有されたときの表示（OGP） --}}
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="{{ $siteName }}">

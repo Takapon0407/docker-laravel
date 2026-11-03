@@ -29,7 +29,15 @@ return [
         'description' => '誕生日を入れると、日本と世界の平均寿命を迎える日と、そこまでの残りの年・日・時間・分・秒を計算します。出典の統計も載せています。',
         'purpose' => 'general',
         'storage' => 'local',
-        'storage_note' => '誕生日はブラウザの中だけで計算に使い、保存もしません',
+        'storage_note' => '誕生日はブラウザの中だけで計算に使います。「この端末に覚える」を選んだときだけ、ブラウザに残します',
+    ],
+    [
+        'route' => 'tools.countdown',
+        'title' => 'カウントダウン',
+        'description' => '今年の残り時間と、これから 1 年の祝日や、マイ記念日まで、あと何日かを表示します。',
+        'purpose' => 'general',
+        'storage' => 'local',
+        'storage_note' => 'マイ記念日は、ブラウザの中にだけ残します',
     ],
     [
         'route' => 'tools.json',

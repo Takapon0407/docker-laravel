@@ -32,7 +32,7 @@ class PageMetaTest extends TestCase
         $top->assertSee('<title>てくてくテック</title>', false);
         $top->assertSee('<link rel="canonical" href="'.url('/').'">', false);
         $top->assertSee('<meta property="og:title" content="てくてくテック">', false);
-        $top->assertSee('<meta name="description" content="Laravel・React・AWSを中心にWebサービスを開発しているエンジニア、たかぽんのポートフォリオです。', false);
+        $top->assertSee('<meta name="description" content="Webエンジニア・たかぽんのポートフォリオサイトです。', false);
         // ヘッダーのロゴもサイト名と同じ表記にそろえる
         $top->assertDontSee('てくてくてっく');
 
@@ -84,6 +84,18 @@ class PageMetaTest extends TestCase
         // 共有する前に、おおよその年齢がわかることを確かめる画面を出す
         $lifespan->assertSee('id="lifespan-share-dialog"', false);
         $lifespan->assertSee('あなたのおおよその年齢がわかります', false);
+        // ホーム画面には寿命の計算のアプリとして追加し、誕生日はチェックしたときだけ端末に覚える
+        $lifespan->assertSee('<link rel="manifest" href="'.asset('manifest-lifespan.json').'">', false);
+        $lifespan->assertSee('id="lifespan-remember"', false);
+
+        // カウントダウン：一般向け・端末内で完結。祝日の決まりの出典へのリンクを載せ、ホーム画面には専用のアプリとして追加する
+        $this->assertToolCard($tools, 'data-purpose="general" data-storage="local"', route('tools.countdown'));
+        $countdown = $this->get(route('tools.countdown'));
+        $countdown->assertOk();
+        $countdown->assertSee('<title>カウントダウン | てくてくテック</title>', false);
+        $countdown->assertSee('href="https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html"', false);
+        $countdown->assertSee('href="https://www.jma.go.jp/jma/kishou/know/yougo_hp/toki.html"', false);
+        $countdown->assertSee('<link rel="manifest" href="'.asset('manifest-countdown.json').'">', false);
 
         // 開発向けのツール：一覧から「端末内で完結」としてたどれ、ページごとのタイトルを出す
         foreach ([

@@ -1,5 +1,11 @@
 @extends('layouts.common')
-@section('description', 'Laravel・React・AWSを中心にWebサービスを開発しているエンジニア、たかぽんのポートフォリオです。スキルスタック・略歴・資格（AWS認定5種など）を紹介しています。')
+@if ($showCareer)
+    @section('description', 'Laravel・React・AWSを中心にWebサービスを開発しているエンジニア、たかぽんのポートフォリオです。スキルスタック・略歴・資格（AWS認定5種など）を紹介しています。')
+    {{-- 就活用の表示は検索結果に出さない（canonical はクエリなしの / のまま） --}}
+    @section('robots', 'noindex')
+@else
+    @section('description', 'Webエンジニア・たかぽんのポートフォリオサイトです。趣味の写真やゲーム、ブラウザですぐに使える便利ツールを公開しています。')
+@endif
 @push('head')
     @vite('resources/ts/laravel/profile.ts')
 @endpush
@@ -30,6 +36,8 @@
             </div>
         </div>
     </div>
+    {{-- スキルスタック・略歴・資格などは、就活用のクエリ（config/profile.php）が付いたときだけ HTML に出す --}}
+    @if ($showCareer)
     <div class="content-box">
         <h2 class="font-heading">すきるすたっく</h2>
         <div class="sub-content">
@@ -108,5 +116,6 @@
             </div>
         </div>
     </div>
+    @endif
 </div>
 @endsection
