@@ -59,7 +59,8 @@
             <button type="submit" class="btn btn-dark countdown-form-submit">足す</button>
         </form>
         <p class="countdown-error" id="countdown-error" role="alert" hidden></p>
-        <p class="countdown-help mt-2 mb-0">足した日は、この端末のブラウザの中にだけ残し、サーバーには送りません（最大 20 件）。</p>
+        {{-- 何のために残すのかがわからないと怪しく見えるため、使いどころと、送らないことをあわせて書く --}}
+        <p class="countdown-help mt-2 mb-0">足した日は、ブックマークやホーム画面から何度も開いて確かめるときに、毎回入れ直す手間がないよう、この端末のブラウザの中にだけ残します。サーバーには送らず、ほかの人からは見えません（最大 20 件。「消す」でいつでも消せます）。</p>
     </section>
 </div>
 
