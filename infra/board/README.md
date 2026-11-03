@@ -109,4 +109,10 @@ aws sns subscribe --topic-arn <AlarmTopicArn> --protocol email --notification-en
 | ルームの作成 | 同じ IP から 1 時間に 5 件 | `shared/protocol.ts` の `LIMITS` |
 | 投稿 | 同じブラウザから 10 秒に 1 回、同じ IP から 1 分に 60 回 | `LIMITS`・`lambda/router.ts` |
 | 1 ルームの参加者 | 30 人（主催者は数えずに入れる） | `LIMITS` |
-| API Gateway | 1 秒に 20 件（瞬間的には 40 件） | `lib/board-stack.ts` |
+| 1 ルームの主催者の接続 | 10 件（タブごとに 1 件） | `lambda/router.ts` |
+| 新しい接続 | 同じ IP から 1 分に 60 回（超えたら `$connect` を 429 で断る） | `lambda/router.ts` |
+| 1 つの接続から送るメッセージ | 10 秒に 20 件（超えたら断って接続を切る。ブラウザは入り直す） | `lambda/router.ts` |
+| API Gateway | 1 秒に 20 件（瞬間的には 40 件）。全ルーム・全接続で 1 つ | `lib/board-stack.ts` |
+
+- IP は CloudFront が付ける `CloudFront-Viewer-Address` から取る（閲覧者が同じ名前のヘッダーを送っても CloudFront が上書きすることを dev で確かめた）。IP の形でない値は使わず、IPv6 は /64 ごとにまとめて数える
+- API Gateway の流量制限は IP ごとではないため、多くの IP から一斉に送られると全ルームが止まりうる。必要になったら CloudFront に WAF のレートベースのルールを付ける

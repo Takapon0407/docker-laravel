@@ -11,6 +11,7 @@ const BROWSER = "browser".padEnd(22, "0");
 
 function setUp({ secret = null, debug = false }: { secret?: string | null; debug?: boolean } = {}) {
     const sent: [string, ServerMessage][] = [];
+    const disconnected: string[] = [];
     const memory = createMemoryStore();
     let now = NOW;
     let counter = 0;
@@ -23,6 +24,9 @@ function setUp({ secret = null, debug = false }: { secret?: string | null; debug
         async send(connectionId, message) {
             sent.push([connectionId, message]);
         },
+        async disconnect(connectionId) {
+            disconnected.push(connectionId);
+        },
         async originSecret() {
             return secret;
         },
@@ -32,7 +36,7 @@ function setUp({ secret = null, debug = false }: { secret?: string | null; debug
     const send = (connectionId: string, body: unknown) => call("$default", connectionId, { body: JSON.stringify(body) });
     // 最後に送ったメッセージ
     const last = () => sent.at(-1)?.[1];
-    return { route, call, send, sent, last, memory, advance: (ms: number) => (now += ms) };
+    return { route, call, send, sent, disconnected, last, memory, advance: (ms: number) => (now += ms) };
 }
 
 async function createRoom(t: ReturnType<typeof setUp>, overrides: Record<string, unknown> = {}) {
@@ -236,8 +240,17 @@ test("閲覧者の IP は CloudFront のヘッダーを優先し、なければ 
     const event = (extra: Partial<WebSocketEvent>) => ({ requestContext: { routeKey: "$connect", connectionId: "c" }, ...extra }) as WebSocketEvent;
     const withHeader = (value: string) => viewerIp(event({ headers: { "CloudFront-Viewer-Address": value } }));
     assert.equal(withHeader("198.51.100.10:46532"), "198.51.100.10");
-    assert.equal(withHeader("2001:db8::1:46532"), "2001:db8::1");
-    assert.equal(withHeader("[2001:db8::1]:46532"), "2001:db8::1");
+    // IPv6 は /64 ごとにまとめる
+    assert.equal(withHeader("2001:db8::1:46532"), "2001:db8:0:0::/64");
+    assert.equal(withHeader("[2001:db8::1]:46532"), "2001:db8:0:0::/64");
+    assert.equal(withHeader("[2001:db8:0:1:aaaa:bbbb:cccc:dddd]:1"), "2001:db8:0:1::/64");
+    assert.equal(withHeader("[2001:DB8:0:1::ffff]:1"), "2001:db8:0:1::/64");
+    assert.equal(withHeader("[2001:db8:0:1::192.0.2.1]:1"), "2001:db8:0:1::/64");
+    assert.equal(withHeader("[::ffff:192.0.2.1]:1"), "192.0.2.1");
+    // IP の形でない値は使わない
+    assert.equal(withHeader("not-an-ip:1"), null);
+    assert.equal(withHeader("x".repeat(500)), null);
+    assert.equal(withHeader("198.51.100.999:1"), null);
 
     const direct = event({});
     direct.requestContext.identity = { sourceIp: "203.0.113.5" };
@@ -695,14 +708,19 @@ test("post：締め切り中に断られた投稿は、連投の回数に数え�
 
 test("post：同じ IP からは、ブラウザ ID を変えても 1 分に 60 回まで", async () => {
     const { t, created, received } = await roomWithMembers();
-    await t.call("$connect", "bot", { headers: { "CloudFront-Viewer-Address": "198.51.100.7:443" } });
+    // 同じ IP の接続を 7 つ使い回す（1 つの接続から送れるメッセージの数の上限に当たらないように）
+    const bots = Array.from({ length: 7 }, (_, i) => `bot${i}`);
+    for (const bot of bots) {
+        await t.call("$connect", bot, { headers: { "CloudFront-Viewer-Address": "198.51.100.7:443" } });
+    }
     const counts = { posted: 0, limited: 0 };
     for (let i = 0; i < 61; i++) {
         // 入り直してブラウザ ID を変える
-        await t.send("bot", { action: "join", requestId: "j", browserId: `bot${String(i).padStart(3, "0")}`.padEnd(22, "x"), roomId: created.roomId, key: created.joinKey });
+        const bot = bots[i % bots.length]!;
+        await t.send(bot, { action: "join", requestId: "j", browserId: `bot${String(i).padStart(3, "0")}`.padEnd(22, "x"), roomId: created.roomId, key: created.joinKey });
         t.sent.length = 0;
-        await t.send("bot", { action: "post", requestId: "p", kind: "comment", body: `連投 ${i}`, nickname: null });
-        const m = received("bot")[0];
+        await t.send(bot, { action: "post", requestId: "p", kind: "comment", body: `連投 ${i}`, nickname: null });
+        const m = received(bot)[0];
         if (m?.type === "posted") {
             counts.posted++;
         } else if (m?.type === "error" && m.code === "rate_limited") {
@@ -750,4 +768,80 @@ test("join：参加者は 30 人まで。主催者は数えず満員でも入れ
     assert.equal(await join("late", created.joinKey), "room_full");
     assert.equal(await join("guest0", created.joinKey), "joined");
     assert.equal(await join("owner", created.adminKey), "joined");
+});
+
+test("1 つの接続から 10 秒に 20 件まで。超えたら断って接続を切り、次の時間枠ではまた送れる", async () => {
+    const t = setUp();
+    // 時間枠の始まりにそろえる
+    t.advance(10_000 - (NOW % 10_000));
+    for (let i = 0; i < 20; i++) {
+        await t.send("c1", { action: "ping", requestId: `r${i}` });
+    }
+    assert.equal(t.last()?.type, "pong");
+    assert.deepEqual(t.disconnected, []);
+
+    await t.send("c1", { action: "ping", requestId: "over" });
+    const m = t.last();
+    assert.equal(m?.type === "error" && m.code, "rate_limited");
+    assert.deepEqual(t.disconnected, ["c1"]);
+    // ほかの接続は送れる
+    await t.send("c2", { action: "ping", requestId: "r" });
+    assert.equal(t.last()?.type, "pong");
+
+    t.advance(10_000);
+    await t.send("c1", { action: "ping", requestId: "next" });
+    assert.equal(t.last()?.type, "pong");
+});
+
+test("$connect：同じ IP からは 1 分に 60 回まで。ほかの IP はつなげる", async () => {
+    const t = setUp();
+    t.advance(60_000 - (NOW % 60_000));
+    const connect = (connectionId: string, address: string) => t.call("$connect", connectionId, { headers: { "CloudFront-Viewer-Address": address } });
+    for (let i = 0; i < 60; i++) {
+        assert.equal((await connect(`c${i}`, "198.51.100.7:443")).statusCode, 200);
+    }
+
+    assert.equal((await connect("over", "198.51.100.7:443")).statusCode, 429);
+    assert.equal(t.memory.connections.has("over"), false);
+    assert.equal((await connect("other", "198.51.100.8:443")).statusCode, 200);
+    t.advance(60_000);
+    assert.equal((await connect("later", "198.51.100.7:443")).statusCode, 200);
+});
+
+test("join：主催者の接続は 1 ルームに 10 件まで。参加者は別に数える", async () => {
+    const { t, created, received } = await roomWithMembers();
+    // owner と合わせて 10 件
+    for (let i = 2; i <= 10; i++) {
+        await t.send(`owner${i}`, { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.adminKey });
+    }
+    t.sent.length = 0;
+
+    await t.send("owner11", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.adminKey });
+    const denied = received("owner11")[0];
+    assert.ok(denied?.type === "error" && denied.code === "room_full");
+    assert.match(denied.message, /主催者として同時に開けるのは 10 件まで/);
+    // 入っている主催者の入り直しと、参加者は入れる
+    t.sent.length = 0;
+    await t.send("owner10", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.adminKey });
+    await t.send("guest3", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.joinKey });
+    assert.equal(received("owner10")[0]?.type, "joined");
+    assert.equal(received("guest3")[0]?.type, "joined");
+});
+
+test("createRoom：IPv6 は同じ /64 なら、アドレスを変えても同じ IP として数える", async () => {
+    const t = setUp();
+    t.advance(3600 * 1000 - (NOW % (3600 * 1000)));
+    const results: string[] = [];
+    for (let i = 1; i <= LIMITS.roomsPerHour + 1; i++) {
+        await t.call("$connect", `v6-${i}`, { headers: { "CloudFront-Viewer-Address": `[2001:db8:0:1::${i}]:443` } });
+        await t.send(`v6-${i}`, { action: "createRoom", requestId: "c", title: "部屋", retention: "24h", nameMode: "nickname", topics: [] });
+        const m = t.last();
+        results.push(m?.type === "error" ? m.code : (m?.type ?? ""));
+    }
+    assert.deepEqual(results, [...Array<string>(LIMITS.roomsPerHour).fill("roomCreated"), "rate_limited"]);
+
+    // ほかの /64 は別に数える
+    await t.call("$connect", "v6-other", { headers: { "CloudFront-Viewer-Address": "[2001:db8:0:2::1]:443" } });
+    await t.send("v6-other", { action: "createRoom", requestId: "c", title: "部屋", retention: "24h", nameMode: "nickname", topics: [] });
+    assert.equal(t.last()?.type, "roomCreated");
 });

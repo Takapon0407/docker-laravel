@@ -1,4 +1,5 @@
 import { createHash, timingSafeEqual } from "node:crypto";
+import { isIP } from "node:net";
 import type { APIGatewayProxyResult, APIGatewayProxyWebsocketEventV2 } from "aws-lambda";
 import {
     ERROR_MESSAGES,
@@ -23,6 +24,8 @@ export type WebSocketEvent = APIGatewayProxyWebsocketEventV2 & {
 // AWS への通信・時刻・乱数は外から渡す（テストでは偽物にする）
 export interface Dependencies {
     send(connectionId: string, message: ServerMessage): Promise<void>;
+    // 接続をサーバーから切る（メッセージを送りすぎた接続に使う）
+    disconnect(connectionId: string): Promise<void>;
     // CloudFront が付ける確認用ヘッダーの値。null なら確かめない（API Gateway に直接つなぐとき）
     originSecret(): Promise<string | null>;
     store: BoardStore;
@@ -46,6 +49,7 @@ export const DEFAULT_TOPIC_TITLE = "全体";
 
 const ok: APIGatewayProxyResult = { statusCode: 200, body: "" };
 const forbidden: APIGatewayProxyResult = { statusCode: 403, body: "" };
+const tooManyRequests: APIGatewayProxyResult = { statusCode: 429, body: "" };
 
 // 操作の途中で断るときに投げる（router がエラーのメッセージにして返す）
 // detail を渡すと、画面に出す文言を ERROR_MESSAGES の代わりにそれにする
@@ -62,6 +66,16 @@ class ActionError extends Error {
 
 // 同じ IP から 1 分間に投稿できる数（ブラウザ ID を変えて連投されたときの上限。会場の Wi-Fi で同じ IP になる人がいても足りる数）
 const POSTS_PER_IP_PER_MINUTE = 60;
+
+// 同じ IP から 1 分間に新しくつなげる数（会場の Wi-Fi で 30 人が同じ IP から一斉に開いても足りる数）
+const CONNECTS_PER_IP_PER_MINUTE = 60;
+
+// 1 つの接続から 10 秒間に送れるメッセージの数。超えたら接続を切る
+// （ステージの流量制限は全ルームで 1 つなので、1 つの接続が送り続けてほかのルームを止めないように。ブラウザは切れたら入り直す）
+const MESSAGES_PER_CONNECTION = { windowSeconds: 10, limit: 20 } as const;
+
+// 1 ルームに同時に入れる主催者の接続の数（主催者 2〜3 人が何枚かタブを開いても足りる数。全員への配信が膨らみすぎないように）
+const ADMIN_CONNECTIONS_PER_ROOM = 10;
 
 // API Gateway のルート（$connect / $disconnect / $default / 各操作）ごとに処理を振り分ける
 export function createRouter(deps: Dependencies) {
@@ -156,12 +170,14 @@ export function createRouter(deps: Dependencies) {
                 if (!role) {
                     throw new ActionError("room_not_found");
                 }
-                // 数えるのは参加者だけで、主催者は満員でも入れる（入り直しで自分が数えられている場合もあるので、自分は除く）
-                if (role === "participant") {
-                    const members = await deps.store.listMembers(room.id, nowSeconds());
-                    if (members.filter((member) => member.role === "participant" && member.connectionId !== connectionId).length >= LIMITS.members) {
-                        throw new ActionError("room_full");
-                    }
+                // 参加者と主催者は別に数え、主催者は参加者が満員でも入れる（入り直しで自分が数えられている場合もあるので、自分は除く）
+                const members = await deps.store.listMembers(room.id, nowSeconds());
+                const sameRole = members.filter((member) => member.role === role && member.connectionId !== connectionId).length;
+                if (role === "participant" && sameRole >= LIMITS.members) {
+                    throw new ActionError("room_full");
+                }
+                if (role === "admin" && sameRole >= ADMIN_CONNECTIONS_PER_ROOM) {
+                    throw new ActionError("room_full", `主催者として同時に開けるのは ${ADMIN_CONNECTIONS_PER_ROOM} 件までです。使っていないタブを閉じてからもう一度開いてください`);
                 }
 
                 // 主催者は、確かめた鍵のハッシュも持たせる（このあと主催者用 URL が作り直されていたら、主催者の操作は断られる）
@@ -361,15 +377,29 @@ export function createRouter(deps: Dependencies) {
         const { routeKey, connectionId } = event.requestContext;
 
         switch (routeKey) {
-            case "$connect":
+            case "$connect": {
                 if (!(await isFromOrigin(event, deps))) {
                     return forbidden;
                 }
-                await deps.store.saveConnection(connectionId, { ip: viewerIp(event) }, nowSeconds() + CONNECTION_TTL_SECONDS);
+                const ip = viewerIp(event);
+                const windowStart = Math.floor(nowSeconds() / 60) * 60;
+                if (!(await deps.store.consume(`connect#${ip ?? "unknown"}`, windowStart, 60, CONNECTS_PER_IP_PER_MINUTE))) {
+                    return tooManyRequests;
+                }
+                await deps.store.saveConnection(connectionId, { ip }, nowSeconds() + CONNECTION_TTL_SECONDS);
                 return ok;
+            }
             case "$disconnect":
                 await deps.store.deleteConnection(connectionId);
                 return ok;
+        }
+
+        // 送りすぎた接続は、断ってから切る
+        const windowStart = Math.floor(nowSeconds() / MESSAGES_PER_CONNECTION.windowSeconds) * MESSAGES_PER_CONNECTION.windowSeconds;
+        if (!(await deps.store.consume(`message#${connectionId}`, windowStart, MESSAGES_PER_CONNECTION.windowSeconds, MESSAGES_PER_CONNECTION.limit))) {
+            await sendError(connectionId, null, "rate_limited");
+            await deps.disconnect(connectionId);
+            return ok;
         }
 
         const parsed = parseClientMessage(event.body);
@@ -436,11 +466,38 @@ async function isFromOrigin(event: WebSocketEvent, deps: Dependencies): Promise<
 
 // CloudFront 経由なら CloudFront が付けたアドレス、直接つないだときは API Gateway が見た送信元を使う
 // （CloudFront 経由のとき、送信元は CloudFront のサーバーになる）
+// IPv6 は、ふつう 1 つの契約に /64 がまとめて割り当てられ、アドレスを変えながらつなげるので、/64 ごとに数える
+// IP の形になっていない値は使わない（IP ごとの上限は "unknown" でまとめて数える）
 export function viewerIp(event: WebSocketEvent): string | null {
     const address = header(event, VIEWER_ADDRESS_HEADER);
-    if (address !== undefined) {
-        const ipv6 = /^\[(.+)\]:\d+$/.exec(address);
-        return ipv6?.[1] ?? address.replace(/:\d+$/, "");
+    const ip = address === undefined ? event.requestContext.identity?.sourceIp : (/^\[(.+)\]:\d+$/.exec(address)?.[1] ?? address.replace(/:\d+$/, ""));
+    if (ip === undefined) {
+        return null;
     }
-    return event.requestContext.identity?.sourceIp ?? null;
+    switch (isIP(ip)) {
+        case 4:
+            return ip;
+        case 6:
+            return ipv6Prefix64(ip);
+        default:
+            return null;
+    }
+}
+
+// IPv6 の上位 64 ビット（例：2001:db8:0:1::5 → 2001:db8:0:1::/64）。IPv4 を埋め込んだ形（::ffff:192.0.2.1）は IPv4 にする
+function ipv6Prefix64(ip: string): string {
+    const embedded = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(ip);
+    if (embedded) {
+        return embedded[1]!;
+    }
+    const [head, tail] = ip.split("::") as [string, string | undefined];
+    const groups = (part: string | undefined) => (part ? part.split(":") : []);
+    // 末尾が IPv4 の形のときは 2 つの 16 ビットにする（上位 64 ビットには関わらないので 0 で埋める）
+    const tailGroups = groups(tail).flatMap((group) => (group.includes(".") ? ["0", "0"] : [group]));
+    const headGroups = groups(head).flatMap((group) => (group.includes(".") ? ["0", "0"] : [group]));
+    const all = tail === undefined ? headGroups : [...headGroups, ...Array<string>(8 - headGroups.length - tailGroups.length).fill("0"), ...tailGroups];
+    return `${all
+        .slice(0, 4)
+        .map((group) => parseInt(group, 16).toString(16))
+        .join(":")}::/64`;
 }
