@@ -63,32 +63,6 @@ npx cdk deploy BoardCiStack --profile <管理者のプロファイル>
 
 2. GitHub の Settings → Environments で設定する
    - `board-dev` を作り、Deployment branches を `develop` だけにする
-   - `production`（EC2 のデプロイと共用）に Required reviewers（自分）を付け、Deployment branches を `main` だけにする
-
-## CI/CD（Issue #259）
-
-`.github/workflows/board.yml`。`infra/board/**` かワークフローが変わったときだけ動く。
-
-| きっかけ | すること | AWS のロール |
-| --- | --- | --- |
-| PR | テスト・`cdk synth`、dev / prod との diff を PR にコメント | `github-actions-board-diff`（読み取りだけ） |
-| `develop` への push | `BoardStack-dev` にデプロイ（Environment「board-dev」） | `github-actions-board-deploy` |
-| `main` への push | 承認のあと `BoardStack-prod` にデプロイ（Environment「production」） | `github-actions-board-deploy` |
-
-- ロールは `BoardCiStack` で作る。CI が自分の権限を広げられないよう、**このスタックは CI からはデプロイせず、管理者が手でデプロイする**
-- diff 用のロールは、CDK のブートストラップの lookup ロール（読み取りだけ。KMS の復号は拒否されるので SecureString は読めない）だけを引き受けられる。フォーク・Dependabot の PR には OIDC のトークンが渡らないため、diff は動かない
-- デプロイ用のロールは、Environment の `board-dev` / `production` のジョブからだけ引き受けられる。どのブランチから動かせるか・承認が要るかは Environment の設定で決める
-  - CloudFormation の実行ロール（ブートストラップの `cfn-exec-role`）は管理者の権限を持つため、デプロイ用のロールは実質的に何でも作れる。Environment の設定（ブランチの制限・承認）で守る
-
-### 初回の準備（管理者が 1 回だけ）
-
-```bash
-# 1. ロールを作る
-npx cdk deploy BoardCiStack --profile <管理者のプロファイル>
-```
-
-2. GitHub の Settings → Environments で設定する
-   - `board-dev` を作り、Deployment branches を `develop` だけにする
    - `production` に Required reviewers（自分）を付け、Deployment branches を `main` だけにする
 
 ## 本番の公開（Issue #260）

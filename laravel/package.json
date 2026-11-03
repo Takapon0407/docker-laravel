@@ -14,6 +14,7 @@
     },
     "dependencies": {
         "bootstrap": "^5.3.8",
-        "swiper": "^14.3.0"
+        "swiper": "^14.3.0",
+        "uqr": "0.1.3"
     }
 }

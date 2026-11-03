@@ -11,6 +11,7 @@ import {
     sortPosts,
     type SortOrder,
 } from "@/lib/board-posts";
+import { qrPath } from "@/lib/board-qr";
 import { length, LIMITS, type PostKind, type PostView, type RoomView, type ServerMessage, type TopicView } from "../../../../../../infra/board/shared/protocol.ts";
 import { showPopupNotification } from "../../util/notification";
 
@@ -19,6 +20,7 @@ type Joined = Extract<ServerMessage, { type: "joined" }>;
 const dateFormat = new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
 const timeFormat = new Intl.DateTimeFormat("ja-JP", { hour: "2-digit", minute: "2-digit" });
 const KIND_LABELS: Record<PostKind, string> = { question: "質問", comment: "コメント" };
+const SVG_NS = "http://www.w3.org/2000/svg";
 
 function element<T extends HTMLElement>(id: string): T {
     return document.getElementById(id) as T;
@@ -121,9 +123,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 break;
             case "postAdded":
                 posts.set(message.post.id, message.post);
+                // 自分の投稿は知らせない（返事より先に届いたときは、返事のときに消す）
+                if (message.post.topicId === viewingTopicId && !deleteKeys.has(message.post.id)) {
+                    unseen.add(message.post.id);
+                }
                 break;
             case "postDeleted":
                 posts.delete(message.postId);
+                unseen.delete(message.postId);
                 forgetPost(message.postId);
                 break;
             case "postLiked": {
@@ -209,6 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
         topics = joined.topics;
         // 入り直したときは、このあと届く投稿で置き換える
         posts.clear();
+        unseen.clear();
         if (switched || !topics.some((topic) => topic.id === viewingTopicId)) {
             viewingTopicId = room.currentTopicId;
         }
@@ -245,11 +253,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const shareUrl = buildRoomUrl(window.location.origin, { roomId: link!.roomId, key: joinKey });
         element<HTMLInputElement>("board-share-url").value = shareUrl;
+        renderQr(shareUrl);
         element<HTMLInputElement>("board-admin-url").value = buildRoomUrl(window.location.origin, { roomId: link!.roomId, key: adminKey });
         // 主催者の鍵をこのブラウザに残せたら、アドレスバーは共有用 URL にする（そのまま共有しても安全なように）
         // 残せなければ、再接続したときも主催者として入れるよう、アドレスバーは主催者用 URL にする
         linkKey = loadAdminKey(storage, link!.roomId) === adminKey ? joinKey : adminKey;
         history.replaceState(null, "", buildRoomUrl(window.location.origin, { roomId: link!.roomId, key: linkKey }));
+    }
+
+    function renderQr(url: string): void {
+        const svg = document.getElementById("board-qr-image") as unknown as SVGSVGElement;
+        const { size, d } = qrPath(url);
+        svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+        const background = document.createElementNS(SVG_NS, "rect");
+        background.setAttribute("width", String(size));
+        background.setAttribute("height", String(size));
+        background.setAttribute("fill", "#fff");
+        const modules = document.createElementNS(SVG_NS, "path");
+        modules.setAttribute("d", d);
+        modules.setAttribute("fill", "#000");
+        modules.setAttribute("shape-rendering", "crispEdges");
+        svg.replaceChildren(background, modules);
     }
 
     function renderRoom(room: RoomView): void {
@@ -313,6 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 deleteKeys.set(message.postId, message.deleteKey);
                 saveDeleteKeys(storage, link!.roomId, deleteKeys);
+                unseen.delete(message.postId);
                 saveNickname(storage, nickname ?? "");
                 bodyInput.value = "";
                 updateCount();
@@ -487,6 +512,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const list = element<HTMLUListElement>("board-post-list");
     const emptyEl = element<HTMLElement>("board-posts-empty");
     let renderScheduled = false;
+    // 見えていないところに届いた新しい投稿（画面に入ったら消す）
+    const unseen = new Set<string>();
+    const newPostsButton = element<HTMLButtonElement>("board-new-posts");
+    const newPostsAnnouncement = element<HTMLElement>("board-new-posts-announcement");
+    const seenObserver = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+            if (entry.isIntersecting) {
+                unseen.delete((entry.target as HTMLElement).dataset.postId ?? "");
+            }
+        }
+        renderNewPosts();
+    });
 
     // 分けて届いた投稿をまとめて描くため、次の描画のタイミングまで待つ
     function scheduleRenderPosts(): void {
@@ -540,11 +577,38 @@ document.addEventListener("DOMContentLoaded", () => {
         );
         emptyEl.hidden = visible.length > 0;
         list.replaceChildren(...visible.map(renderPost));
+
+        // 描き直した要素で、まだ見ていない投稿が画面に入るかを見張り直す（別のトピックに移ったものは数えない）
+        seenObserver.disconnect();
+        const shown = new Set(visible.map((post) => post.id));
+        for (const id of unseen) {
+            if (!shown.has(id)) {
+                unseen.delete(id);
+            }
+        }
+        for (const item of list.querySelectorAll<HTMLLIElement>("li[data-post-id]")) {
+            if (unseen.has(item.dataset.postId!)) {
+                seenObserver.observe(item);
+            }
+        }
+        renderNewPosts();
+    }
+
+    function renderNewPosts(): void {
+        const label = `新しい投稿 ${unseen.size} 件`;
+        // 見えている投稿が変わるたびに呼ばれるので、件数が変わったときだけ読み上げる（すべて見たら空にする）
+        const announcement = unseen.size === 0 ? "" : label;
+        if (newPostsAnnouncement.textContent !== announcement) {
+            newPostsAnnouncement.textContent = announcement;
+        }
+        newPostsButton.hidden = unseen.size === 0;
+        newPostsButton.textContent = label;
     }
 
     function renderPost(post: PostView): HTMLLIElement {
         const li = document.createElement("li");
         li.className = "board-post";
+        li.dataset.postId = post.id;
         li.classList.toggle("is-pinned", post.pinned);
 
         const meta = document.createElement("div");
@@ -631,6 +695,19 @@ document.addEventListener("DOMContentLoaded", () => {
             viewingTopicId = button.dataset.topicId!;
             scheduleRenderPosts();
         }
+    });
+
+    // まだ見ていない投稿のうち、一覧で一番上のものまで移る（画面に入ると数から消える）
+    newPostsButton.addEventListener("click", () => {
+        const target = [...list.querySelectorAll<HTMLLIElement>("li[data-post-id]")].find((item) => unseen.has(item.dataset.postId!));
+        target?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+
+    // 会場のスクリーンに映すため、QR コードを全画面にする（できないブラウザ（iPhone の Safari など）ではボタンを出さない）
+    const qrFullscreen = element<HTMLButtonElement>("board-qr-fullscreen");
+    qrFullscreen.hidden = !document.fullscreenEnabled;
+    qrFullscreen.addEventListener("click", () => {
+        qrFullscreen.closest<HTMLElement>(".board-qr")?.requestFullscreen().catch(() => showPopupNotification("全画面にできませんでした"));
     });
 
     document.querySelectorAll<HTMLInputElement>('input[name="sort"]').forEach((input) => {
