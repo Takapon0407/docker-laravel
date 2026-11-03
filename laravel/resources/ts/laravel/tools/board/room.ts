@@ -163,6 +163,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 showAdminUrls();
                 showPopupNotification("ほかの主催者が共有用 URL を作り直しました");
                 break;
+            case "removed":
+                // 主催者が参加者を全員退出させた。古い共有用 URL では入り直せないので、つなぎ直さない
+                client.close();
+                showError("主催者が参加者を全員退出させました。主催者から新しい共有用 URL を受け取って、入り直してください。");
+                return;
             case "roleChanged":
                 if (message.role === "participant") {
                     // ほかの主催者が主催者用 URL を作り直した。残っていた鍵はもう使えない
@@ -384,16 +389,18 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll<HTMLButtonElement>("[data-rotate]").forEach((button) => {
         button.addEventListener("click", () => {
             const target = button.dataset.rotate === "admin" ? "admin" : "join";
-            const message =
-                target === "join"
-                    ? "共有用 URL を作り直しますか？古い URL では新しく入れなくなります。"
-                    : "主催者用 URL を作り直しますか？ほかの主催者は参加者になります。";
+            const removeParticipants = button.dataset.rotate === "join-remove";
+            const message = removeParticipants
+                ? "共有用 URL を作り直して、今いる参加者を全員退出させますか？参加者には新しい共有用 URL から入り直してもらう必要があります。"
+                : target === "join"
+                  ? "共有用 URL を作り直しますか？古い URL では新しく入れなくなります。"
+                  : "主催者用 URL を作り直しますか？ほかの主催者は参加者になります。";
             if (!window.confirm(message)) {
                 return;
             }
             button.disabled = true;
             client
-                .request({ action: "rotateKeys", target })
+                .request({ action: "rotateKeys", target, ...(removeParticipants && { removeParticipants: true as const }) })
                 .then((result) => {
                     if (result.type !== "keysRotated") {
                         throw new Error(`unexpected message: ${result.type}`);
@@ -404,7 +411,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         saveAdminKey(storage, link!.roomId, adminKey);
                     }
                     showAdminUrls();
-                    showPopupNotification(target === "join" ? "共有用 URL を作り直しました" : "主催者用 URL を作り直しました");
+                    showPopupNotification(
+                        removeParticipants ? "共有用 URL を作り直し、参加者を退出させました" : target === "join" ? "共有用 URL を作り直しました" : "主催者用 URL を作り直しました",
+                    );
                 })
                 .catch((error: unknown) => showPopupNotification(error instanceof BoardRequestError ? error.message : "作り直せませんでした"))
                 .finally(() => {
