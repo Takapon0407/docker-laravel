@@ -1,0 +1,24 @@
+{
+    "id": "/tools/lifespan",
+    "name": "寿命の計算 | てくてくテック",
+    "short_name": "寿命の計算",
+    "description": "誕生日から、日本と世界の平均寿命まであとどれくらいかを計算するツールです。",
+    "lang": "ja",
+    "start_url": "/tools/lifespan",
+    "scope": "/tools/lifespan",
+    "display": "standalone",
+    "background_color": "#55c501",
+    "theme_color": "#55c501",
+    "icons": [
+        {
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

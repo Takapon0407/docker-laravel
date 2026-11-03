@@ -160,3 +160,31 @@ export function shareText(results: { label: string; years: number; result: Remai
         })
         .join("\n");
 }
+
+// 「この端末に覚える」で残した入力（localStorage の値）。読めない・おかしな値は null にして、覚えていないものとする
+export interface Saved {
+    birthday: string;
+    sex: Sex;
+}
+
+const SEXES: readonly Sex[] = ["male", "female", "unspecified"];
+
+export function parseSaved(json: string | null, nowMs: number): Saved | null {
+    if (json === null) {
+        return null;
+    }
+    let value: unknown;
+    try {
+        value = JSON.parse(json);
+    } catch {
+        return null;
+    }
+    if (typeof value !== "object" || value === null) {
+        return null;
+    }
+    const { birthday, sex } = value as Record<string, unknown>;
+    if (typeof birthday !== "string" || parseBirthday(birthday, nowMs) === null || typeof sex !== "string" || !SEXES.includes(sex as Sex)) {
+        return null;
+    }
+    return { birthday, sex: sex as Sex };
+}

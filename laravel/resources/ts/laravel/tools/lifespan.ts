@@ -1,10 +1,13 @@
-import { birthYearCandidates, daysInMonth, expectedEnd, LIFE_EXPECTANCY, parseBirthday, remaining, shareText, todayInJapan, type Region, type Sex } from "@/lib/lifespan";
+import { birthYearCandidates, daysInMonth, expectedEnd, LIFE_EXPECTANCY, parseBirthday, parseSaved, remaining, shareText, todayInJapan, type Region, type Sex } from "@/lib/lifespan";
 
 import { flash } from "../util/flash";
 import { showPopupNotification } from "../util/notification";
 
 const number = new Intl.NumberFormat("ja-JP");
 const dateFormat = new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "short", timeZone: "Asia/Tokyo" });
+
+// 「この端末に覚える」を選んだときの入力
+const STORAGE_KEY = "lifespan:v1";
 
 const TOTAL_LABELS = [
     ["years", "年"],
@@ -93,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (birthMs === null) {
             return;
         }
-        const sex = (document.querySelector<HTMLInputElement>('input[name="lifespan-sex"]:checked')?.value ?? "unspecified") as Sex;
+        const sex = selectedSex();
         const text = shareText(
             (["japan", "world"] as const).map((region) => {
                 const { years } = LIFE_EXPECTANCY[region][sex];
@@ -140,6 +143,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    function selectedSex(): Sex {
+        return (document.querySelector<HTMLInputElement>('input[name="lifespan-sex"]:checked')?.value ?? "unspecified") as Sex;
+    }
+
     function birthdayValue(): string {
         const [year, month, day] = [selected(yearSelect), selected(monthSelect), selected(daySelect)];
         if (year === null || month === null || day === null) {
@@ -166,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // changed：誕生日・性別を変えたとき（結果のカードを一瞬光らせる。1 秒ごとの書き換えでは光らせない）
     function render(changed = false): void {
-        const sex = (document.querySelector<HTMLInputElement>('input[name="lifespan-sex"]:checked')?.value ?? "unspecified") as Sex;
+        const sex = selectedSex();
         const now = Date.now();
         const value = birthdayValue();
         const birthMs = value === "" ? null : parseBirthday(value, now);
@@ -209,16 +216,57 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // 覚えるのは誕生日がそろったときだけ（途中の入力は残さない）。チェックを外したら消す
+    const remember = document.getElementById("lifespan-remember") as HTMLInputElement;
+    function saveInput(): void {
+        try {
+            const birthday = birthdayValue();
+            if (!remember.checked) {
+                localStorage.removeItem(STORAGE_KEY);
+            } else if (parseBirthday(birthday, Date.now()) !== null) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ birthday, sex: selectedSex() }));
+            }
+        } catch {
+            // 保存できない環境（プライベートブラウズなど）でも計算はできるので無視する
+        }
+    }
+    function loadInput(): void {
+        let saved = null;
+        try {
+            saved = parseSaved(localStorage.getItem(STORAGE_KEY), Date.now());
+        } catch {
+            // 読めない環境では、覚えていないものとする
+        }
+        if (saved === null) {
+            return;
+        }
+        const [year, month, day] = saved.birthday.split("-").map(Number) as [number, number, number];
+        yearSelect.value = String(year);
+        monthSelect.value = String(month);
+        updateDays();
+        daySelect.value = String(day);
+        (document.getElementById(`lifespan-sex-${saved.sex}`) as HTMLInputElement).checked = true;
+        remember.checked = true;
+    }
+
     for (const select of [yearSelect, monthSelect, daySelect]) {
         select.addEventListener("change", () => {
             updateDays();
             updateCandidates();
             render(true);
+            saveInput();
         });
     }
     ageInput.addEventListener("input", updateCandidates);
-    document.querySelectorAll<HTMLInputElement>('input[name="lifespan-sex"]').forEach((radio) => radio.addEventListener("change", () => render(true)));
+    document.querySelectorAll<HTMLInputElement>('input[name="lifespan-sex"]').forEach((radio) =>
+        radio.addEventListener("change", () => {
+            render(true);
+            saveInput();
+        }),
+    );
+    remember.addEventListener("change", saveInput);
     updateDays();
+    loadInput();
     render();
     // 秒が変わるタイミングにそろえて書き換える
     window.setTimeout(() => {

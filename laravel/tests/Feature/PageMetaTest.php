@@ -84,6 +84,9 @@ class PageMetaTest extends TestCase
         // 共有する前に、おおよその年齢がわかることを確かめる画面を出す
         $lifespan->assertSee('id="lifespan-share-dialog"', false);
         $lifespan->assertSee('あなたのおおよその年齢がわかります', false);
+        // ホーム画面には寿命の計算のアプリとして追加し、誕生日はチェックしたときだけ端末に覚える
+        $lifespan->assertSee('<link rel="manifest" href="'.asset('manifest-lifespan.json').'">', false);
+        $lifespan->assertSee('id="lifespan-remember"', false);
 
         // 開発向けのツール：一覧から「端末内で完結」としてたどれ、ページごとのタイトルを出す
         foreach ([

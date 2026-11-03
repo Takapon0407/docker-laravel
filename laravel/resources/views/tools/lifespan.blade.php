@@ -1,6 +1,8 @@
 @extends('layouts.common')
 @section('title', '寿命の計算')
-@section('description', '誕生日を入れると、日本と世界の平均寿命から、平均寿命を迎える日と、そこまでの残りの年・日・時間・分・秒を計算します。入力はブラウザの中だけで処理し、保存もしません。')
+{{-- ホーム画面には寿命の計算のアプリとして追加する（アイコンから開くと、覚えた誕生日ですぐ結果が出る） --}}
+@section('manifest', asset('manifest-lifespan.json'))
+@section('description', '誕生日を入れると、日本と世界の平均寿命から、平均寿命を迎える日と、そこまでの残りの年・日・時間・分・秒を計算します。入力はブラウザの中だけで処理し、サーバーには送りません。')
 @push('head')
     @vite('resources/ts/laravel/tools/lifespan.ts')
 @endpush
@@ -8,7 +10,7 @@
 
 <div id="notification" class="notification" role="status" aria-live="polite" aria-atomic="true"></div>
 
-{{-- 計算はブラウザ内だけで行う（誕生日はサーバーに送らない・保存しない） --}}
+{{-- 計算はブラウザ内だけで行う（誕生日はサーバーに送らない。「この端末に覚える」のときだけ localStorage に残す） --}}
 <div class="container lifespan-container">
     <h1 class="lifespan-title font-heading">寿命の計算</h1>
     <p class="lifespan-lead">誕生日を入れると、日本と世界の平均寿命まで、あとどれくらいかを計算します。</p>
@@ -48,7 +50,12 @@
                 </div>
             </fieldset>
         </div>
-        <p class="lifespan-help mt-2 mb-0">入力された誕生日は、ブラウザの中だけで計算に使い、送信も保存もしません。</p>
+        {{-- 選んだときだけ localStorage に残す（ホーム画面やブックマークから開いたとき、すぐ結果を出すため） --}}
+        <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="lifespan-remember">
+            <label class="form-check-label" for="lifespan-remember">この端末に覚える（次に開いたとき、すぐに結果を出します）</label>
+        </div>
+        <p class="lifespan-help mt-2 mb-0">入力された誕生日は、ブラウザの中だけで計算に使い、送信しません。「この端末に覚える」を選んだときだけ、このブラウザの中に残します（チェックを外すと消します）。</p>
         <p class="lifespan-error" id="lifespan-error" role="alert" hidden></p>
     </section>
 
