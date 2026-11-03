@@ -7,7 +7,7 @@ export function createMemoryStore() {
     const rooms = new Map<string, RoomRecord>();
     const topics = new Map<string, TopicRecord[]>();
     const connections = new Map<string, ConnectionRecord & { expiresAt: number }>();
-    const members = new Map<string, Map<string, { role: Role; expiresAt: number }>>();
+    const members = new Map<string, Map<string, { role: Role; adminKeyHash?: string; expiresAt: number }>>();
     const posts = new Map<string, Map<string, PostRecord & { expiresAt: number }>>();
     // 「ルーム ID 投稿 ID ブラウザ ID」
     const likes = new Set<string>();
@@ -56,7 +56,7 @@ export function createMemoryStore() {
             const { expiresAt: _expiresAt, ...record } = c;
             return record;
         },
-        async joinRoom(connectionId, roomId, role, browserId, expiresAt) {
+        async joinRoom(connectionId, roomId, role, adminKeyHash, browserId, expiresAt) {
             const current = connections.get(connectionId);
             if (current?.roomId && current.roomId !== roomId) {
                 members.get(current.roomId)?.delete(connectionId);
@@ -64,18 +64,33 @@ export function createMemoryStore() {
             if (!members.has(roomId)) {
                 members.set(roomId, new Map());
             }
-            members.get(roomId)!.set(connectionId, { role, expiresAt });
-            connections.set(connectionId, { ip: current?.ip ?? null, expiresAt: current?.expiresAt ?? 0, roomId, role, browserId });
+            const keyHash = adminKeyHash === null ? {} : { adminKeyHash };
+            members.get(roomId)!.set(connectionId, { role, ...keyHash, expiresAt });
+            connections.set(connectionId, { ip: current?.ip ?? null, expiresAt: current?.expiresAt ?? 0, roomId, role, ...keyHash, browserId });
         },
         async listMembers(roomId, now) {
-            return [...(members.get(roomId) ?? [])].filter(([, m]) => m.expiresAt >= now).map(([connectionId, m]) => ({ connectionId, role: m.role }));
+            return [...(members.get(roomId) ?? [])]
+                .filter(([, m]) => m.expiresAt >= now)
+                .map(([connectionId, { expiresAt: _expiresAt, ...m }]) => ({ connectionId, ...m }));
         },
-        async setRole(connectionId, roomId, role) {
+        async rotateAdminKey(roomId, connectionId, adminKeyHash) {
+            const member = members.get(roomId)?.get(connectionId);
+            const connection = connections.get(connectionId);
+            if (!member || connection?.roomId !== roomId) {
+                throw new Error("conditional check failed");
+            }
+            rooms.get(roomId)!.adminKeyHash = adminKeyHash;
+            member.adminKeyHash = adminKeyHash;
+            connection.adminKeyHash = adminKeyHash;
+        },
+        async demote(connectionId, roomId) {
             const member = members.get(roomId)?.get(connectionId);
             const connection = connections.get(connectionId);
             if (member && connection?.roomId === roomId) {
-                member.role = role;
-                connection.role = role;
+                member.role = "participant";
+                connection.role = "participant";
+                delete member.adminKeyHash;
+                delete connection.adminKeyHash;
             }
         },
         async deleteConnection(connectionId) {
