@@ -26,7 +26,10 @@ class BoardPageTest extends TestCase
     {
         config(['board.enabled' => true]);
 
-        $this->get('/tools')->assertSee('href="'.route('tools.board').'"', false);
+        $tools = $this->get('/tools');
+        $tools->assertSee('href="'.route('tools.board').'"', false);
+        // サーバーに保存するツールとして扱い、「端末内で完結」の絞り込みで隠れるようにする
+        $tools->assertSeeInOrder(['data-storage="server"', 'href="'.route('tools.board').'"'], false);
     }
 
     /**

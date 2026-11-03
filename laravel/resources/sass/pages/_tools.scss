@@ -16,6 +16,45 @@
     margin-bottom: 1.5rem;
 }
 
+.tools-filter {
+    // 絞り込みは :has() で行うため、対応していないブラウザではボタンごと出さない
+    // （押しても絞り込まれず、「端末内で完結」のつもりでサーバーに保存するツールを選んでしまわないように）
+    display: none;
+    text-align: center;
+    margin-bottom: 1.25rem;
+
+    @supports selector(:has(*)) {
+        display: block;
+    }
+
+    // ボタンの緑を Bootstrap の success ではなくサイトの緑にする（割り勘・質問ボードと同じ）
+    .btn-outline-success {
+        --bs-btn-color: color-mix(in srgb, #{$main-color} 80%, #000);
+        --bs-btn-border-color: #{$main-color};
+        --bs-btn-hover-bg: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-border-color: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-color: #fff;
+    }
+
+    .btn-check:checked + .btn-outline-success {
+        background-color: $main-color;
+        border-color: $main-color;
+        color: #fff;
+    }
+}
+
+.tools-filter-label {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.5rem;
+}
+
+// 「端末内で完結」を選んだらサーバーに保存するツールを、「サーバーに保存」を選んだら端末内で完結するツールを隠す
+.tools-container:has(#tools-filter-local:checked) .tools-list > [data-storage="server"],
+.tools-container:has(#tools-filter-server:checked) .tools-list > [data-storage="local"] {
+    display: none;
+}
+
 .tools-list {
     list-style: none;
     padding: 0;
@@ -54,9 +93,22 @@
     margin-bottom: 0.5rem;
 }
 
-.tools-card-note {
+// データの扱い（どこに保存されるか）
+.tools-storage {
+    display: inline-block;
     font-size: 0.85rem;
-    color: #777;
+    border-radius: 6px;
+    padding: 0.2rem 0.6rem;
+
+    &.is-local {
+        background: color-mix(in srgb, #{$main-color} 12%, #fff);
+        color: color-mix(in srgb, #{$main-color} 60%, #000);
+    }
+
+    &.is-server {
+        background: #f0f1f3;
+        color: #555;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
