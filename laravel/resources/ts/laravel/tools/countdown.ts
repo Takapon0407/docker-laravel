@@ -111,8 +111,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const holidays = upcomingHolidays(now).map((holiday) => listItem(holiday.name, holiday.startMs, holiday.daysLeft));
         holidayList.replaceChildren(...holidays.slice(0, HOLIDAYS_SHOWN));
         holidayMoreList.replaceChildren(...holidays.slice(HOLIDAYS_SHOWN));
-        holidayMore.hidden = holidays.length <= HOLIDAYS_SHOWN;
-        holidayMoreSummary.textContent = `ほかの祝日を見る（${holidays.length - HOLIDAYS_SHOWN} 日）`;
+        // 数は祝日の件数（「◯ 日」だと日数に見えるため「件」にする）。たたむ分がなければ出さない
+        const rest = Math.max(0, holidays.length - HOLIDAYS_SHOWN);
+        holidayMore.hidden = rest === 0;
+        holidayMoreSummary.textContent = `ほかの祝日を見る（${rest} 件）`;
 
         const sorted = days.map((day, index) => ({ day, index, next: nextOccurrence(day.month, day.day, now) })).sort((a, b) => a.next.daysLeft - b.next.daysLeft);
         customList.replaceChildren(
