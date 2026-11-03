@@ -65,6 +65,14 @@ class PageMetaTest extends TestCase
         $tools->assertSee('id="tools-filter-server"', false);
         $tools->assertSee('id="tools-purpose-dev"', false);
 
+        // 寿命の計算：一般向け・端末内で完結。出典の統計へのリンクを載せる
+        $tools->assertSeeInOrder(['data-purpose="general" data-storage="local"', 'href="'.route('tools.lifespan').'"'], false);
+        $lifespan = $this->get(route('tools.lifespan'));
+        $lifespan->assertOk();
+        $lifespan->assertSee('<title>寿命の計算 | てくてくテック</title>', false);
+        $lifespan->assertSee('href="https://www.mhlw.go.jp/toukei/saikin/hw/life/life25/index.html"', false);
+        $lifespan->assertSee('href="https://population.un.org/wpp/"', false);
+
         // 開発向けのツール：一覧から「端末内で完結」としてたどれ、ページごとのタイトルを出す
         foreach ([
             'tools.json' => 'JSON 整形',

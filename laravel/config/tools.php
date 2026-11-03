@@ -24,6 +24,14 @@ return [
         'enabled_by' => 'board.enabled',
     ],
     [
+        'route' => 'tools.lifespan',
+        'title' => '寿命の計算',
+        'description' => '誕生日を入れると、日本と世界の平均寿命を迎える日と、そこまでの残りの年・日・時間・分・秒を計算します。出典の統計も載せています。',
+        'purpose' => 'general',
+        'storage' => 'local',
+        'storage_note' => '誕生日はブラウザの中だけで計算に使い、保存もしません',
+    ],
+    [
         'route' => 'tools.json',
         'title' => 'JSON 整形',
         'description' => '1 行の JSON をインデント付きで見やすく整形したり、1 行に圧縮したりします。形が正しくないときは、何行目の何文字目かを表示します。',
