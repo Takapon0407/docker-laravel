@@ -13,11 +13,28 @@
 
     <section class="lifespan-card">
         <div class="row g-3">
-            <div class="col-sm-6">
-                <label class="form-label" for="lifespan-birthday">誕生日</label>
-                <input type="date" class="form-control form-control-lg" id="lifespan-birthday" min="1900-01-01">
-            </div>
-            <fieldset class="col-sm-6">
+            {{-- 年・月・日の選択肢はスクリプトで作る（年は今年から 1900 年まで、日はその月の日数まで） --}}
+            <fieldset class="col-12">
+                <legend class="form-label fs-6">誕生日</legend>
+                <div class="lifespan-birthday">
+                    <label class="visually-hidden" for="lifespan-year">年</label>
+                    <select class="form-select" id="lifespan-year"><option value="">----</option></select>
+                    <span>年</span>
+                    <label class="visually-hidden" for="lifespan-month">月</label>
+                    <select class="form-select" id="lifespan-month"><option value="">--</option></select>
+                    <span>月</span>
+                    <label class="visually-hidden" for="lifespan-day">日</label>
+                    <select class="form-select" id="lifespan-day"><option value="">--</option></select>
+                    <span>日</span>
+                </div>
+                <div class="lifespan-age mt-2">
+                    <label class="lifespan-help" for="lifespan-age">年齢から年を選ぶ：今</label>
+                    <input type="number" class="form-control form-control-sm" id="lifespan-age" inputmode="numeric" min="0" max="126" step="1">
+                    <span class="lifespan-help">歳</span>
+                    <span class="lifespan-age-candidates" id="lifespan-age-candidates"></span>
+                </div>
+            </fieldset>
+            <fieldset class="col-12">
                 <legend class="form-label fs-6">性別（平均寿命が男女で違うため）</legend>
                 <div class="btn-group w-100">
                     <input type="radio" class="btn-check" name="lifespan-sex" id="lifespan-sex-male" value="male">

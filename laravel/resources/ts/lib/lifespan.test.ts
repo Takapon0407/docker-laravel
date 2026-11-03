@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { breakdown, expectedEnd, LIFE_EXPECTANCY, parseBirthday, remaining } from "./lifespan.ts";
+import { birthYearCandidates, breakdown, daysInMonth, expectedEnd, LIFE_EXPECTANCY, parseBirthday, remaining, todayInJapan } from "./lifespan.ts";
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
@@ -62,4 +62,28 @@ test("日本の男女を合わせた値は、公表値がないので男女の�
     assert.equal(unspecified.years, Math.round(((male.years + female.years) / 2) * 100) / 100);
     assert.equal(unspecified.derived, true);
     assert.equal(LIFE_EXPECTANCY.world.unspecified.derived, false);
+});
+
+test("その月の日数（うるう年の 2 月は 29 日）", () => {
+    assert.deepEqual([daysInMonth(2026, 1), daysInMonth(2026, 2), daysInMonth(2024, 2), daysInMonth(1900, 2), daysInMonth(2000, 2), daysInMonth(2026, 4)], [31, 28, 29, 28, 29, 30]);
+});
+
+test("今日の日付は日本時間で数える", () => {
+    // UTC では 11 月 4 日 15 時 = 日本時間 11 月 5 日 0 時
+    assert.deepEqual(todayInJapan(Date.UTC(2026, 10, 4, 15)), { year: 2026, month: 11, day: 5 });
+    assert.deepEqual(todayInJapan(NOW), { year: 2026, month: 11, day: 4 });
+});
+
+test("年齢から生まれた年の候補：誕生日が分からなければ 2 つ、分かれば 1 つ", () => {
+    // 今日は 2026 年 11 月 4 日
+    assert.deepEqual(birthYearCandidates(35, NOW), [1991, 1990]);
+    // 今年の誕生日を過ぎた（4 月 1 日・今日）
+    assert.deepEqual(birthYearCandidates(35, NOW, 4, 1), [1991]);
+    assert.deepEqual(birthYearCandidates(35, NOW, 11, 4), [1991]);
+    // 今年の誕生日がまだ（11 月 5 日・12 月 31 日）
+    assert.deepEqual(birthYearCandidates(35, NOW, 11, 5), [1990]);
+    assert.deepEqual(birthYearCandidates(35, NOW, 12, 31), [1990]);
+    // 1900 年より前の年は出さない
+    assert.deepEqual(birthYearCandidates(126, NOW), [1900]);
+    assert.deepEqual(birthYearCandidates(130, NOW), []);
 });

@@ -120,3 +120,28 @@ export function parseBirthday(value: string, nowMs: number): number | null {
     const birthMs = utc - 9 * HOUR;
     return birthMs > nowMs ? null : birthMs;
 }
+
+// その月の日数（month は 1〜12）
+export function daysInMonth(year: number, month: number): number {
+    return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+// 日本時間での今日の年・月・日
+export function todayInJapan(nowMs: number): { year: number; month: number; day: number } {
+    const date = new Date(nowMs + 9 * HOUR);
+    return { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1, day: date.getUTCDate() };
+}
+
+// 今の年齢から、生まれた年の候補を求める（新しい年から順）
+// 誕生日（月・日）が分かっていれば、今年の誕生日を過ぎたかで 1 つに決まる。分からなければ 2 つ
+export function birthYearCandidates(age: number, nowMs: number, month: number | null = null, day: number | null = null): number[] {
+    const today = todayInJapan(nowMs);
+    const passed = today.year - age;
+    const notYet = passed - 1;
+    if (month === null || day === null) {
+        return [passed, notYet].filter((year) => year >= 1900);
+    }
+    const birthdayPassed = month < today.month || (month === today.month && day <= today.day);
+    const year = birthdayPassed ? passed : notYet;
+    return year >= 1900 ? [year] : [];
+}

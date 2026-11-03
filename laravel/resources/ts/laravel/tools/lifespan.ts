@@ -1,4 +1,4 @@
-import { expectedEnd, LIFE_EXPECTANCY, parseBirthday, remaining, type Region, type Sex } from "@/lib/lifespan";
+import { birthYearCandidates, daysInMonth, expectedEnd, LIFE_EXPECTANCY, parseBirthday, remaining, todayInJapan, type Region, type Sex } from "@/lib/lifespan";
 
 const number = new Intl.NumberFormat("ja-JP");
 const dateFormat = new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "short", timeZone: "Asia/Tokyo" });
@@ -12,11 +12,70 @@ const TOTAL_LABELS = [
 ] as const;
 
 document.addEventListener("DOMContentLoaded", () => {
-    const birthday = document.getElementById("lifespan-birthday") as HTMLInputElement;
+    const yearSelect = document.getElementById("lifespan-year") as HTMLSelectElement;
+    const monthSelect = document.getElementById("lifespan-month") as HTMLSelectElement;
+    const daySelect = document.getElementById("lifespan-day") as HTMLSelectElement;
+    const ageInput = document.getElementById("lifespan-age") as HTMLInputElement;
+    const candidates = document.getElementById("lifespan-age-candidates") as HTMLElement;
     const error = document.getElementById("lifespan-error") as HTMLElement;
     const cards = [...document.querySelectorAll<HTMLElement>("[data-lifespan-region]")];
-    // 入力欄で未来の日を選べないようにする（日本時間の今日まで）
-    birthday.max = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    const option = (value: number) => new Option(String(value), String(value));
+    // 年は新しい順（今年から 1900 年まで）
+    for (let year = todayInJapan(Date.now()).year; year >= 1900; year--) {
+        yearSelect.add(option(year));
+    }
+    for (let month = 1; month <= 12; month++) {
+        monthSelect.add(option(month));
+    }
+    const selected = (select: HTMLSelectElement) => (select.value === "" ? null : Number(select.value));
+
+    // 日の選択肢を、選んだ年・月の日数にそろえる（年・月がまだなら 31 日まで。選んでいた日が多すぎれば月末にする）
+    function updateDays(): void {
+        const year = selected(yearSelect) ?? 2000;
+        const month = selected(monthSelect);
+        const count = month === null ? 31 : daysInMonth(year, month);
+        const current = selected(daySelect);
+        while (daySelect.options.length - 1 > count) {
+            daySelect.remove(daySelect.options.length - 1);
+        }
+        for (let day = daySelect.options.length; day <= count; day++) {
+            daySelect.add(option(day));
+        }
+        if (current !== null && current > count) {
+            daySelect.value = String(count);
+        }
+    }
+
+    // 年齢から生まれた年の候補を出す（押すと年に入る）
+    function updateCandidates(): void {
+        const age = ageInput.value === "" ? null : Number(ageInput.value);
+        const years = age === null || !Number.isInteger(age) || age < 0 ? [] : birthYearCandidates(age, Date.now(), selected(monthSelect), selected(daySelect));
+        const decided = selected(monthSelect) !== null && selected(daySelect) !== null;
+        candidates.replaceChildren(
+            ...years.map((year, index) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "btn btn-outline-success btn-sm";
+                const note = decided ? "" : index === 0 ? "（今年の誕生日を過ぎた）" : "（今年の誕生日がまだ）";
+                button.textContent = `${year} 年${note}`;
+                button.addEventListener("click", () => {
+                    yearSelect.value = String(year);
+                    updateDays();
+                    render();
+                });
+                return button;
+            }),
+        );
+    }
+
+    function birthdayValue(): string {
+        const [year, month, day] = [selected(yearSelect), selected(monthSelect), selected(daySelect)];
+        if (year === null || month === null || day === null) {
+            return "";
+        }
+        return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    }
 
     const part = (card: HTMLElement, name: string) => card.querySelector<HTMLElement>(`[data-lifespan="${name}"]`)!;
     // 単位ごとの合計は 1 秒ごとに書き換えるので、一度だけ作って値だけを変える
@@ -37,9 +96,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function render(): void {
         const sex = (document.querySelector<HTMLInputElement>('input[name="lifespan-sex"]:checked')?.value ?? "unspecified") as Sex;
         const now = Date.now();
-        const birthMs = birthday.value === "" ? null : parseBirthday(birthday.value, now);
-        error.hidden = birthday.value === "" || birthMs !== null;
-        error.textContent = "1900 年 1 月 1 日から今日までの日付を入れてください";
+        const value = birthdayValue();
+        const birthMs = value === "" ? null : parseBirthday(value, now);
+        error.hidden = value === "" || birthMs !== null;
+        error.textContent = "今日より後の日は選べません";
         for (const card of cards) {
             card.hidden = birthMs === null;
             if (birthMs === null) {
@@ -73,8 +133,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    birthday.addEventListener("input", render);
+    for (const select of [yearSelect, monthSelect, daySelect]) {
+        select.addEventListener("change", () => {
+            updateDays();
+            updateCandidates();
+            render();
+        });
+    }
+    ageInput.addEventListener("input", updateCandidates);
     document.querySelectorAll<HTMLInputElement>('input[name="lifespan-sex"]').forEach((radio) => radio.addEventListener("change", render));
+    updateDays();
     render();
     // 秒が変わるタイミングにそろえて書き換える
     window.setTimeout(() => {

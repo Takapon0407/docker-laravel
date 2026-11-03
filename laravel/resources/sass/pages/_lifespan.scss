@@ -50,6 +50,40 @@
     color: #666;
 }
 
+// 誕生日の年・月・日を横に並べる
+.lifespan-birthday {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    select {
+        width: auto;
+        min-width: 4.5rem;
+    }
+
+    #lifespan-year {
+        min-width: 6.5rem;
+    }
+}
+
+// 年齢から年の候補を出す入力補助
+.lifespan-age {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+
+    input {
+        width: 5rem;
+    }
+}
+
+.lifespan-age-candidates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
 .lifespan-error {
     color: #b02a37;
     margin: 0.5rem 0 0;
