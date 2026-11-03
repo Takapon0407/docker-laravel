@@ -115,8 +115,9 @@ textarea.devtool-code {
     grid-template-columns: max-content 1fr auto;
     gap: 0.5rem 0.75rem;
     align-items: center;
-    margin: 0;
-    // 光らせたときの背景の角を丸める
+    // 光らせたときに背景が文字の端ぴったりにならないよう内側に余白を取り、その分だけ外にずらして文字の位置は変えない
+    margin: 0 -0.75rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 8px;
 
     dt {
