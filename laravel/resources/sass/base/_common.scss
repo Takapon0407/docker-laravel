@@ -55,8 +55,10 @@
     margin-left: 3%;
 }
 
-.font-cherry {
-    font-family: "Cherry Bomb One", cursive;
+// 見出しのフォント（漢字も同じフォントで表示できる Mochiy Pop One。太さは 1 種類だけなので、太字の指定があっても太らせない）
+.font-heading {
+    font-family: "Mochiy Pop One", sans-serif;
+    font-synthesis: none;
 }
 
 /* スマホ用のスタイル */

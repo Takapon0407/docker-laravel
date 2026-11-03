@@ -8,7 +8,7 @@
 @section('content')
 
 <div class="container board-container">
-    <h1 class="board-title font-cherry">匿名質問ボード</h1>
+    <h1 class="board-title font-heading">匿名質問ボード</h1>
     <p class="board-lead">
         勉強会などで使える、ログインなし・匿名の質問／コメントボードです。
         ルームを作って共有用 URL を配ると、参加者が質問やコメントを投稿できます。

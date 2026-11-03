@@ -46,12 +46,18 @@ class PageMetaTest extends TestCase
         $warikan->assertOk();
         $warikan->assertSee('<title>割り勘計算 | てくてくテック</title>', false);
         $warikan->assertSee('<link rel="canonical" href="'.url('/tools/warikan').'">', false);
-        // ヘッダーからたどれること
-        $warikan->assertSee('href="'.route('tools.warikan').'"', false);
+        // ヘッダーからツールの一覧へ、一覧から割り勘へたどれること
+        $warikan->assertSee('href="'.route('tools.index').'"', false);
         // ホーム画面には割り勘専用のアプリとして追加する（ほかのページはポートフォリオの manifest のまま）
         $warikan->assertSee('<link rel="manifest" href="'.asset('manifest-warikan.json').'">', false);
         $warikan->assertSee('<link rel="apple-touch-icon" href="'.asset('icons/warikan-apple-touch-icon.png').'">', false);
         $top->assertSee('<link rel="manifest" href="'.asset('manifest.json').'">', false);
         $top->assertSee('<link rel="apple-touch-icon" href="'.asset('icons/apple-touch-icon.png').'">', false);
+
+        $tools = $this->get('/tools');
+        $tools->assertOk();
+        $tools->assertSee('<title>便利ツール | てくてくテック</title>', false);
+        $tools->assertSee('<link rel="canonical" href="'.url('/tools').'">', false);
+        $tools->assertSee('href="'.route('tools.warikan').'"', false);
     }
 }
