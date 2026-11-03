@@ -37,6 +37,9 @@
 <body>
     @include('layouts.header')
     @yield('content')
+    <footer class="site-footer">
+        <a href="{{ route('privacy') }}">プライバシーポリシー・免責事項</a>
+    </footer>
 </body>
 
 </html>

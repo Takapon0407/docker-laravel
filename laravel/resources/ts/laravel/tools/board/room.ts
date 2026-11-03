@@ -11,6 +11,7 @@ import {
     sortPosts,
     type SortOrder,
 } from "@/lib/board-posts";
+import { detectPersonalInfo, PERSONAL_INFO_LABELS } from "@/lib/board-personal-info";
 import { qrPath } from "@/lib/board-qr";
 import { length, LIMITS, type PostKind, type PostView, type RoomView, type ServerMessage, type TopicView } from "../../../../../../infra/board/shared/protocol.ts";
 import { showPopupNotification } from "../../util/notification";
@@ -333,6 +334,37 @@ document.addEventListener("DOMContentLoaded", () => {
         const kind = (form.querySelector<HTMLInputElement>('input[name="kind"]:checked')?.value ?? "question") as PostKind;
         const nickname = room?.nameMode === "anonymous" ? null : nicknameInput.value.trim() || null;
 
+        // 電話番号などのようなものが入っていれば、送る前に確かめる
+        const kinds = detectPersonalInfo(`${body}\n${nickname ?? ""}`);
+        if (kinds.length > 0) {
+            personalInfoKinds.textContent = kinds.map((k) => PERSONAL_INFO_LABELS[k]).join("・");
+            pendingPost = { kind, body, nickname };
+            personalInfoDialog.showModal();
+            return;
+        }
+        sendPost(kind, body, nickname);
+    });
+
+    const personalInfoDialog = element<HTMLDialogElement>("board-personal-info-dialog");
+    const personalInfoKinds = element<HTMLElement>("board-personal-info-kinds");
+    let pendingPost: { kind: PostKind; body: string; nickname: string | null } | null = null;
+    element<HTMLButtonElement>("board-personal-info-back").addEventListener("click", () => personalInfoDialog.close());
+    element<HTMLButtonElement>("board-personal-info-send").addEventListener("click", () => {
+        const post = pendingPost;
+        personalInfoDialog.close();
+        if (post) {
+            sendPost(post.kind, post.body, post.nickname);
+        }
+    });
+    // 閉じたら（戻って直す・Esc）、本文の欄に戻る
+    personalInfoDialog.addEventListener("close", () => {
+        if (pendingPost) {
+            pendingPost = null;
+            bodyInput.focus();
+        }
+    });
+
+    function sendPost(kind: PostKind, body: string, nickname: string | null): void {
         submit.disabled = true;
         client
             .request({ action: "post", kind, body, nickname })
@@ -358,7 +390,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .finally(() => {
                 submit.disabled = false;
             });
-    });
+    }
 
     // ----- 受付・URL の作り直し（主催者だけ） -----
 

@@ -1,0 +1,11 @@
+// 全ページの下に出すフッター（layouts/common.blade.php。プライバシーポリシーへのリンクなど）
+.site-footer {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #777;
+    padding: 1.5rem 1rem 2rem;
+
+    a {
+        color: inherit;
+    }
+}
