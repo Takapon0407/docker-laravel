@@ -31,7 +31,8 @@
                 <div class="countdown-progress-bar" id="countdown-season-progress-bar"></div>
             </div>
             <p class="countdown-help mt-1" id="countdown-season-label"></p>
-            <p class="countdown-help mb-0">季節は、気象庁の決まり（春 3〜5 月・夏 6〜8 月・秋 9〜11 月・冬 12〜2 月）で区切っています（<a href="https://www.jma.go.jp/jma/kishou/know/yougo_hp/toki.html" target="_blank" rel="noopener noreferrer">気象庁「時に関する用語」</a>）。</p>
+            <p class="countdown-help mb-0">季節は、気象庁の決まり（春 3〜5 月・夏 6〜8 月・秋 9〜11 月・冬 12〜2 月）で区切っています。<br>
+                出典：<a href="https://www.jma.go.jp/jma/kishou/know/yougo_hp/toki.html" target="_blank" rel="noopener noreferrer">気象庁「時に関する用語」</a></p>
         </div>
     </section>
 
@@ -46,7 +47,9 @@
             <ul class="countdown-list" id="countdown-holidays-rest"></ul>
         </details>
         <p class="countdown-help mb-0">
-            祝日は「<a href="https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html" target="_blank" rel="noopener noreferrer">国民の祝日について</a>」（内閣府）の決まりで計算しています。振替休日と、祝日にはさまれた休日も入ります。春分の日・秋分の日は計算による予測で、正式には前の年の 2 月に官報で発表されます。
+            祝日は「<a href="https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html" target="_blank" rel="noopener noreferrer">国民の祝日について</a>」（内閣府）の決まりで計算しています。<br>
+            振替休日と、祝日にはさまれた休日も入ります。<br>
+            春分の日・秋分の日は計算による予測で、正式には前の年の 2 月に官報で発表されます。
         </p>
     </section>
 
