@@ -32,6 +32,14 @@ return [
         'storage_note' => '誕生日はブラウザの中だけで計算に使います。「この端末に覚える」を選んだときだけ、ブラウザに残します',
     ],
     [
+        'route' => 'tools.countdown',
+        'title' => 'カウントダウン',
+        'description' => '今年の残り時間と、これから 1 年の祝日や、マイ記念日まで、あと何日かを表示します。',
+        'purpose' => 'general',
+        'storage' => 'local',
+        'storage_note' => 'マイ記念日は、ブラウザの中にだけ残します',
+    ],
+    [
         'route' => 'tools.json',
         'title' => 'JSON 整形',
         'description' => '1 行の JSON をインデント付きで見やすく整形したり、1 行に圧縮したりします。形が正しくないときは、何行目の何文字目かを表示します。',
