@@ -6,7 +6,7 @@
 @endpush
 @section('content')
 
-<div id="notification" class="notification"></div>
+<div id="notification" class="notification" role="status" aria-live="polite" aria-atomic="true"></div>
 
 {{-- 計算はブラウザ内だけで行う（誕生日はサーバーに送らない・保存しない） --}}
 <div class="container lifespan-container">
