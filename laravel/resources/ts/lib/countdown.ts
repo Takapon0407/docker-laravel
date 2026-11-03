@@ -122,3 +122,46 @@ export function parseCustomDays(json: string | null): CustomDay[] {
     }
     return value.filter(isValidCustomDay).slice(0, MAX_CUSTOM_DAYS).map(({ name, month, day }) => ({ name, month, day }));
 }
+
+// 今の季節（気象庁の決まり：春 3〜5 月・夏 6〜8 月・秋 9〜11 月・冬 12〜2 月）
+export interface Season {
+    name: "春" | "夏" | "秋" | "冬";
+    // 季節のはじめの日の 0 時と、次の季節のはじめの日の 0 時（日本時間）
+    startMs: number;
+    endMs: number;
+    // 最後の日（例：秋なら 11 月 30 日）
+    lastDay: { year: number; month: number; day: number };
+    // 今日を含めた残りの日数（最後の日なら 1）
+    daysLeft: number;
+    // 季節のうち過ぎた割合（0〜1）
+    progress: number;
+}
+
+const SEASONS = [
+    { name: "春", startMonth: 3 },
+    { name: "夏", startMonth: 6 },
+    { name: "秋", startMonth: 9 },
+    { name: "冬", startMonth: 12 },
+] as const;
+
+export function seasonOf(nowMs: number): Season {
+    const today = japanToday(nowMs);
+    // 1・2 月は前の年の 12 月から始まる冬
+    const index = today.month < 3 ? 3 : Math.floor((today.month - 3) / 3);
+    const season = SEASONS[index]!;
+    const startYear = today.month < 3 ? today.year - 1 : today.year;
+    const startMs = japanMidnight(startYear, season.startMonth, 1);
+    // 次の季節のはじめ（Date.UTC は 13 月以降を次の年に繰り上げる）
+    const end = new Date(Date.UTC(startYear, season.startMonth - 1 + 3, 1));
+    const endMs = end.getTime() - JST_OFFSET_MS;
+    const last = new Date(end.getTime() - DAY_MS);
+    const lastDay = { year: last.getUTCFullYear(), month: last.getUTCMonth() + 1, day: last.getUTCDate() };
+    return {
+        name: season.name,
+        startMs,
+        endMs,
+        lastDay,
+        daysLeft: Math.round((end.getTime() - Date.UTC(today.year, today.month - 1, today.day)) / DAY_MS),
+        progress: (nowMs - startMs) / (endMs - startMs),
+    };
+}

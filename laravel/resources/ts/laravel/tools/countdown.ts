@@ -1,4 +1,4 @@
-import { clock, type Clock, type CustomDay, isValidCustomDay, MAX_CUSTOM_DAYS, nextOccurrence, parseCustomDays, upcomingHolidays, yearRemaining } from "@/lib/countdown";
+import { clock, type Clock, type CustomDay, isValidCustomDay, japanToday, MAX_CUSTOM_DAYS, nextOccurrence, parseCustomDays, seasonOf, upcomingHolidays, yearRemaining } from "@/lib/countdown";
 
 // マイ記念日
 const STORAGE_KEY = "countdown:v1";
@@ -64,6 +64,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const yearProgress = document.getElementById("countdown-year-progress") as HTMLElement;
     const yearProgressBar = document.getElementById("countdown-year-progress-bar") as HTMLElement;
     const yearLabel = document.getElementById("countdown-year-label") as HTMLElement;
+    const season = document.getElementById("countdown-season") as HTMLElement;
+    const seasonTitle = document.getElementById("countdown-season-title") as HTMLElement;
+    const seasonRange = document.getElementById("countdown-season-range") as HTMLElement;
+    const seasonMain = document.getElementById("countdown-season-main") as HTMLElement;
+    const seasonProgress = document.getElementById("countdown-season-progress") as HTMLElement;
+    const seasonProgressBar = document.getElementById("countdown-season-progress-bar") as HTMLElement;
+    const seasonLabel = document.getElementById("countdown-season-label") as HTMLElement;
     const holidayBasis = document.getElementById("countdown-holiday-basis") as HTMLElement;
     const holidayMain = document.getElementById("countdown-holiday-main") as HTMLElement;
     const holidayList = document.getElementById("countdown-holidays") as HTMLElement;
@@ -142,6 +149,19 @@ document.addEventListener("DOMContentLoaded", () => {
         yearProgress.setAttribute("aria-label", `今年のうち、過ぎた割合 ${percent}%`);
         yearProgressBar.style.width = `${percent}%`;
         yearLabel.textContent = `今年の ${percent}% が過ぎました`;
+
+        const current = seasonOf(now);
+        const start = japanToday(current.startMs);
+        const last = current.lastDay;
+        season.dataset.season = current.name;
+        seasonTitle.textContent = `今の季節：${current.name}`;
+        seasonRange.textContent = `${start.year}年${start.month}月${start.day}日〜${last.year === start.year ? "" : `${last.year}年`}${last.month}月${last.day}日`;
+        seasonMain.textContent = `${current.name}の残り ${current.daysLeft} 日（今日を含む）`;
+        const seasonPercent = Math.floor(current.progress * 1000) / 10;
+        seasonProgress.setAttribute("aria-valuenow", String(seasonPercent));
+        seasonProgress.setAttribute("aria-label", `${current.name}のうち、過ぎた割合 ${seasonPercent}%`);
+        seasonProgressBar.style.width = `${seasonPercent}%`;
+        seasonLabel.textContent = `${current.name}の ${seasonPercent}% が過ぎました`;
 
         const holidays = upcomingHolidays(now);
         const next = holidays[0];

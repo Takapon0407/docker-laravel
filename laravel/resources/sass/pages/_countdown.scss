@@ -72,6 +72,41 @@
     background: $main-color;
 }
 
+// 今の季節（棒の色を季節ごとに変える）
+.countdown-season {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+
+    &[data-season="春"] {
+        --season-color: #e8829b;
+    }
+
+    &[data-season="夏"] {
+        --season-color: #2a9fd6;
+    }
+
+    &[data-season="秋"] {
+        --season-color: #d9822b;
+    }
+
+    &[data-season="冬"] {
+        --season-color: #6c8ebf;
+    }
+
+    .countdown-progress-bar {
+        background: var(--season-color, #{$main-color});
+    }
+}
+
+.countdown-season-main {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: color-mix(in srgb, var(--season-color, #{$main-color}) 80%, #000);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 0.5rem;
+}
+
 // 祝日・自分の日の一覧（狭い画面では「名前・残り」の下に日付、広い画面では 1 行に並べる）
 .countdown-list {
     list-style: none;

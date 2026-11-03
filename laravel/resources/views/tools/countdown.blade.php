@@ -21,6 +21,18 @@
             <div class="countdown-progress-bar" id="countdown-year-progress-bar"></div>
         </div>
         <p class="countdown-help mt-1 mb-0" id="countdown-year-label"></p>
+
+        {{-- 今日が属する季節だけを出す（data-season で棒の色を季節ごとに変える） --}}
+        <div class="countdown-season" id="countdown-season">
+            <h3 class="countdown-subheading" id="countdown-season-title"></h3>
+            <p class="countdown-basis" id="countdown-season-range"></p>
+            <p class="countdown-season-main" id="countdown-season-main"></p>
+            <div class="countdown-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="countdown-season-progress">
+                <div class="countdown-progress-bar" id="countdown-season-progress-bar"></div>
+            </div>
+            <p class="countdown-help mt-1" id="countdown-season-label"></p>
+            <p class="countdown-help mb-0">季節は、気象庁の決まり（春 3〜5 月・夏 6〜8 月・秋 9〜11 月・冬 12〜2 月）で区切っています（<a href="https://www.jma.go.jp/jma/kishou/know/yougo_hp/toki.html" target="_blank" rel="noopener noreferrer">気象庁「時に関する用語」</a>）。</p>
+        </div>
     </section>
 
     <section class="countdown-card">

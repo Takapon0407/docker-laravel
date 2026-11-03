@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { clock, japanMidnight, nextOccurrence, parseCustomDays, upcomingHolidays, yearRemaining } from "./countdown.ts";
+import { clock, japanMidnight, nextOccurrence, parseCustomDays, seasonOf, upcomingHolidays, yearRemaining } from "./countdown.ts";
 
 const HOUR = 60 * 60 * 1000;
 // 2026-11-04 12:00 JST
@@ -56,4 +56,24 @@ test("覚えた自分の日は、正しいものだけを読む", () => {
     }
     assert.equal(parseCustomDays(JSON.stringify(Array.from({ length: 25 }, () => ({ name: "a", month: 1, day: 1 })))).length, 20);
     assert.deepEqual(parseCustomDays(JSON.stringify([{ name: "あ".repeat(31), month: 1, day: 1 }])), []);
+});
+
+test("今の季節は気象庁の決まり（春 3〜5 月・夏 6〜8 月・秋 9〜11 月・冬 12〜2 月）で、残りの日数は今日を含める", () => {
+    const autumn = seasonOf(NOW);
+    assert.equal(autumn.name, "秋");
+    assert.equal(autumn.startMs, japanMidnight(2026, 9, 1));
+    assert.equal(autumn.endMs, japanMidnight(2026, 12, 1));
+    assert.deepEqual(autumn.lastDay, { year: 2026, month: 11, day: 30 });
+    assert.equal(autumn.daysLeft, 27);
+    // 9 月 1 日から 64.5 日 / 91 日
+    assert.ok(Math.abs(autumn.progress - 64.5 / 91) < 1e-9);
+
+    // 1 月の冬は前の年の 12 月から。うるう年の 2 月 29 日まで数える
+    const winter = seasonOf(japanMidnight(2028, 1, 15));
+    assert.deepEqual([winter.name, winter.startMs, winter.lastDay, winter.daysLeft], ["冬", japanMidnight(2027, 12, 1), { year: 2028, month: 2, day: 29 }, 46]);
+    // 季節の最後の日は残り 1 日、次の日の 0 時からは次の季節
+    assert.deepEqual([seasonOf(japanMidnight(2026, 5, 31) + HOUR).name, seasonOf(japanMidnight(2026, 5, 31) + HOUR).daysLeft], ["春", 1]);
+    assert.deepEqual([seasonOf(japanMidnight(2026, 6, 1)).name, seasonOf(japanMidnight(2026, 6, 1)).progress], ["夏", 0]);
+    assert.equal(seasonOf(japanMidnight(2026, 12, 1)).name, "冬");
+    assert.equal(seasonOf(japanMidnight(2027, 3, 1) - 1000).name, "冬");
 });

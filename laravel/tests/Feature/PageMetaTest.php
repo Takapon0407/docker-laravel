@@ -94,6 +94,7 @@ class PageMetaTest extends TestCase
         $countdown->assertOk();
         $countdown->assertSee('<title>カウントダウン | てくてくテック</title>', false);
         $countdown->assertSee('href="https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html"', false);
+        $countdown->assertSee('href="https://www.jma.go.jp/jma/kishou/know/yougo_hp/toki.html"', false);
         $countdown->assertSee('<link rel="manifest" href="'.asset('manifest-countdown.json').'">', false);
 
         // 開発向けのツール：一覧から「端末内で完結」としてたどれ、ページごとのタイトルを出す
