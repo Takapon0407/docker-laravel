@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\BoardController;
 use App\Http\Controllers\HobbiesController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'profile')->name('profile');
+// スキルスタック・略歴などは、就活用のクエリが付いたときだけ出す（config/profile.php）
+Route::get('/', [ProfileController::class, 'show'])->name('profile');
 // トップページと同じ内容だった /profile は、重複させないようトップページへ恒久的に転送する
 Route::permanentRedirect('/profile', '/');
 

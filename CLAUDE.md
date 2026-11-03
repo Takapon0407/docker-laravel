@@ -69,6 +69,7 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 - `/tools/*` の便利ツールは計算をブラウザ内だけで行う（サーバーに入力を送らない。匿名質問ボードの投稿だけは例外で、`infra/board` の WebSocket に送る）。DOM に依存しないロジックは `resources/ts/lib/` に置いてテストし、ページの TS（`resources/ts/laravel/tools/`）から使う（`resources/ts/laravel/` 以下は全部 Vite のエントリーになるため）
 - `config/` は変更したものだけを置き、ほかは Laravel の既定値を使う。`/hobbies` のゲーム一覧は `config/hobbies.php` のデータ
 - Sass は `components/`・`base/`・`pages/` に分け、サイトの緑は `_variables.scss` の `$main-color`。見出しのフォントは `.font-heading`（Google Fonts の Mochiy Pop One。漢字も含む）。Bootstrap 5 のクラスを使う（Bootstrap 4 のクラスは効かない）
+- `/` のスキルスタック・略歴・資格は、就活用のクエリ（`config/profile.php`。今は `/?for=recruit`）が付いたときだけ HTML に出す（ツールなどから来た人に見せないため。秘密ではない）。その表示は `noindex`
 - `/` と `/profile` は同じ内容のため `/profile` は `/` へ 301。ページのタイトル・説明は `@section('title')` / `@section('description')`
 
 ## ハマりどころ
