@@ -14,7 +14,7 @@
 
 {{-- 計算はブラウザ内だけで行う（入力内容はサーバーに送らない） --}}
 <div class="container warikan-container">
-    <h1 class="warikan-title font-cherry">割り勘計算</h1>
+    <h1 class="warikan-title font-heading">割り勘計算</h1>
 
     <div class="btn-group w-100 warikan-split-mode" role="group" aria-label="割り方の種類">
         <button type="button" class="btn btn-outline-success" data-split-mode="group">グループで割る</button>
