@@ -5,6 +5,7 @@
 // 共通の部品
 @import "./components/header";
 @import "./components/notification";
+@import "./components/footer";
 
 // ページ共通の土台
 @import "./base/common";
@@ -15,6 +16,9 @@
 @import "./pages/warikan";
 @import "./pages/board";
 @import "./pages/tools";
+@import "./pages/devtools";
+@import "./pages/lifespan";
+@import "./pages/policy";
 
 html {
     font-family: sans-serif;

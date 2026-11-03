@@ -1,0 +1,112 @@
+@extends('layouts.common')
+@section('title', 'プライバシーポリシー・免責事項')
+@section('description', 'てくてくテック（たかぽんのポートフォリオサイト）で扱うデータと、便利ツールの免責事項です。')
+@section('content')
+
+<div class="container policy-container">
+    <h1 class="policy-title font-heading">プライバシーポリシー・免責事項</h1>
+    <p class="policy-lead">
+        てくてくテック（以下「このサイト」）は、たかぽん（以下「運営者」）が個人で運営しているポートフォリオサイトです。
+        このページでは、このサイトで扱うデータと、便利ツールを使うときの注意をまとめています。
+    </p>
+
+    <section class="policy-section">
+        <h2 class="policy-heading">1. 集めていないもの</h2>
+        <ul>
+            <li>このサイトには会員登録・ログイン・お問い合わせのフォームはなく、氏名・メールアドレスなどを入力してもらうことはありません。</li>
+            <li>Cookie は使っていません。アクセス解析や広告のサービスも使っていません。</li>
+        </ul>
+    </section>
+
+    <section class="policy-section">
+        <h2 class="policy-heading">2. 自動で記録されるもの</h2>
+        <p>
+            ページを開くと、サーバーの仕組みとして、アクセスの記録（IP アドレス・日時・開いたページ・ブラウザの種類など）が残ります。
+            この記録は、障害の調査と不正なアクセスへの対応のためだけに使い、一定の量を超えた古いものから自動で消えます。
+        </p>
+        <p class="mb-0">
+            見出しのフォントは Google Fonts から読み込んでいるため、ページを開くとブラウザが Google のサーバーに接続します。
+            Google での扱いは <a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener noreferrer">Google のプライバシーポリシー</a> をご覧ください。
+        </p>
+    </section>
+
+    <section class="policy-section">
+        <h2 class="policy-heading">3. 便利ツールで扱うデータ</h2>
+        <h3 class="policy-subheading">端末内で完結するツール</h3>
+        <p>
+            割り勘計算・寿命の計算・JSON 整形・日時の変換・正規表現チェックは、入力した内容をブラウザの中だけで処理し、サーバーには送りません。
+            割り勘計算は、次に開いたときに続きから使えるよう、入力した内容をお使いのブラウザ（localStorage）に残します。ブラウザのサイトデータを消すと、なくなります。
+        </p>
+        <p>
+            寿命の計算の「X に投稿する」を押すと、確認の画面で文章を見せたうえで、X の投稿画面に「あと約 ◯ 年」という文章とこのページの URL を渡します。
+            誕生日や日数は渡しませんが、平均寿命の値から、おおよその年齢がわかります。投稿したあとの扱いは X の規約によります。
+        </p>
+
+        <h3 class="policy-subheading">匿名質問ボード（サーバーに保存するツール）</h3>
+        <p>質問ボードは、参加者に投稿を届けるため、次のデータをサーバー（Amazon Web Services の東京リージョン）に保存します。</p>
+        <div class="table-responsive">
+            <table class="table table-sm policy-table">
+                <thead>
+                    <tr><th scope="col">保存するもの</th><th scope="col">目的</th><th scope="col">保存する期間</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>ルームの名前・トピック・設定、投稿（本文・ニックネーム・いいねの数など）</td>
+                        <td>参加者に届けるため</td>
+                        <td>ルームを作るときに選んだ保存期間（24 時間・7 日・30 日）まで</td>
+                    </tr>
+                    <tr>
+                        <td>接続元の IP アドレス、ブラウザごとの ID（ランダムな文字列）</td>
+                        <td>ルームの作成・投稿の回数に上限を設けて、荒らしを防ぐため。いいねを 1 人 1 回にするため</td>
+                        <td>IP アドレスは最大 3 時間。ブラウザごとの ID は、いいねとあわせてルームの保存期間まで</td>
+                    </tr>
+                    <tr>
+                        <td>エラーの記録</td>
+                        <td>障害の調査のため</td>
+                        <td>2 週間</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="mb-0">
+            期間が過ぎたデータは自動で削除します（削除の処理が実際に動くまで、数日かかることがあります）。
+            ブラウザごとの ID・ニックネーム・主催者用の鍵・自分の投稿を取り消すための鍵は、お使いのブラウザ（localStorage）にも残します。
+            投稿はルームの参加者全員が見られます。個人を特定できる内容は書かないでください。
+        </p>
+    </section>
+
+    <section class="policy-section">
+        <h2 class="policy-heading">4. 第三者への提供</h2>
+        <p class="mb-0">
+            保存したデータを、法令にもとづく場合を除き、第三者に提供することはありません。
+            サーバーには Amazon Web Services を使っており、データはその上で保管しています。
+        </p>
+    </section>
+
+    <section class="policy-section">
+        <h2 class="policy-heading">5. 免責事項</h2>
+        <ul class="mb-0">
+            <li>便利ツールの結果（計算・変換・整形・正規表現の判定など）は目安です。正しさを保証するものではなく、結果を使って生じた損害について運営者は責任を負いません。大切な用途では、ほかの方法でも確かめてください。</li>
+            <li>寿命の計算は、公表されている平均寿命（0 歳の平均余命）をもとにしたもので、ひとりひとりの寿命を表すものではありません。</li>
+            <li>匿名質問ボードの投稿の内容は、投稿した人の責任です。法令に反する投稿や他人を傷つける投稿は、運営者が削除することがあります。</li>
+            <li>ツールやページは、予告なく変更・停止することがあります。</li>
+            <li>このサイトからリンクしている外部のサイトの内容について、運営者は責任を負いません。</li>
+        </ul>
+    </section>
+
+    <section class="policy-section">
+        <h2 class="policy-heading">6. お問い合わせ</h2>
+        <p class="mb-0">
+            このページの内容や、質問ボードの投稿の削除などについては、運営者の X（<a href="https://x.com/TakaponEng" target="_blank" rel="noopener noreferrer">@TakaponEng</a>）までご連絡ください。
+        </p>
+    </section>
+
+    <section class="policy-section">
+        <h2 class="policy-heading">7. 変更</h2>
+        <p class="mb-0">このページの内容は、必要に応じて変更します。変更したときは、このページでお知らせします。</p>
+    </section>
+
+    <p class="policy-date">2026 年 11 月 4 日 制定</p>
+</div>
+
+@endsection

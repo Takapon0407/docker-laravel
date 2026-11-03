@@ -1,6 +1,6 @@
 @extends('layouts.common')
 @section('title', '便利ツール')
-@section('description', '割り勘の計算や、勉強会で使える匿名の質問ボードなど、ブラウザですぐに使える便利ツールの一覧です。入力したデータを外に送らない「端末内で完結」のツールと、「サーバーに保存」するツールで絞り込めます。')
+@section('description', '割り勘の計算や勉強会で使える匿名の質問ボード、JSON 整形・日時の変換・正規表現チェックなど、ブラウザですぐに使える便利ツールの一覧です。一般向け・開発向けと、入力したデータを外に送らない「端末内で完結」・「サーバーに保存」で絞り込めます。')
 @section('content')
 
 <div class="container tools-container">
@@ -8,42 +8,53 @@
     <p class="tools-lead">ブラウザですぐに使える、ちょっとした便利ツールです。ログインは要りません。</p>
 
     {{-- 絞り込みは CSS だけで行う（選んだラジオボタンに合わせて、_tools.scss でカードを隠す） --}}
-    <fieldset class="tools-filter">
-        <legend class="tools-filter-label">データの扱いで絞り込む</legend>
-        {{-- グループの名前は fieldset の legend で付ける --}}
-        <div class="btn-group">
-            <input type="radio" class="btn-check" name="tools-filter" id="tools-filter-all" value="all" checked>
-            <label class="btn btn-outline-success" for="tools-filter-all">すべて</label>
-            <input type="radio" class="btn-check" name="tools-filter" id="tools-filter-local" value="local">
-            <label class="btn btn-outline-success" for="tools-filter-local">端末内で完結</label>
-            <input type="radio" class="btn-check" name="tools-filter" id="tools-filter-server" value="server">
-            <label class="btn btn-outline-success" for="tools-filter-server">サーバーに保存</label>
-        </div>
-    </fieldset>
+    <div class="tools-filters">
+        <fieldset class="tools-filter">
+            <legend class="tools-filter-label">用途</legend>
+            <div class="btn-group">
+                <input type="radio" class="btn-check" name="tools-purpose" id="tools-purpose-all" value="all" checked>
+                <label class="btn btn-outline-success btn-sm" for="tools-purpose-all">すべて</label>
+                <input type="radio" class="btn-check" name="tools-purpose" id="tools-purpose-general" value="general">
+                <label class="btn btn-outline-success btn-sm" for="tools-purpose-general">一般向け</label>
+                <input type="radio" class="btn-check" name="tools-purpose" id="tools-purpose-dev" value="dev">
+                <label class="btn btn-outline-success btn-sm" for="tools-purpose-dev">開発向け</label>
+            </div>
+        </fieldset>
+        <fieldset class="tools-filter">
+            <legend class="tools-filter-label">データの扱い</legend>
+            <div class="btn-group">
+                <input type="radio" class="btn-check" name="tools-filter" id="tools-filter-all" value="all" checked>
+                <label class="btn btn-outline-success btn-sm" for="tools-filter-all">すべて</label>
+                <input type="radio" class="btn-check" name="tools-filter" id="tools-filter-local" value="local">
+                <label class="btn btn-outline-success btn-sm" for="tools-filter-local">端末内で完結</label>
+                <input type="radio" class="btn-check" name="tools-filter" id="tools-filter-server" value="server">
+                <label class="btn btn-outline-success btn-sm" for="tools-filter-server">サーバーに保存</label>
+            </div>
+        </fieldset>
+    </div>
 
-    {{-- data-storage：local = 入力はブラウザの中だけ / server = サーバーに送って保存する --}}
+    @php
+        $purposes = ['general' => '一般向け', 'dev' => '開発向け'];
+        $storages = ['local' => '端末内で完結', 'server' => 'サーバーに保存'];
+    @endphp
     <ul class="tools-list">
-        <li data-storage="local">
-            <a class="tools-card" href="{{ route('tools.warikan') }}">
-                <h2 class="tools-card-title font-heading">割り勘計算</h2>
-                <p class="tools-card-text">
-                    合計金額と人数から、1 人あたりの金額を計算します。先輩・後輩などグループごとの比率や、固定額の人、1 人ずつ金額を決める割り方にも対応しています。
-                </p>
-                <span class="tools-storage is-local">端末内で完結：計算はブラウザの中だけで行います</span>
-            </a>
-        </li>
-        @if (config('board.enabled'))
-            <li data-storage="server">
-                <a class="tools-card" href="{{ route('tools.board') }}">
-                    <h2 class="tools-card-title font-heading">匿名質問ボード</h2>
-                    <p class="tools-card-text">
-                        勉強会などで使える、匿名の質問・コメントボードです。ルームを作って URL や QR コードを配ると、参加者がその場で投稿できます。
-                    </p>
-                    <span class="tools-storage is-server">サーバーに保存：投稿はルームの保存期間（最長 30 日）が過ぎると自動で消えます</span>
-                </a>
-            </li>
-        @endif
+        @foreach (config('tools') as $tool)
+            @if (! isset($tool['enabled_by']) || config($tool['enabled_by']))
+                <li data-purpose="{{ $tool['purpose'] }}" data-storage="{{ $tool['storage'] }}">
+                    <a class="tools-card" href="{{ route($tool['route']) }}">
+                        <ul class="tools-tags" aria-label="分類">
+                            <li class="tools-tag">{{ $purposes[$tool['purpose']] }}</li>
+                            <li class="tools-tag is-{{ $tool['storage'] }}">{{ $storages[$tool['storage']] }}</li>
+                        </ul>
+                        <h2 class="tools-card-title font-heading">{{ $tool['title'] }}</h2>
+                        <p class="tools-card-text">{{ $tool['description'] }}</p>
+                        <p class="tools-card-note">{{ $tool['storage_note'] }}</p>
+                    </a>
+                </li>
+            @endif
+        @endforeach
     </ul>
+    <p class="tools-empty">条件に合うツールはありません。</p>
 </div>
 
 @endsection

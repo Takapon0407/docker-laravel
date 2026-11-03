@@ -10,6 +10,8 @@ Route::permanentRedirect('/profile', '/');
 
 Route::get('/hobbies', [HobbiesController::class, 'show'])->name('hobbies');
 
+Route::view('/privacy', 'privacy')->name('privacy');
+
 Route::prefix('games')->name('games.')->group(function () {
     Route::view('/tetris', 'games.tetris')->name('tetris');
     Route::view('/puyo', 'games.puyo')->name('puyo');
@@ -18,6 +20,10 @@ Route::prefix('games')->name('games.')->group(function () {
 Route::prefix('tools')->name('tools.')->group(function () {
     Route::view('/', 'tools.index')->name('index');
     Route::view('/warikan', 'tools.warikan')->name('warikan');
+    Route::view('/json', 'tools.json')->name('json');
+    Route::view('/datetime', 'tools.datetime')->name('datetime');
+    Route::view('/regex', 'tools.regex')->name('regex');
+    Route::view('/lifespan', 'tools.lifespan')->name('lifespan');
     Route::get('/board', [BoardController::class, 'create'])->name('board');
     Route::get('/board/room', [BoardController::class, 'room'])->name('board.room');
 });

@@ -54,14 +54,48 @@ class PageMetaTest extends TestCase
         $top->assertSee('<link rel="manifest" href="'.asset('manifest.json').'">', false);
         $top->assertSee('<link rel="apple-touch-icon" href="'.asset('icons/apple-touch-icon.png').'">', false);
 
+        // プライバシーポリシー・免責事項：全ページの下からたどれる
+        $privacy = $this->get('/privacy');
+        $privacy->assertOk();
+        $privacy->assertSee('<title>プライバシーポリシー・免責事項 | てくてくテック</title>', false);
+        $privacy->assertSee('<link rel="canonical" href="'.url('/privacy').'">', false);
+        foreach ([$top, $hobbies, $warikan] as $page) {
+            $page->assertSee('<a href="'.route('privacy').'">プライバシーポリシー・免責事項</a>', false);
+        }
+
         $tools = $this->get('/tools');
         $tools->assertOk();
         $tools->assertSee('<title>便利ツール | てくてくテック</title>', false);
         $tools->assertSee('<link rel="canonical" href="'.url('/tools').'">', false);
         $tools->assertSee('href="'.route('tools.warikan').'"', false);
         // 割り勘は入力をサーバーに送らないツールとして、絞り込んでも残す
-        $tools->assertSeeInOrder(['data-storage="local"', 'href="'.route('tools.warikan').'"'], false);
+        $this->assertToolCard($tools, 'data-purpose="general" data-storage="local"', route('tools.warikan'));
         $tools->assertSee('id="tools-filter-local"', false);
         $tools->assertSee('id="tools-filter-server"', false);
+        $tools->assertSee('id="tools-purpose-dev"', false);
+
+        // 寿命の計算：一般向け・端末内で完結。出典の統計へのリンクを載せる
+        $this->assertToolCard($tools, 'data-purpose="general" data-storage="local"', route('tools.lifespan'));
+        $lifespan = $this->get(route('tools.lifespan'));
+        $lifespan->assertOk();
+        $lifespan->assertSee('<title>寿命の計算 | てくてくテック</title>', false);
+        $lifespan->assertSee('href="https://www.mhlw.go.jp/toukei/saikin/hw/life/life25/index.html"', false);
+        $lifespan->assertSee('href="https://population.un.org/wpp/"', false);
+        // X に投稿する前に、おおよその年齢がわかることを確かめる画面を出す
+        $lifespan->assertSee('id="lifespan-share-dialog"', false);
+        $lifespan->assertSee('あなたのおおよその年齢がわかります', false);
+
+        // 開発向けのツール：一覧から「端末内で完結」としてたどれ、ページごとのタイトルを出す
+        foreach ([
+            'tools.json' => 'JSON 整形',
+            'tools.datetime' => '日時の変換（UTC / JST）',
+            'tools.regex' => '正規表現チェック',
+        ] as $route => $title) {
+            $this->assertToolCard($tools, 'data-purpose="dev" data-storage="local"', route($route));
+            $page = $this->get(route($route));
+            $page->assertOk();
+            $page->assertSee('<title>'.$title.' | てくてくテック</title>', false);
+            $page->assertSee('<link rel="canonical" href="'.route($route).'">', false);
+        }
     }
 }

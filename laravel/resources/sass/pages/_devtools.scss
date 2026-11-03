@@ -1,0 +1,175 @@
+// 開発向けの便利ツール（JSON 整形・日時の変換・正規表現チェック）で共通の見た目
+.devtool-container {
+    max-width: 880px;
+    padding: 1.5rem 1rem 3rem;
+
+    // ボタンの緑を Bootstrap の success ではなくサイトの緑にする（割り勘・質問ボードと同じ）
+    .btn-success,
+    .btn-outline-success {
+        --bs-btn-hover-bg: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-border-color: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-active-bg: #{$main-color};
+        --bs-btn-active-border-color: #{$main-color};
+        --bs-btn-hover-color: #fff;
+        --bs-btn-active-color: #fff;
+    }
+
+    .btn-success {
+        --bs-btn-bg: #{$main-color};
+        --bs-btn-border-color: #{$main-color};
+    }
+
+    .btn-outline-success {
+        --bs-btn-color: color-mix(in srgb, #{$main-color} 80%, #000);
+        --bs-btn-border-color: #{$main-color};
+    }
+
+    .btn-check:checked + .btn-outline-success {
+        background-color: $main-color;
+        border-color: $main-color;
+        color: #fff;
+    }
+}
+
+.devtool-title {
+    font-size: 2rem;
+    text-align: center;
+    color: $main-color;
+    margin-bottom: 0.75rem;
+}
+
+.devtool-lead {
+    color: #555;
+    text-align: center;
+    margin-bottom: 1.25rem;
+}
+
+.devtool-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.devtool-heading {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 0.75rem;
+}
+
+.devtool-help {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+// 入力・結果は等幅のフォントで、折り返さずに横に流す（JSON・正規表現のテスト文字列）
+.devtool-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.9rem;
+    tab-size: 4;
+}
+
+textarea.devtool-code {
+    min-height: 12rem;
+    white-space: pre;
+    overflow-x: auto;
+}
+
+// 結果が変わったとき、一瞬だけ背景を光らせる（util/flash.ts で付ける）
+// 光り終わりの色は --flash-base（白いカードそのものを光らせるときは #fff にして、後ろの色が透けないようにする）
+.is-updated {
+    animation: devtool-updated 0.8s ease-out;
+}
+
+@keyframes devtool-updated {
+    from {
+        background-color: color-mix(in srgb, #{$main-color} 25%, #fff);
+    }
+    to {
+        background-color: var(--flash-base, transparent);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .is-updated {
+        animation: none;
+    }
+}
+
+.devtool-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.devtool-error {
+    color: #b02a37;
+    margin: 0.5rem 0 0;
+}
+
+// 値とコピーのボタンを並べた一覧（日時の変換の結果など）
+.devtool-values {
+    display: grid;
+    grid-template-columns: max-content 1fr auto;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+    // 光らせたときに背景が文字の端ぴったりにならないよう内側に余白を取り、その分だけ外にずらして文字の位置は変えない
+    margin: 0 -0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+
+    dt {
+        font-weight: normal;
+        color: #555;
+        font-size: 0.9rem;
+    }
+
+    dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+}
+
+@media (max-width: 576px) {
+    .devtool-values {
+        grid-template-columns: 1fr auto;
+
+        dt {
+            grid-column: 1 / -1;
+            margin-top: 0.25rem;
+        }
+    }
+}
+
+// 正規表現：一致した場所に印を付けたテスト文字列
+.devtool-highlight {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    max-height: 20rem;
+    overflow-y: auto;
+
+    mark {
+        background: color-mix(in srgb, #{$main-color} 30%, #fff);
+        padding: 0;
+        border-radius: 2px;
+    }
+}
+
+.devtool-matches {
+    font-size: 0.9rem;
+    max-height: 20rem;
+    overflow-y: auto;
+
+    td {
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+    }
+}

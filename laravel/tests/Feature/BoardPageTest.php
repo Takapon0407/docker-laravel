@@ -29,7 +29,7 @@ class BoardPageTest extends TestCase
         $tools = $this->get('/tools');
         $tools->assertSee('href="'.route('tools.board').'"', false);
         // サーバーに保存するツールとして扱い、「端末内で完結」の絞り込みで隠れるようにする
-        $tools->assertSeeInOrder(['data-storage="server"', 'href="'.route('tools.board').'"'], false);
+        $this->assertToolCard($tools, 'data-purpose="general" data-storage="server"', route('tools.board'));
     }
 
     /**
@@ -46,6 +46,10 @@ class BoardPageTest extends TestCase
             // 接続先の設定がなければ空（ブラウザがページと同じドメインの /tools/board/ws につなぐ）
             $response->assertSee('<meta name="board-websocket-url" content="">', false);
         }
+        // 投稿欄には、個人情報を書かないよう注意を出し、電話番号などのようなものがあれば送る前に確かめる
+        $room = $this->get('/tools/board/room');
+        $room->assertSee('電話番号・住所・氏名など、個人がわかる情報は書かないでください。', false);
+        $room->assertSee('id="board-personal-info-dialog"', false);
     }
 
     /**

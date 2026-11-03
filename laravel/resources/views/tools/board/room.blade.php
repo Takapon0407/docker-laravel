@@ -101,9 +101,23 @@
                     <span class="board-help" id="board-post-topic"></span>
                     <span class="board-help" id="board-post-count"></span>
                 </div>
+                <p class="board-help mt-1 mb-0">投稿は参加者全員に表示されます。電話番号・住所・氏名など、個人がわかる情報は書かないでください。</p>
                 <p class="board-error mt-2 mb-0" id="board-post-error" role="alert"></p>
                 <button type="submit" class="btn btn-success w-100 mt-2" id="board-post-submit">投稿する</button>
             </form>
+
+            {{-- 電話番号などのようなものが入っているときだけ、送る前に確かめる（ブラウザ標準の dialog。Esc で閉じる） --}}
+            <dialog class="board-dialog" id="board-personal-info-dialog" aria-labelledby="board-personal-info-title">
+                <h2 class="board-heading" id="board-personal-info-title">個人情報が含まれていませんか？</h2>
+                <p class="board-dialog-warning">
+                    <span id="board-personal-info-kinds"></span>のようなものが含まれています。
+                    投稿は参加者全員に表示されます。自分や他人の個人がわかる情報なら、消してから投稿してください。
+                </p>
+                <div class="board-dialog-actions">
+                    <button type="button" class="btn btn-success" id="board-personal-info-back">戻って直す</button>
+                    <button type="button" class="btn btn-outline-secondary" id="board-personal-info-send">このまま投稿する</button>
+                </div>
+            </dialog>
             <p class="board-help mb-0" id="board-closed" hidden>今は投稿を受け付けていません。</p>
         </section>
 
