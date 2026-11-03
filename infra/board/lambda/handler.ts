@@ -1,6 +1,6 @@
 // Lambda の入り口。AWS への通信を用意して router に渡す
 import { randomBytes } from "node:crypto";
-import { ApiGatewayManagementApiClient, GoneException, PostToConnectionCommand } from "@aws-sdk/client-apigatewaymanagementapi";
+import { ApiGatewayManagementApiClient, DeleteConnectionCommand, GoneException, PostToConnectionCommand } from "@aws-sdk/client-apigatewaymanagementapi";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
@@ -35,6 +35,15 @@ export const handler = createRouter({
             await api.send(new PostToConnectionCommand({ ConnectionId: connectionId, Data: JSON.stringify(message) }));
         } catch (error) {
             // 送る前に切断された接続は無視する（接続の情報は $disconnect で消える）
+            if (!(error instanceof GoneException)) {
+                throw error;
+            }
+        }
+    },
+    async disconnect(connectionId) {
+        try {
+            await api.send(new DeleteConnectionCommand({ ConnectionId: connectionId }));
+        } catch (error) {
             if (!(error instanceof GoneException)) {
                 throw error;
             }
