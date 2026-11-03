@@ -10,7 +10,8 @@
     {{-- 絞り込みは CSS だけで行う（選んだラジオボタンに合わせて、_tools.scss でカードを隠す） --}}
     <fieldset class="tools-filter">
         <legend class="tools-filter-label">データの扱いで絞り込む</legend>
-        <div class="btn-group" role="group">
+        {{-- グループの名前は fieldset の legend で付ける --}}
+        <div class="btn-group">
             <input type="radio" class="btn-check" name="tools-filter" id="tools-filter-all" value="all" checked>
             <label class="btn btn-outline-success" for="tools-filter-all">すべて</label>
             <input type="radio" class="btn-check" name="tools-filter" id="tools-filter-local" value="local">

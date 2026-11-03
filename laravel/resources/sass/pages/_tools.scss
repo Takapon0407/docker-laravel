@@ -17,8 +17,15 @@
 }
 
 .tools-filter {
+    // 絞り込みは :has() で行うため、対応していないブラウザではボタンごと出さない
+    // （押しても絞り込まれず、「端末内で完結」のつもりでサーバーに保存するツールを選んでしまわないように）
+    display: none;
     text-align: center;
     margin-bottom: 1.25rem;
+
+    @supports selector(:has(*)) {
+        display: block;
+    }
 
     // ボタンの緑を Bootstrap の success ではなくサイトの緑にする（割り勘・質問ボードと同じ）
     .btn-outline-success {
