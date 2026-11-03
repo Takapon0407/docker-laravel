@@ -45,12 +45,15 @@ export interface ConnectionRecord {
     roomId?: string;
     role?: Role;
     browserId?: string;
+    // 主催者として入ったときの鍵のハッシュ。ルームの adminKeyHash と同じ間だけ主催者として扱う（主催者用 URL を作り直したら、古い鍵で入った主催者はその場で権限を失う）
+    adminKeyHash?: string;
 }
 
 // 変更を送る相手
 export interface MemberRecord {
     connectionId: string;
     role: Role;
+    adminKeyHash?: string;
 }
 
 // いいね・取り消しの結果
@@ -71,11 +74,13 @@ export interface BoardStore {
 
     saveConnection(connectionId: string, connection: ConnectionRecord, expiresAt: number): Promise<void>;
     getConnection(connectionId: string): Promise<ConnectionRecord | null>;
-    // 接続をルームに入れる（ほかのルームに入っていたら、そちらからは抜ける）
-    joinRoom(connectionId: string, roomId: string, role: Role, browserId: string, expiresAt: number): Promise<void>;
+    // 接続をルームに入れる（ほかのルームに入っていたら、そちらからは抜ける）。adminKeyHash は主催者のときだけ渡す
+    joinRoom(connectionId: string, roomId: string, role: Role, adminKeyHash: string | null, browserId: string, expiresAt: number): Promise<void>;
     listMembers(roomId: string, now: number): Promise<MemberRecord[]>;
-    // 主催者用 URL を作り直したとき、ほかの主催者を参加者にする
-    setRole(connectionId: string, roomId: string, role: Role): Promise<void>;
+    // ルームの主催者用の鍵と、作り直した主催者の接続が持つ鍵のハッシュをまとめて変える
+    rotateAdminKey(roomId: string, connectionId: string, adminKeyHash: string): Promise<void>;
+    // 主催者用 URL を作り直したとき、ほかの主催者を参加者にする（接続が切れた・別のルームに移ったときは何もしない）
+    demote(connectionId: string, roomId: string): Promise<void>;
     // 接続の情報と、ルームの接続一覧からの登録を消す
     deleteConnection(connectionId: string): Promise<void>;
 
