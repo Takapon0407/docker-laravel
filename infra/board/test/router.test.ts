@@ -845,3 +845,43 @@ test("createRoom：IPv6 は同じ /64 なら、アドレスを変えても同じ
     await t.send("v6-other", { action: "createRoom", requestId: "c", title: "部屋", retention: "24h", nameMode: "nickname", topics: [] });
     assert.equal(t.last()?.type, "roomCreated");
 });
+
+test("rotateKeys join（参加者も退出）：参加者に知らせて接続を切り、すぐに枠を空ける。主催者はそのまま", async () => {
+    const { t, created, received } = await roomWithMembers();
+    await t.send("owner2", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.adminKey });
+    // 枠を埋めておく
+    for (let i = 3; i <= LIMITS.members; i++) {
+        await t.send(`squat${i}`, { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: created.joinKey });
+    }
+    t.sent.length = 0;
+
+    await t.send("owner", { action: "rotateKeys", requestId: "k", target: "join", removeParticipants: true });
+    const rotated = received("owner")[0];
+    assert.ok(rotated?.type === "keysRotated");
+    assert.deepEqual(received("guest1"), [{ type: "removed" }]);
+    assert.deepEqual(received("squat30"), [{ type: "removed" }]);
+    assert.deepEqual(received("owner2"), [{ type: "joinKeyChanged", joinKey: rotated.joinKey }]);
+    assert.deepEqual(t.disconnected.sort(), ["guest1", "guest2", ...Array.from({ length: LIMITS.members - 2 }, (_, i) => `squat${i + 3}`)].sort());
+    assert.deepEqual([...t.memory.members.get(created.roomId)!.keys()].sort(), ["owner", "owner2"]);
+    // 退出させた接続は、切れる前に送ってきても操作できない
+    t.sent.length = 0;
+    await t.send("guest1", { action: "like", requestId: "l", postId: "p".repeat(22) });
+    const denied = received("guest1")[0];
+    assert.equal(denied?.type === "error" && denied.code, "not_joined");
+
+    // 新しい共有用 URL なら、すぐに入れる
+    t.sent.length = 0;
+    await t.send("fresh", { action: "join", requestId: "j", browserId: BROWSER, roomId: created.roomId, key: rotated.joinKey });
+    assert.equal(received("fresh")[0]?.type, "joined");
+});
+
+test("rotateKeys join（参加者も退出）：参加者からは使えない", async () => {
+    const { t, created, received } = await roomWithMembers();
+
+    await t.send("guest1", { action: "rotateKeys", requestId: "k", target: "join", removeParticipants: true });
+
+    const denied = received("guest1")[0];
+    assert.equal(denied?.type === "error" && denied.code, "forbidden");
+    assert.deepEqual(t.disconnected, []);
+    assert.equal(t.memory.rooms.get(created.roomId)!.joinKey, created.joinKey);
+});

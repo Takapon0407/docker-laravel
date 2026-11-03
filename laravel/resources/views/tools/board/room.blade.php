@@ -58,6 +58,8 @@
                 <summary>URL を作り直す（URL が広まってしまったとき）</summary>
                 <p class="board-help mt-2 mb-1">共有用 URL を作り直すと、古い URL では新しく入れなくなります。入っている参加者はそのままです。</p>
                 <button type="button" class="btn btn-outline-danger btn-sm mb-2" data-rotate="join">共有用 URL を作り直す</button>
+                <p class="board-help mb-1">知らない人に参加者の枠を埋められて入れないときは、作り直すのと一緒に今いる参加者を全員退出させます。参加者には新しい共有用 URL から入り直してもらってください。</p>
+                <button type="button" class="btn btn-outline-danger btn-sm mb-2" data-rotate="join-remove">共有用 URL を作り直して、参加者を全員退出させる</button>
                 <p class="board-help mb-1">主催者用 URL を作り直すと、ほかの主催者はすぐに参加者になります。新しい主催者用 URL を渡し直してください。</p>
                 <button type="button" class="btn btn-outline-danger btn-sm" data-rotate="admin">主催者用 URL を作り直す</button>
             </details>

@@ -111,6 +111,26 @@ export function createRouter(deps: Dependencies) {
         return room;
     }
 
+    // 共有用 URL で参加者の枠が埋められたときのため、参加者を全員退出させる
+    // すぐに入り直せる枠を空けるよう、$disconnect を待たずにルームの接続一覧から消す（1 人失敗しても、ほかの人は続ける）
+    async function removeParticipants(roomId: string, exceptConnectionId: string): Promise<void> {
+        const participants = (await deps.store.listMembers(roomId, nowSeconds())).filter(
+            (member) => member.role === "participant" && member.connectionId !== exceptConnectionId,
+        );
+        const results = await Promise.allSettled(
+            participants.map(async (member) => {
+                await deps.send(member.connectionId, { type: "removed" });
+                await deps.store.deleteConnection(member.connectionId);
+                await deps.disconnect(member.connectionId);
+            }),
+        );
+        for (const result of results) {
+            if (result.status === "rejected") {
+                console.error(result.reason);
+            }
+        }
+    }
+
     async function broadcastTopics(roomId: string, currentTopicId: string): Promise<void> {
         const topics = await deps.store.listTopics(roomId, nowSeconds());
         await broadcast(roomId, { type: "topicsUpdated", topics, currentTopicId });
@@ -304,12 +324,15 @@ export function createRouter(deps: Dependencies) {
                     (member) => member.role === "admin" && member.connectionId !== connectionId,
                 );
                 if (message.target === "join") {
-                    // 入っている参加者はそのまま（全員を追い出すと、勉強会の途中で全員が入り直すことになる）。新しく入るときは新しい URL が要る
+                    // ふだんは入っている参加者はそのまま（全員を追い出すと、勉強会の途中で全員が入り直すことになる）。新しく入るときは新しい URL が要る
                     const joinKey = deps.randomToken();
                     await deps.store.updateRoom(room.id, { joinKey });
                     await deps.send(connectionId, { type: "keysRotated", requestId: message.requestId, joinKey });
                     // 古い主催者用 URL で入ったまま参加者に戻せていない接続には送らない
                     await Promise.all(members.filter((member) => isAdmin(member, room)).map((member) => deps.send(member.connectionId, { type: "joinKeyChanged", joinKey })));
+                    if (message.removeParticipants) {
+                        await removeParticipants(room.id, connectionId);
+                    }
                     return;
                 }
                 // 主催者用 URL が漏れたときのため、ほかの主催者はすぐに参加者にする（新しい URL を受け取ったら入り直す）
