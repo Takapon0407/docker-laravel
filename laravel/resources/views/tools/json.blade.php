@@ -37,8 +37,11 @@
     </section>
 
     <section class="devtool-card">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <h2 class="devtool-heading mb-0">結果</h2>
+        <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+            <div>
+                <h2 class="devtool-heading mb-0">結果</h2>
+                <p class="devtool-help mb-0" id="json-status"></p>
+            </div>
             <button type="button" class="btn btn-success btn-sm" data-copy-target="json-output">コピー</button>
         </div>
         <label class="visually-hidden" for="json-output">整形した JSON</label>

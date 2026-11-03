@@ -76,6 +76,26 @@ textarea.devtool-code {
     overflow-x: auto;
 }
 
+// 設定を変えて結果が変わったとき、一瞬だけ背景を光らせる
+textarea.devtool-code.is-updated {
+    animation: devtool-updated 0.8s ease-out;
+}
+
+@keyframes devtool-updated {
+    from {
+        background-color: color-mix(in srgb, #{$main-color} 25%, #fff);
+    }
+    to {
+        background-color: #fff;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    textarea.devtool-code.is-updated {
+        animation: none;
+    }
+}
+
 .devtool-toolbar {
     display: flex;
     flex-wrap: wrap;
