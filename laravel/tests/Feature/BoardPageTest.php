@@ -29,7 +29,7 @@ class BoardPageTest extends TestCase
         $tools = $this->get('/tools');
         $tools->assertSee('href="'.route('tools.board').'"', false);
         // サーバーに保存するツールとして扱い、「端末内で完結」の絞り込みで隠れるようにする
-        $tools->assertSeeInOrder(['data-storage="server"', 'href="'.route('tools.board').'"'], false);
+        $this->assertToolCard($tools, 'data-purpose="general" data-storage="server"', route('tools.board'));
     }
 
     /**

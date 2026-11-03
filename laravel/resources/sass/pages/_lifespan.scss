@@ -1,0 +1,190 @@
+.lifespan-container {
+    max-width: 720px;
+    padding: 1.5rem 1rem 3rem;
+
+    // ボタンの緑を Bootstrap の success ではなくサイトの緑にする（割り勘と同じ）
+    .btn-outline-success {
+        --bs-btn-color: color-mix(in srgb, #{$main-color} 80%, #000);
+        --bs-btn-border-color: #{$main-color};
+        --bs-btn-hover-bg: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-border-color: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-color: #fff;
+    }
+
+    .btn-check:checked + .btn-outline-success {
+        background-color: $main-color;
+        border-color: $main-color;
+        color: #fff;
+    }
+}
+
+.lifespan-title {
+    font-size: 2rem;
+    text-align: center;
+    color: $main-color;
+    margin-bottom: 0.75rem;
+}
+
+.lifespan-lead {
+    color: #555;
+    text-align: center;
+    margin-bottom: 1.25rem;
+}
+
+.lifespan-card {
+    --flash-base: #fff;
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.lifespan-heading {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.lifespan-help {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+// 誕生日の年・月・日を横に並べる
+.lifespan-birthday {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    select {
+        width: auto;
+        min-width: 4.5rem;
+    }
+
+    #lifespan-year {
+        min-width: 6.5rem;
+    }
+}
+
+// 年齢から年の候補を出す入力補助
+.lifespan-age {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+
+    input {
+        width: 5rem;
+    }
+}
+
+.lifespan-age-candidates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.lifespan-error {
+    color: #b02a37;
+    margin: 0.5rem 0 0;
+}
+
+.lifespan-basis {
+    color: #555;
+    margin-bottom: 0.25rem;
+}
+
+// 残りの時間（いちばん大きく出す）
+.lifespan-main {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: color-mix(in srgb, #{$main-color} 75%, #000);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 0.75rem;
+}
+
+.lifespan-unit {
+    white-space: nowrap;
+}
+
+.lifespan-progress {
+    height: 0.6rem;
+    background: #e9ecef;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.lifespan-progress-bar {
+    height: 100%;
+    background: $main-color;
+}
+
+// 単位ごとの合計
+.lifespan-totals {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.25rem 1rem;
+    margin: 0.75rem 0 0;
+    font-variant-numeric: tabular-nums;
+
+    dt {
+        font-weight: normal;
+        color: #555;
+    }
+
+    dd {
+        margin: 0;
+    }
+}
+
+.lifespan-share {
+    text-align: center;
+    margin-bottom: 1.25rem;
+}
+
+.lifespan-dialog {
+    max-width: min(32rem, calc(100vw - 2rem));
+    border: none;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+
+    &::backdrop {
+        background: rgba(0, 0, 0, 0.45);
+    }
+}
+
+.lifespan-dialog-warning {
+    background: #fff1e0;
+    color: #6b3400;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.lifespan-dialog-preview {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.75rem;
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.lifespan-dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.lifespan-sources ul {
+    padding-left: 1.25rem;
+    margin-bottom: 0.75rem;
+
+    li {
+        margin-bottom: 0.5rem;
+    }
+}
