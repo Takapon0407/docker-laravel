@@ -1,0 +1,133 @@
+// 見た目は寿命の計算（_lifespan.scss）とそろえる
+.pixel-container {
+    max-width: 720px;
+    padding: 1.5rem 1rem 3rem;
+
+    // ボタンの緑を Bootstrap の success ではなくサイトの緑にする（割り勘と同じ）
+    .btn-outline-success {
+        --bs-btn-color: color-mix(in srgb, #{$main-color} 80%, #000);
+        --bs-btn-border-color: #{$main-color};
+        --bs-btn-hover-bg: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-border-color: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-color: #fff;
+    }
+
+    .btn-check:checked + .btn-outline-success {
+        background-color: $main-color;
+        border-color: $main-color;
+        color: #fff;
+    }
+}
+
+.pixel-title {
+    font-size: 2rem;
+    text-align: center;
+    color: $main-color;
+    margin-bottom: 0.75rem;
+}
+
+.pixel-lead {
+    color: #555;
+    text-align: center;
+    margin-bottom: 1.25rem;
+}
+
+.pixel-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.pixel-heading {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.pixel-help {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+// 画像を選ぶ枠（ドラッグ中は色を付ける）
+.pixel-drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1.5rem 1rem;
+    border: 2px dashed $main-color;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+
+    &:hover,
+    &.is-dragover {
+        background: color-mix(in srgb, #{$main-color} 10%, #fff);
+    }
+}
+
+// ファイルの選択はキーボードでも開けるよう、隠した input にフォーカスしたときは枠を光らせる
+.pixel-drop:has(+ #pixel-file:focus-visible) {
+    outline: 3px solid color-mix(in srgb, #{$main-color} 60%, #fff);
+    outline-offset: 2px;
+}
+
+.pixel-drop-main {
+    font-weight: bold;
+    color: color-mix(in srgb, #{$main-color} 75%, #000);
+}
+
+.pixel-error {
+    color: #b02a37;
+    margin: 0.5rem 0 0;
+}
+
+// 元の画像とドット絵を並べる（狭い画面では縦に並べる）
+.pixel-compare {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+
+    @media (min-width: 576px) {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.pixel-figure {
+    margin: 0;
+    text-align: center;
+}
+
+// 透明なところがわかるよう、市松模様の上に出す
+.pixel-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    background: repeating-conic-gradient(#eee 0% 25%, #fff 0% 50%) 0 0 / 16px 16px;
+
+    // ドット絵は拡大してもぼかさない
+    &.is-dot {
+        image-rendering: pixelated;
+    }
+}
+
+.pixel-palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+}
+
+// 全体の li { width: 100% } を打ち消す
+.pixel-swatch {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
