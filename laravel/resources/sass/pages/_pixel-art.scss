@@ -1,0 +1,207 @@
+// 見た目は寿命の計算（_lifespan.scss）とそろえる
+.pixel-container {
+    max-width: 720px;
+    padding: 1.5rem 1rem 3rem;
+}
+
+.pixel-title {
+    font-size: 2rem;
+    text-align: center;
+    color: $main-color;
+    margin-bottom: 0.75rem;
+}
+
+.pixel-lead {
+    color: #555;
+    text-align: center;
+    margin-bottom: 1.25rem;
+}
+
+.pixel-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.pixel-heading {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.pixel-help {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+// スライダー（名前と値を 1 行に並べ、その下にスライダー）
+.pixel-slider {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+
+    .form-label {
+        margin-bottom: 0.25rem;
+    }
+
+    // つまみを Bootstrap の青ではなくサイトの緑にする
+    .form-range {
+        grid-column: 1 / -1;
+
+        &::-webkit-slider-thumb {
+            background-color: $main-color;
+        }
+
+        &::-moz-range-thumb {
+            background-color: $main-color;
+        }
+
+        &:focus::-webkit-slider-thumb {
+            box-shadow: 0 0 0 1px #fff, 0 0 0 0.25rem color-mix(in srgb, #{$main-color} 35%, transparent);
+        }
+
+        &:focus::-moz-range-thumb {
+            box-shadow: 0 0 0 1px #fff, 0 0 0 0.25rem color-mix(in srgb, #{$main-color} 35%, transparent);
+        }
+
+        &::-webkit-slider-thumb:active {
+            background-color: color-mix(in srgb, #{$main-color} 60%, #fff);
+        }
+
+        &::-moz-range-thumb:active {
+            background-color: color-mix(in srgb, #{$main-color} 60%, #fff);
+        }
+    }
+}
+
+.pixel-slider-value {
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+    color: color-mix(in srgb, #{$main-color} 75%, #000);
+}
+
+.pixel-slider-ends {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+}
+
+// よく使われる値のボタン（ボタンの緑を Bootstrap の success ではなくサイトの緑にする。割り勘と同じ）
+.pixel-presets {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+
+    .btn-outline-success {
+        --bs-btn-color: color-mix(in srgb, #{$main-color} 80%, #000);
+        --bs-btn-border-color: #{$main-color};
+        --bs-btn-hover-bg: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-border-color: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-color: #fff;
+        min-width: 3.5rem;
+    }
+
+    .btn[aria-pressed="true"] {
+        background-color: $main-color;
+        border-color: $main-color;
+        color: #fff;
+    }
+}
+
+// 画像を選ぶ枠（ドラッグ中は色を付ける）
+.pixel-drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1.5rem 1rem;
+    border: 2px dashed $main-color;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+
+    &:hover,
+    &.is-dragover {
+        background: color-mix(in srgb, #{$main-color} 10%, #fff);
+    }
+}
+
+// ファイルの選択はキーボードでも開けるよう、隠した input にフォーカスしたときは枠を光らせる
+// （:has() に対応していないブラウザでも効くよう、input を枠の直前に置いて隣の要素として指す）
+#pixel-file:focus-visible + .pixel-drop {
+    outline: 3px solid color-mix(in srgb, #{$main-color} 60%, #fff);
+    outline-offset: 2px;
+}
+
+.pixel-drop-main {
+    font-weight: bold;
+    color: color-mix(in srgb, #{$main-color} 75%, #000);
+}
+
+.pixel-error {
+    color: #b02a37;
+    margin: 0.5rem 0 0;
+}
+
+// 元の画像とドット絵を並べる（狭い画面では、スライダーを結果のすぐ下に置けるよう、ドット絵を大きく・元の画像を右に小さく並べる）
+.pixel-compare {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    align-items: start;
+    gap: 0.75rem;
+
+    .pixel-figure:first-child {
+        order: 1;
+    }
+
+    @media (min-width: 576px) {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+
+        .pixel-figure:first-child {
+            order: 0;
+        }
+    }
+}
+
+.pixel-figure {
+    margin: 0;
+    text-align: center;
+}
+
+// 透明なところがわかるよう、市松模様の上に出す
+.pixel-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    background: repeating-conic-gradient(#eee 0% 25%, #fff 0% 50%) 0 0 / 16px 16px;
+
+    // ドット絵は拡大してもぼかさない。縦長の画像でも、下のスライダーが画面に入るよう高さを抑える
+    &.is-dot {
+        image-rendering: pixelated;
+        max-height: 50vh;
+        object-fit: contain;
+    }
+}
+
+.pixel-palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+}
+
+// 全体の li { width: 100% } を打ち消す
+.pixel-swatch {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
