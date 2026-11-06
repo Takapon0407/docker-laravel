@@ -20,25 +20,6 @@
         <input type="file" class="visually-hidden" id="pixel-file" accept="image/*">
         <p class="pixel-error" id="pixel-error" role="alert" hidden></p>
 
-        <fieldset class="mt-3">
-            <legend class="form-label fs-6">細かさ（長いほうの辺のドット数）</legend>
-            <div class="btn-group w-100">
-                @foreach ([32, 48, 64, 96] as $size)
-                    <input type="radio" class="btn-check" name="pixel-size" id="pixel-size-{{ $size }}" value="{{ $size }}" @checked($size === 48)>
-                    <label class="btn btn-outline-success" for="pixel-size-{{ $size }}">{{ $size }}</label>
-                @endforeach
-            </div>
-        </fieldset>
-        <fieldset class="mt-3">
-            <legend class="form-label fs-6">色数</legend>
-            <div class="btn-group w-100">
-                @foreach ([8, 16, 32] as $count)
-                    <input type="radio" class="btn-check" name="pixel-colors" id="pixel-colors-{{ $count }}" value="{{ $count }}" @checked($count === 16)>
-                    <label class="btn btn-outline-success" for="pixel-colors-{{ $count }}">{{ $count }} 色</label>
-                @endforeach
-            </div>
-        </fieldset>
-
         <p class="pixel-help mt-3 mb-0">
             画像はサーバーに送らず、お使いのブラウザの中だけで変換します。<br>
             どこにも保存しないため、ページを閉じると消えます。
@@ -57,6 +38,23 @@
                 <figcaption class="pixel-help" id="pixel-after-caption"></figcaption>
             </figure>
         </div>
+
+        {{-- 結果を見ながら動かせるよう、画像のすぐ下に置く。動かしている間も描き直す
+             （上限は、スマホでもすぐ描き直せて、ドット絵らしさが残る大きさ） --}}
+        <div class="pixel-slider mt-3">
+            <label class="form-label" for="pixel-size">細かさ</label>
+            <output class="pixel-slider-value" for="pixel-size" id="pixel-size-value">48 ドット</output>
+            {{-- 値は長いほうの辺のドット数（縦長の画像は縦が、この数になる） --}}
+            <input type="range" class="form-range" id="pixel-size" min="16" max="128" step="1" value="48">
+            <div class="pixel-slider-ends pixel-help" aria-hidden="true"><span>粗い</span><span>細かい</span></div>
+        </div>
+        <div class="pixel-slider mt-2">
+            <label class="form-label" for="pixel-colors">色数</label>
+            <output class="pixel-slider-value" for="pixel-colors" id="pixel-colors-value">16 色</output>
+            <input type="range" class="form-range" id="pixel-colors" min="2" max="64" step="1" value="16">
+            <div class="pixel-slider-ends pixel-help" aria-hidden="true"><span>少ない</span><span>多い</span></div>
+        </div>
+
         <h2 class="pixel-heading mt-3">使っている色</h2>
         <ul class="pixel-palette" id="pixel-palette" aria-label="使っている色"></ul>
         <button type="button" class="btn btn-dark" id="pixel-save">PNG で保存</button>

@@ -2,21 +2,6 @@
 .pixel-container {
     max-width: 720px;
     padding: 1.5rem 1rem 3rem;
-
-    // ボタンの緑を Bootstrap の success ではなくサイトの緑にする（割り勘と同じ）
-    .btn-outline-success {
-        --bs-btn-color: color-mix(in srgb, #{$main-color} 80%, #000);
-        --bs-btn-border-color: #{$main-color};
-        --bs-btn-hover-bg: color-mix(in srgb, #{$main-color} 90%, #000);
-        --bs-btn-hover-border-color: color-mix(in srgb, #{$main-color} 90%, #000);
-        --bs-btn-hover-color: #fff;
-    }
-
-    .btn-check:checked + .btn-outline-success {
-        background-color: $main-color;
-        border-color: $main-color;
-        color: #fff;
-    }
 }
 
 .pixel-title {
@@ -49,6 +34,58 @@
 .pixel-help {
     font-size: 0.85rem;
     color: #666;
+}
+
+// スライダー（名前と値を 1 行に並べ、その下にスライダー）
+.pixel-slider {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+
+    .form-label {
+        margin-bottom: 0.25rem;
+    }
+
+    // つまみを Bootstrap の青ではなくサイトの緑にする
+    .form-range {
+        grid-column: 1 / -1;
+
+        &::-webkit-slider-thumb {
+            background-color: $main-color;
+        }
+
+        &::-moz-range-thumb {
+            background-color: $main-color;
+        }
+
+        &:focus::-webkit-slider-thumb {
+            box-shadow: 0 0 0 1px #fff, 0 0 0 0.25rem color-mix(in srgb, #{$main-color} 35%, transparent);
+        }
+
+        &:focus::-moz-range-thumb {
+            box-shadow: 0 0 0 1px #fff, 0 0 0 0.25rem color-mix(in srgb, #{$main-color} 35%, transparent);
+        }
+
+        &::-webkit-slider-thumb:active {
+            background-color: color-mix(in srgb, #{$main-color} 60%, #fff);
+        }
+
+        &::-moz-range-thumb:active {
+            background-color: color-mix(in srgb, #{$main-color} 60%, #fff);
+        }
+    }
+}
+
+.pixel-slider-value {
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+    color: color-mix(in srgb, #{$main-color} 75%, #000);
+}
+
+.pixel-slider-ends {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
 }
 
 // 画像を選ぶ枠（ドラッグ中は色を付ける）
@@ -85,14 +122,24 @@
     margin: 0.5rem 0 0;
 }
 
-// 元の画像とドット絵を並べる（狭い画面では縦に並べる）
+// 元の画像とドット絵を並べる（狭い画面では、スライダーを結果のすぐ下に置けるよう、ドット絵を大きく・元の画像を右に小さく並べる）
 .pixel-compare {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
+    grid-template-columns: 2fr 1fr;
+    align-items: start;
+    gap: 0.75rem;
+
+    .pixel-figure:first-child {
+        order: 1;
+    }
 
     @media (min-width: 576px) {
         grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+
+        .pixel-figure:first-child {
+            order: 0;
+        }
     }
 }
 
@@ -109,9 +156,11 @@
     border-radius: 6px;
     background: repeating-conic-gradient(#eee 0% 25%, #fff 0% 50%) 0 0 / 16px 16px;
 
-    // ドット絵は拡大してもぼかさない
+    // ドット絵は拡大してもぼかさない。縦長の画像でも、下のスライダーが画面に入るよう高さを抑える
     &.is-dot {
         image-rendering: pixelated;
+        max-height: 50vh;
+        object-fit: contain;
     }
 }
 

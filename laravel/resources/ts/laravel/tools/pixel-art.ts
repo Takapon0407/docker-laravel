@@ -1,4 +1,4 @@
-import { type Color, pixelate, type Pixels } from "@/lib/pixel-art";
+import { applyPalette, type Color, downscale, palette, type Pixels, targetSize } from "@/lib/pixel-art";
 
 // これより大きなファイルは読み込まない（スマホで固まらないように）
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
@@ -49,23 +49,32 @@ document.addEventListener("DOMContentLoaded", () => {
     const afterCaption = document.getElementById("pixel-after-caption") as HTMLElement;
     const paletteList = document.getElementById("pixel-palette") as HTMLElement;
     const save = document.getElementById("pixel-save") as HTMLButtonElement;
+    const sizeInput = document.getElementById("pixel-size") as HTMLInputElement;
+    const sizeValue = document.getElementById("pixel-size-value") as HTMLOutputElement;
+    const colorsInput = document.getElementById("pixel-colors") as HTMLInputElement;
+    const colorsValue = document.getElementById("pixel-colors-value") as HTMLOutputElement;
 
     let source: Pixels | null = null;
+    // 色数だけを変えたときは、縮めた画像を使い回す（縮めるのがいちばん時間がかかるため）
+    let small: { size: number; pixels: Pixels } | null = null;
 
     function showError(message: string): void {
         error.textContent = message;
         error.hidden = message === "";
     }
 
-    function selected(name: string): number {
-        return Number((document.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement).value);
-    }
-
     function render(): void {
+        sizeValue.textContent = `${sizeInput.value} ドット`;
+        colorsValue.textContent = `${colorsInput.value} 色`;
         if (source === null) {
             return;
         }
-        const pixels = pixelate(source, selected("pixel-size"), selected("pixel-colors"));
+        const size = Number(sizeInput.value);
+        if (small === null || small.size !== size) {
+            const target = targetSize(source.width, source.height, size);
+            small = { size, pixels: downscale(source, target.width, target.height) };
+        }
+        const pixels = applyPalette(small.pixels, palette(small.pixels, Number(colorsInput.value)));
         after.width = pixels.width;
         after.height = pixels.height;
         after.getContext("2d")!.putImageData(new ImageData(new Uint8ClampedArray(pixels.data), pixels.width, pixels.height), 0, 0);
@@ -109,6 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
         before.getContext("2d")!.drawImage(canvas, 0, 0);
         const image = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height);
         source = { width: image.width, height: image.height, data: image.data };
+        small = null;
         result.hidden = false;
         render();
     }
@@ -141,9 +151,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    document.querySelectorAll<HTMLInputElement>('input[name="pixel-size"], input[name="pixel-colors"]').forEach((input) => {
-        input.addEventListener("change", render);
-    });
+    // スライダーを動かしている間は、画面を描き直すたびに 1 回だけ変換する
+    let scheduled = false;
+    for (const input of [sizeInput, colorsInput]) {
+        input.addEventListener("input", () => {
+            if (!scheduled) {
+                scheduled = true;
+                requestAnimationFrame(() => {
+                    scheduled = false;
+                    render();
+                });
+            }
+        });
+    }
+    // 戻るボタンなどで、ブラウザがスライダーの位置を前の値に戻したとき
+    render();
 
     save.addEventListener("click", () => {
         const scale = Math.max(1, Math.floor(SAVE_SIZE / Math.max(after.width, after.height)));

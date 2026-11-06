@@ -66,6 +66,27 @@ function distance(a: Color, b: Color): number {
     return 2 * dr * dr + 4 * dg * dg + 3 * db * db;
 }
 
+interface Box {
+    colors: Color[];
+    // いちばん広がっている向き（0：赤・1：緑・2：青）と、その幅
+    channel: 0 | 1 | 2;
+    range: number;
+}
+
+function box(colors: Color[]): Box {
+    const min = [255, 255, 255];
+    const max = [0, 0, 0];
+    for (const color of colors) {
+        for (let channel = 0; channel < 3; channel++) {
+            min[channel] = Math.min(min[channel]!, color[channel]!);
+            max[channel] = Math.max(max[channel]!, color[channel]!);
+        }
+    }
+    const ranges = max.map((value, channel) => value - min[channel]!);
+    const channel = ranges.indexOf(Math.max(...ranges)) as 0 | 1 | 2;
+    return { colors, channel, range: ranges[channel]! };
+}
+
 // メディアンカット：色の集まりを、いちばん広がっている向きの真ん中で分けることを繰り返し、
 // 分けたそれぞれの平均を使う色（パレット）にする。同じ画像からはいつも同じパレットになる
 export function palette(pixels: Pixels, count: number): Color[] {
@@ -79,36 +100,25 @@ export function palette(pixels: Pixels, count: number): Color[] {
         return [];
     }
 
-    const boxes: Color[][] = [colors];
+    const boxes: Box[] = [box(colors)];
     while (boxes.length < count) {
         // 広がりがいちばん大きい集まりを分ける（1 色だけの集まりは分けない）
         let target = -1;
-        let targetChannel = 0;
-        let targetRange = 0;
-        boxes.forEach((box, index) => {
-            for (let channel = 0; channel < 3; channel++) {
-                let min = 255;
-                let max = 0;
-                for (const color of box) {
-                    min = Math.min(min, color[channel]!);
-                    max = Math.max(max, color[channel]!);
-                }
-                if (max - min > targetRange) {
-                    target = index;
-                    targetChannel = channel;
-                    targetRange = max - min;
-                }
+        boxes.forEach((candidate, index) => {
+            if (candidate.range > 0 && (target === -1 || candidate.range > boxes[target]!.range)) {
+                target = index;
             }
         });
         if (target === -1) {
             break;
         }
-        const box = boxes[target]!.sort((a, b) => a[targetChannel]! - b[targetChannel]!);
-        const half = box.length >> 1;
-        boxes.splice(target, 1, box.slice(0, half), box.slice(half));
+        const { colors: members, channel } = boxes[target]!;
+        members.sort((a, b) => a[channel] - b[channel]);
+        const half = members.length >> 1;
+        boxes.splice(target, 1, box(members.slice(0, half)), box(members.slice(half)));
     }
 
-    return boxes.map((box) => {
+    return boxes.map(({ colors: box }) => {
         const sum = box.reduce<Color>((total, color) => [total[0] + color[0], total[1] + color[1], total[2] + color[2]], [0, 0, 0]);
         return sum.map((value) => Math.round(value / box.length)) as Color;
     });
@@ -126,8 +136,17 @@ export function applyPalette(pixels: Pixels, colors: Color[]): Pixels {
         let nearest = cache.get(key);
         if (nearest === undefined) {
             const color: Color = [pixels.data[i]!, pixels.data[i + 1]!, pixels.data[i + 2]!];
-            nearest = colors.reduce((best, candidate) => (distance(candidate, color) < distance(best, color) ? candidate : best));
-            cache.set(key, nearest);
+            let found = colors[0]!;
+            let best = distance(found, color);
+            for (const candidate of colors) {
+                const d = distance(candidate, color);
+                if (d < best) {
+                    best = d;
+                    found = candidate;
+                }
+            }
+            nearest = found;
+            cache.set(key, found);
         }
         data.set([...nearest, 255], i);
     }
