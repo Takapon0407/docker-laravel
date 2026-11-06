@@ -97,6 +97,13 @@ class PageMetaTest extends TestCase
         $countdown->assertSee('href="https://www.jma.go.jp/jma/kishou/know/yougo_hp/toki.html"', false);
         $countdown->assertSee('<link rel="manifest" href="'.asset('manifest-countdown.json').'">', false);
 
+        // ドット絵メーカー：一般向け・端末内で完結。画像を送らないことをページに書く
+        $this->assertToolCard($tools, 'data-purpose="general" data-storage="local"', route('tools.pixel-art'));
+        $pixelArt = $this->get(route('tools.pixel-art'));
+        $pixelArt->assertOk();
+        $pixelArt->assertSee('<title>ドット絵メーカー | てくてくテック</title>', false);
+        $pixelArt->assertSee('画像はサーバーに送らず、お使いのブラウザの中だけで変換します。', false);
+
         // 開発向けのツール：一覧から「端末内で完結」としてたどれ、ページごとのタイトルを出す
         foreach ([
             'tools.json' => 'JSON 整形',

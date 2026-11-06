@@ -40,6 +40,14 @@ return [
         'storage_note' => 'マイ記念日は、ブラウザの中にだけ残します',
     ],
     [
+        'route' => 'tools.pixel-art',
+        'title' => 'ドット絵メーカー',
+        'description' => '画像を選ぶか貼り付けると、ドット絵に変換します。細かさと色数を選んで、PNG で保存できます。',
+        'purpose' => 'general',
+        'storage' => 'local',
+        'storage_note' => '画像はブラウザの中だけで変換し、どこにも保存しません',
+    ],
+    [
         'route' => 'tools.json',
         'title' => 'JSON 整形',
         'description' => '1 行の JSON をインデント付きで見やすく整形したり、1 行に圧縮したりします。形が正しくないときは、何行目の何文字目かを表示します。',
