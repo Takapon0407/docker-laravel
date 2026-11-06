@@ -12,12 +12,13 @@
     <p class="pixel-lead">画像を選ぶか貼り付けると、ドット絵に変換します。</p>
 
     <section class="pixel-card">
-        {{-- ラベルごと押せるようにして、ファイルの選択を開く。ドラッグ＆ドロップと貼り付け（Ctrl + V）はスクリプトで受け取る --}}
+        {{-- ラベルごと押せるようにして、ファイルの選択を開く。ドラッグ＆ドロップと貼り付け（Ctrl + V）はスクリプトで受け取る。
+             input は、フォーカスしたときに枠を光らせられるよう（_pixel-art.scss）、枠の直前に置く --}}
+        <input type="file" class="visually-hidden" id="pixel-file" accept="image/*">
         <label class="pixel-drop" id="pixel-drop" for="pixel-file">
             <span class="pixel-drop-main">画像を選ぶ</span>
             <span class="pixel-help">ここに画像をドラッグするか、コピーした画像を貼り付けて（Ctrl + V / ⌘ + V）も使えます</span>
         </label>
-        <input type="file" class="visually-hidden" id="pixel-file" accept="image/*">
         <p class="pixel-error" id="pixel-error" role="alert" hidden></p>
 
         <p class="pixel-help mt-3 mb-0">

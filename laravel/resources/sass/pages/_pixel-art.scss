@@ -131,7 +131,8 @@
 }
 
 // ファイルの選択はキーボードでも開けるよう、隠した input にフォーカスしたときは枠を光らせる
-.pixel-drop:has(+ #pixel-file:focus-visible) {
+// （:has() に対応していないブラウザでも効くよう、input を枠の直前に置いて隣の要素として指す）
+#pixel-file:focus-visible + .pixel-drop {
     outline: 3px solid color-mix(in srgb, #{$main-color} 60%, #fff);
     outline-offset: 2px;
 }
