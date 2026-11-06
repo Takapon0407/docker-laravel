@@ -47,12 +47,24 @@
             {{-- 値は長いほうの辺のドット数（縦長の画像は縦が、この数になる） --}}
             <input type="range" class="form-range" id="pixel-size" min="16" max="128" step="1" value="48">
             <div class="pixel-slider-ends pixel-help" aria-hidden="true"><span>粗い</span><span>細かい</span></div>
+            {{-- よく使われる値（ゲームのキャラクターなどのドット絵は 16・32・64 ドット四方が多い）にすぐ合わせる --}}
+            <div class="pixel-presets" role="group" aria-label="よく使われる細かさ">
+                @foreach ([16, 32, 64, 128] as $size)
+                    <button type="button" class="btn btn-outline-success btn-sm" data-pixel-preset="pixel-size" value="{{ $size }}" aria-pressed="false">{{ $size }}</button>
+                @endforeach
+            </div>
         </div>
         <div class="pixel-slider mt-2">
             <label class="form-label" for="pixel-colors">色数</label>
             <output class="pixel-slider-value" for="pixel-colors" id="pixel-colors-value">16 色</output>
             <input type="range" class="form-range" id="pixel-colors" min="2" max="64" step="1" value="16">
             <div class="pixel-slider-ends pixel-help" aria-hidden="true"><span>少ない</span><span>多い</span></div>
+            {{-- よく使われる色数（昔のゲーム機やパソコンが同時に出せた色数の名残で、2 の累乗が多い） --}}
+            <div class="pixel-presets" role="group" aria-label="よく使われる色数">
+                @foreach ([4, 8, 16, 32] as $count)
+                    <button type="button" class="btn btn-outline-success btn-sm" data-pixel-preset="pixel-colors" value="{{ $count }}" aria-pressed="false">{{ $count }} 色</button>
+                @endforeach
+            </div>
         </div>
 
         <h2 class="pixel-heading mt-3">使っている色</h2>

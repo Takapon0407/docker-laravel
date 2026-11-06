@@ -88,6 +88,30 @@
     justify-content: space-between;
 }
 
+// よく使われる値のボタン（ボタンの緑を Bootstrap の success ではなくサイトの緑にする。割り勘と同じ）
+.pixel-presets {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+
+    .btn-outline-success {
+        --bs-btn-color: color-mix(in srgb, #{$main-color} 80%, #000);
+        --bs-btn-border-color: #{$main-color};
+        --bs-btn-hover-bg: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-border-color: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-color: #fff;
+        min-width: 3.5rem;
+    }
+
+    .btn[aria-pressed="true"] {
+        background-color: $main-color;
+        border-color: $main-color;
+        color: #fff;
+    }
+}
+
 // 画像を選ぶ枠（ドラッグ中は色を付ける）
 .pixel-drop {
     display: flex;

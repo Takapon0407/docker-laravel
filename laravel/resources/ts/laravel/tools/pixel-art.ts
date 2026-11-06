@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const sizeValue = document.getElementById("pixel-size-value") as HTMLOutputElement;
     const colorsInput = document.getElementById("pixel-colors") as HTMLInputElement;
     const colorsValue = document.getElementById("pixel-colors-value") as HTMLOutputElement;
+    const presets = document.querySelectorAll<HTMLButtonElement>("[data-pixel-preset]");
 
     let source: Pixels | null = null;
     // 色数だけを変えたときは、縮めた画像を使い回す（縮めるのがいちばん時間がかかるため）
@@ -66,6 +67,11 @@ document.addEventListener("DOMContentLoaded", () => {
     function render(): void {
         sizeValue.textContent = `${sizeInput.value} ドット`;
         colorsValue.textContent = `${colorsInput.value} 色`;
+        // スライダーがプリセットの値のときは、そのボタンを押した状態にする
+        presets.forEach((button) => {
+            const input = document.getElementById(button.dataset["pixelPreset"]!) as HTMLInputElement;
+            button.setAttribute("aria-pressed", String(input.value === button.value));
+        });
         if (source === null) {
             return;
         }
@@ -164,6 +170,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+    presets.forEach((button) => {
+        button.addEventListener("click", () => {
+            (document.getElementById(button.dataset["pixelPreset"]!) as HTMLInputElement).value = button.value;
+            render();
+        });
+    });
+
     // 戻るボタンなどで、ブラウザがスライダーの位置を前の値に戻したとき
     render();
 
