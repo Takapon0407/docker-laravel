@@ -23,7 +23,7 @@ class WorksController extends Controller
                 continue;
             }
             $duration = self::stringOf($track, 'duration');
-            $totalSeconds += self::secondsOf($duration);
+            $totalSeconds += self::secondsOf($duration) ?? 0;
             $tracks[] = [
                 'no' => $index + 1,
                 'title_en' => self::stringOf($track, 'title_en'),
@@ -43,12 +43,15 @@ class WorksController extends Controller
     }
 
     /**
-     * 「分:秒」を秒にする（形が違うときは 0）
+     * 「分:秒」か「時:分:秒」を秒にする（形が違うときは null。設定のすべての曲が読めることは WorksPageTest で確かめる）
      */
-    public static function secondsOf(string $duration): int
+    public static function secondsOf(string $duration): ?int
     {
-        if (preg_match('/^(\d+):([0-5]\d)$/', $duration, $matches) !== 1) {
-            return 0;
+        if (preg_match('/^(?:(\d+):([0-5]\d)|(\d+):([0-5]\d):([0-5]\d))$/', $duration, $matches) !== 1) {
+            return null;
+        }
+        if (($matches[3] ?? '') !== '') {
+            return (int) $matches[3] * 3600 + (int) $matches[4] * 60 + (int) $matches[5];
         }
 
         return (int) $matches[1] * 60 + (int) $matches[2];

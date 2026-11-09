@@ -6,7 +6,8 @@ return [
     // 音源などの大きいファイルの置き場所（URL の頭。末尾の / なし）
     // 本番は同じドメインの /media（CloudFront の /media/* → S3。infra/media）。
     // ローカルでは laravel/public/media に置いたファイルを nginx が返す（git には入れない）
-    // 別の場所（R2 など）に移すときは、ファイルをコピーしてここを変える
+    // 別の場所（R2 など）に移すときは、ファイルをコピーしてここを変える。
+    // 別のドメイン・サービスから配信するようになったら、プライバシーポリシー（privacy.blade.php の「このサイトのサーバーから配信」）も直す
     'media_url' => rtrim((string) env('WORKS_MEDIA_URL', '/media'), '/'),
 
     'list' => [

@@ -54,7 +54,19 @@ class WorksPageTest extends TestCase
         $response = $this->get('/works/rain-and-realms');
 
         $response->assertSee('data-src="https://media.example.com/rain-and-realms/kominka-rain/01-first-drops-on-the-engawa.m4a"', false);
-        $this->assertStringContainsString("media-src 'self' https://media.example.com", (string) $response->headers->get('Content-Security-Policy'));
+        $this->assertStringContainsString("media-src 'self' https://media.example.com;", (string) $response->headers->get('Content-Security-Policy'));
+    }
+
+    /**
+     * 既定以外のポートの配信元は、ポートも含めて CSP で許可すること（落とすと音源がブロックされる）
+     */
+    public function test_media_origin_keeps_port(): void
+    {
+        config(['works.media_url' => 'https://media.example.com:8443/files']);
+
+        $response = $this->get('/works/rain-and-realms');
+
+        $this->assertStringContainsString("media-src 'self' https://media.example.com:8443;", (string) $response->headers->get('Content-Security-Policy'));
     }
 
     /**
@@ -83,7 +95,24 @@ class WorksPageTest extends TestCase
     public function test_seconds_of_duration(): void
     {
         $this->assertSame(213, WorksController::secondsOf('3:33'));
-        $this->assertSame(0, WorksController::secondsOf('3:75'));
-        $this->assertSame(0, WorksController::secondsOf(''));
+        $this->assertSame(3723, WorksController::secondsOf('1:02:03'));
+        $this->assertNull(WorksController::secondsOf('3:75'));
+        $this->assertNull(WorksController::secondsOf('3:5'));
+        $this->assertNull(WorksController::secondsOf(''));
+    }
+
+    /**
+     * 設定の曲の長さがすべて読めること（書き間違えると、合計の分数が黙って少なくなるため）
+     */
+    public function test_all_track_durations_are_readable(): void
+    {
+        $tracks = config()->array('rain-and-realms.album.tracks');
+        $this->assertNotEmpty($tracks);
+        foreach ($tracks as $track) {
+            $this->assertIsArray($track);
+            $duration = $track['duration'] ?? null;
+            $this->assertIsString($duration);
+            $this->assertNotNull(WorksController::secondsOf($duration), "曲の長さ「{$duration}」が読めない");
+        }
     }
 }

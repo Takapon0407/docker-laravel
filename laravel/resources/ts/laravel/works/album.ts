@@ -63,11 +63,15 @@ function setUpAlbumPlayer(): void {
         });
     }
 
-    function renderTime(): void {
+    // 曲の長さは、変わったとき（曲を切り替えて読み込んだとき）だけ書く
+    function renderDuration(): void {
         const duration = Number.isFinite(audio!.duration) ? audio!.duration : 0;
         seek!.max = String(Math.floor(duration));
         seek!.disabled = duration === 0;
         durationLabel!.textContent = formatTime(duration);
+    }
+
+    function renderCurrentTime(): void {
         if (!seeking) {
             seek!.value = String(Math.floor(audio!.currentTime));
             currentLabel!.textContent = formatTime(audio!.currentTime);
@@ -81,7 +85,8 @@ function setUpAlbumPlayer(): void {
             return;
         }
         unavailable!.hidden = true;
-        if (current !== index) {
+        // 再生に失敗したあと（配信を止めている月など）に同じ曲をもう一度押したときも、読み込み直して確かめる
+        if (current !== index || audio!.error) {
             current = index;
             audio!.src = src;
             nowTitle!.textContent = `${index + 1}. ${track.dataset.title ?? ""}`;
@@ -94,6 +99,9 @@ function setUpAlbumPlayer(): void {
 
     function togglePlay(): void {
         if (current === null) {
+            play(0);
+        } else if (audio!.ended && nextIndex(current, tracks.length) === null) {
+            // アルバムを最後まで聴いたあとは、最初の曲から
             play(0);
         } else if (audio!.paused) {
             play(current);
@@ -165,8 +173,8 @@ function setUpAlbumPlayer(): void {
 
     audio.addEventListener("play", render);
     audio.addEventListener("pause", render);
-    audio.addEventListener("timeupdate", renderTime);
-    audio.addEventListener("durationchange", renderTime);
+    audio.addEventListener("timeupdate", renderCurrentTime);
+    audio.addEventListener("durationchange", renderDuration);
     audio.addEventListener("ended", () => {
         const next = current === null ? null : nextIndex(current, tracks.length);
         if (next === null) {

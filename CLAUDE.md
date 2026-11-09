@@ -71,7 +71,7 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 - 開発向けのツールは見た目を `pages/_devtools.scss`（`.devtool-*`）で共通にする。正規表現は時間のかかるパターンで固まらないよう Web Worker（`lib/regex-worker.ts`）で動かし、1 秒で止める。コピーのボタンは `util/copy.ts` の `data-copy-target`、結果が変わったことを知らせる光らせ方は `util/flash.ts`
 - `/tools/*` の便利ツールは計算をブラウザ内だけで行う（サーバーに入力を送らない。匿名質問ボードの投稿だけは例外で、`infra/board` の WebSocket に送る）。DOM に依存しないロジックは `resources/ts/lib/` に置いてテストし、ページの TS（`resources/ts/laravel/tools/`）から使う（`resources/ts/laravel/` 以下は全部 Vite のエントリーになるため）
 - 作品はヘッダーの「Works」→ `/works`（`config/works.php` の一覧）からたどる。Rain & Realms のページは `config/rain-and-realms.php`。**リンクはこのサイト → Rain & Realms の一方向だけ**（外部リンクは `rel="noopener noreferrer"`）、曲は AI で生成しているので**「作曲した」とは書かない**、音源のダウンロードは付けない
-- 作品の音源は `config('works.media_url')`（既定は同じドメインの `/media`。本番は CloudFront の `/media/*` → S3）から `preload="none"` で再生する。ローカルは `laravel/public/media` に置く（git には入れない）。音源が返ってこない（転送量の上限を超えた月は 403）ときは、YouTube・配信サービスへ案内する。YouTube は押したときだけ youtube-nocookie.com を読み込む
+- 作品の音源は `config('works.media_url')`（既定は同じドメインの `/media`。本番は CloudFront の `/media/*` → S3）から `preload="none"` で再生する。ローカルは `laravel/public/media` に置く（git には入れない）。音源が返ってこない（転送量の上限を超えた月は 403）ときは、YouTube・配信サービスへ案内する。YouTube は押したときだけ youtube-nocookie.com を読み込む。`works.media_url` を別のドメイン（R2 など）に変えたら、CSP は自動で許可されるが、プライバシーポリシーの音源の配信元の記述は手で直す
 - `config/` は変更したものだけを置き、ほかは Laravel の既定値を使う。`/hobbies` のゲーム一覧は `config/hobbies.php` のデータ
 - Sass は `components/`・`base/`・`pages/` に分け、サイトの緑は `_variables.scss` の `$main-color`。見出しのフォントは `.font-heading`（Google Fonts の Mochiy Pop One。漢字も含む）。Bootstrap 5 のクラスを使う（Bootstrap 4 のクラスは効かない）
 - `/` のスキルスタック・略歴・資格は、就活用のクエリ（`config/profile.php`。今は `/?for=recruit`）が付いたときだけ HTML に出す（ツールなどから来た人に見せないため。秘密ではない）。その表示は `noindex`

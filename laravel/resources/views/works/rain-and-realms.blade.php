@@ -77,8 +77,8 @@
 
             {{-- 再生できなかったとき（アクセスが多い月に配信を止めたときなど）に出す --}}
             <div class="album-unavailable" id="album-unavailable" role="alert" hidden>
-                今はここで再生できません。アクセスが多い月は、費用を抑えるために再生を止めることがあります。
-                <a href="#album-links">YouTube や各配信サービス</a>でお楽しみください。
+                今はここで再生できませんでした。通信の状態を確かめて、もう一度押してみてください。
+                アクセスが多い月は、費用を抑えるためにここでの再生を止めることがあります。そのときは <a href="#album-links">YouTube や各配信サービス</a>でお楽しみください。
             </div>
 
             <ol class="album-tracks">

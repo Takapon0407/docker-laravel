@@ -106,6 +106,9 @@ class ContentSecurityPolicy
         return is_string($url) && $url !== '' ? $this->originOf($url) : null;
     }
 
+    /**
+     * URL のオリジン（スキーム・ホスト・ポート）。ポートを落とすと、既定以外のポートのときに CSP が一致しなくなる
+     */
     private function originOf(string $url): ?string
     {
         $scheme = parse_url($url, PHP_URL_SCHEME);
@@ -113,7 +116,8 @@ class ContentSecurityPolicy
         if (! is_string($scheme) || ! is_string($host)) {
             return null;
         }
+        $port = parse_url($url, PHP_URL_PORT);
 
-        return "{$scheme}://{$host}";
+        return "{$scheme}://{$host}".(is_int($port) ? ":{$port}" : '');
     }
 }
