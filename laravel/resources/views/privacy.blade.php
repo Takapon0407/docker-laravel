@@ -14,7 +14,7 @@
         <h2 class="policy-heading">1. 集めていないもの</h2>
         <ul>
             <li>このサイトには会員登録・ログイン・お問い合わせのフォームはなく、氏名・メールアドレスなどを入力してもらうことはありません。</li>
-            <li>Cookie は使っていません。アクセス解析や広告のサービスも使っていません。</li>
+            <li>このサイト自身は Cookie を使っていません。アクセス解析や広告のサービスも使っていません（YouTube の動画を再生したときは、次の「2. 自動で記録されるもの」のとおり YouTube の仕組みが動きます）。</li>
         </ul>
     </section>
 
@@ -27,6 +27,11 @@
         <p class="mb-0">
             見出しのフォントは Google Fonts から読み込んでいるため、ページを開くとブラウザが Google のサーバーに接続します。
             Google での扱いは <a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener noreferrer">Google のプライバシーポリシー</a> をご覧ください。
+        </p>
+        <p class="mt-3 mb-0">
+            作品のページの YouTube の動画は、再生のボタンを押したときだけ、YouTube のプレーヤー（プライバシー強化モードの youtube-nocookie.com）を読み込みます。
+            押すまで YouTube には接続しません。押したあとは YouTube の仕組みとして、お使いのブラウザに情報が保存されたり、視聴の記録が YouTube に送られたりすることがあります。扱いは同じく Google のプライバシーポリシーによります。
+            作品のページの曲は、このサイトのサーバーから配信しており、聴いた曲が外部のサービスに送られることはありません。
         </p>
     </section>
 

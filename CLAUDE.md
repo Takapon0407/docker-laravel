@@ -5,7 +5,7 @@
 ## 概要
 
 - ポートフォリオサイト（https://tektektech-portfolio.com/）。Laravel 13 / PHP 8.5、フロントは Blade ＋ TypeScript ＋ Sass（Vite でビルド）
-- **閲覧専用のサイト**：DB・ログイン・フォームはない。ページは `/`（プロフィール）・`/hobbies`・`/games/{tetris,puyo}`・`/tools`（便利ツールの一覧）・`/tools/warikan`・`/tools/board`（匿名質問ボード）・`/tools/lifespan`（寿命の計算）・`/tools/countdown`（今年の残り・祝日・マイ記念日まで）・`/tools/pixel-art`（画像をドット絵にする）・`/tools/chord-player`（雨音コードプレイヤー：コード進行を組み立てて、エレピで鳴らす）・`/tools/{json,datetime,regex}`（開発向け）・`/privacy`（プライバシーポリシー・免責事項。全ページのフッターからリンク）だけ
+- **閲覧専用のサイト**：DB・ログイン・フォームはない。ページは `/`（プロフィール）・`/works`（作品の一覧）・`/works/rain-and-realms`（AI で作る作業用 BGM のアルバム。全曲を再生できる）・`/hobbies`・`/games/{tetris,puyo}`・`/tools`（便利ツールの一覧）・`/tools/warikan`・`/tools/board`（匿名質問ボード）・`/tools/lifespan`（寿命の計算）・`/tools/countdown`（今年の残り・祝日・マイ記念日まで）・`/tools/pixel-art`（画像をドット絵にする）・`/tools/chord-player`（雨音コードプレイヤー：コード進行を組み立てて、エレピで鳴らす）・`/tools/{json,datetime,regex}`（開発向け）・`/privacy`（プライバシーポリシー・免責事項。全ページのフッターからリンク）だけ
 - 匿名質問ボードだけはサーバー側の処理があるが、Laravel とは別の **`infra/board`（CDK：API Gateway の WebSocket ＋ Lambda ＋ DynamoDB）**。Laravel はページを返すだけで、ブラウザが WebSocket で直接やり取りする。詳細は `infra/board/README.md`
 - `/hobbies` の写真は S3 から取得する。S3 への PUT 時に Lambda が幅・高さをメタデータとして付け、`HobbiesController` が `headObject` で読んで縦横を判定する
 
@@ -17,6 +17,7 @@
 ```
 
 - CloudFront のオリジンは **VPC オリジン `tektektech-ec2`**（EC2 のプライベート DNS 名 `ip-172-31-45-191.ap-northeast-1.compute.internal`）。メンテナンス画面（`/errors/*`）だけ S3 オリジン、**`/tools/board/ws` は API Gateway（`BoardStack-prod` の WebSocket）**。このビヘイビアは CDK の外で手で設定している（`X-Origin-Verify` ヘッダーの値は SSM の `/tektektech/board/prod/origin-secret` と同じ。手順は `infra/board/README.md`）
+- **`/media/*`（作品の音源）は S3（`MediaStack` の `tektektech-media-<アカウント>`、OAC）**。viewer request の CloudFront Function `tektektech-media-gate` が KeyValueStore の `media_enabled` を見て、`false` なら 403。5 分おきの Lambda が、今月（UTC）の CloudFront 全体の転送量が上限（700GB）を超えたら `false` にし、月が変わったら戻す。このビヘイビアも CDK の外で手で設定している（手順は `infra/media/README.md`）
 - EC2 の SG の受信は **80 番・`CloudFront-VPCOrigins-Service-SG` からのみ**（インターネットから EC2 には直接届かない）。ALB はない
 - EC2 はパブリックサブネットに置いたまま、**Elastic IP は送信専用**（Docker イメージの取得・SSM・S3・Parameter Store・OS の更新に使う。解放するとデプロイできなくなる）
 - 閲覧者 → CloudFront は全ビヘイビア `Redirect HTTP to HTTPS`
@@ -49,6 +50,7 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 ## デプロイとロールバック
 
 - `infra/board` は `.github/workflows/board.yml` が別にデプロイする（PR で diff、`develop` → dev、`main` → Environment `production` の承認 → prod）
+- `infra/media` は CI（`.github/workflows/media.yml`）でテスト・synth だけを行い、デプロイは管理者が手で `cdk deploy MediaStack` する
 - `main` への push で `.github/workflows/deploy.yml` が動く：`test` と `lint`（PHPStan / Pint）が通ったら、ビルド（npm / composer `--no-dev`）→ tarball を S3 へ → SSM Run Command で `deploy/remote-deploy.sh` を実行
 - `remote-deploy.sh`：コードを含むイメージ `tektektech-app` / `tektektech-nginx` を **コミットの SHA をタグにして**作り、`deploy/switch-release.sh` でコンテナごと入れ替える。トップページが 200 を返さなければ**直前のリリース（`.current-release`）に自動で戻す**。イメージは直近 3 世代を残す
 - 手動で戻すときは Actions の `Rollback` を実行する。**sha を空欄にすると 1 つ前に動いていたリリース（`.previous-release`）に戻る**（もう一度空欄で実行すると元に戻る）。特定のリリースに戻すときは SHA（40 桁）を渡す。戻せる SHA はデプロイのログ末尾の `Images kept for rollback` に出る
@@ -70,6 +72,8 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 - 雨音コードプレイヤーは、コードの読み取り・ボイシング・8 分ごとに鳴らすもの（`planStep`）・定番の進行（`PRESET_GROUPS`）を `lib/chord-player.ts`、次のコードの候補を `lib/chord-suggest.ts`（よく行く先の表 `TRANSITIONS` と、考えられるキーを絞っていく仕組み）、音の合成（Web Audio API。音のファイルは使わない）を `lib/chord-audio.ts` で行う。鳴らすのは 25ms ごとのタイマーで少し先まで予約する方式（タブが裏にあるときは長めに予約）。入力と設定は localStorage（`chord-player:v1`。組み立て中の状態は残さない）
 - 開発向けのツールは見た目を `pages/_devtools.scss`（`.devtool-*`）で共通にする。正規表現は時間のかかるパターンで固まらないよう Web Worker（`lib/regex-worker.ts`）で動かし、1 秒で止める。コピーのボタンは `util/copy.ts` の `data-copy-target`、結果が変わったことを知らせる光らせ方は `util/flash.ts`
 - `/tools/*` の便利ツールは計算をブラウザ内だけで行う（サーバーに入力を送らない。匿名質問ボードの投稿だけは例外で、`infra/board` の WebSocket に送る）。DOM に依存しないロジックは `resources/ts/lib/` に置いてテストし、ページの TS（`resources/ts/laravel/tools/`）から使う（`resources/ts/laravel/` 以下は全部 Vite のエントリーになるため）
+- 作品はヘッダーの「Works」→ `/works`（`config/works.php` の一覧）からたどる。Rain & Realms のページは `config/rain-and-realms.php`。**リンクはこのサイト → Rain & Realms の一方向だけ**（外部リンクは `rel="noopener noreferrer"`）、曲は AI で生成しているので**「作曲した」とは書かない**、音源のダウンロードは付けない
+- 作品の音源は `config('works.media_url')`（既定は同じドメインの `/media`。本番は CloudFront の `/media/*` → S3）から `preload="none"` で再生する。ローカルは `laravel/public/media` に置く（git には入れない）。音源が返ってこない（転送量の上限を超えた月は 403）ときは、YouTube・配信サービスへ案内する。YouTube は押したときだけ youtube-nocookie.com を読み込む。`works.media_url` を別のドメイン（R2 など）に変えたら、CSP は自動で許可されるが、プライバシーポリシーの音源の配信元の記述は手で直す
 - `config/` は変更したものだけを置き、ほかは Laravel の既定値を使う。`/hobbies` のゲーム一覧は `config/hobbies.php` のデータ
 - Sass は `components/`・`base/`・`pages/` に分け、サイトの緑は `_variables.scss` の `$main-color`。見出しのフォントは `.font-heading`（Google Fonts の Mochiy Pop One。漢字も含む）。Bootstrap 5 のクラスを使う（Bootstrap 4 のクラスは効かない）
 - `/` のスキルスタック・略歴・資格は、就活用のクエリ（`config/profile.php`。今は `/?for=recruit`）が付いたときだけ HTML に出す（ツールなどから来た人に見せないため。秘密ではない）。その表示は `noindex`

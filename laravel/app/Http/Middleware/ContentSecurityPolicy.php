@@ -49,6 +49,10 @@ class ContentSecurityPolicy
             'img-src' => array_filter(["'self'", 'data:', $photoOrigin]),
             // 匿名質問ボードの WebSocket を別のドメインにつなぐとき（ローカルで dev 環境を使うときなど）はその接続先も許可する
             'connect-src' => array_filter(["'self'", $this->boardWebSocketOrigin()]),
+            // 作品のページの音源（既定は同じドメインの /media。R2 など別のドメインに移したときはその配信元も許可する）
+            'media-src' => array_filter(["'self'", $this->mediaOrigin()]),
+            // 作品のページの YouTube は、押したときだけ youtube-nocookie.com のプレーヤーを読み込む
+            'frame-src' => ["'self'", 'https://www.youtube-nocookie.com'],
             'manifest-src' => ["'self'"],
             'base-uri' => ["'self'"],
             'object-src' => ["'none'"],
@@ -88,6 +92,13 @@ class ContentSecurityPolicy
         return "https://{$bucket}.s3.{$region}.amazonaws.com";
     }
 
+    private function mediaOrigin(): ?string
+    {
+        $url = config('works.media_url');
+
+        return is_string($url) && $url !== '' ? $this->originOf($url) : null;
+    }
+
     private function boardWebSocketOrigin(): ?string
     {
         $url = config('board.websocket_url');
@@ -95,6 +106,9 @@ class ContentSecurityPolicy
         return is_string($url) && $url !== '' ? $this->originOf($url) : null;
     }
 
+    /**
+     * URL のオリジン（スキーム・ホスト・ポート）。ポートを落とすと、既定以外のポートのときに CSP が一致しなくなる
+     */
     private function originOf(string $url): ?string
     {
         $scheme = parse_url($url, PHP_URL_SCHEME);
@@ -102,7 +116,8 @@ class ContentSecurityPolicy
         if (! is_string($scheme) || ! is_string($host)) {
             return null;
         }
+        $port = parse_url($url, PHP_URL_PORT);
 
-        return "{$scheme}://{$host}";
+        return "{$scheme}://{$host}".(is_int($port) ? ":{$port}" : '');
     }
 }

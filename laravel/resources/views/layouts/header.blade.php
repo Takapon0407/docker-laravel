@@ -20,6 +20,11 @@
     </ul>
     <ul class="navbar-nav">
       <li class="nav-item">
+        <a class="nav-link text-white" href="{{ route('works.index') }}">Works</a>
+      </li>
+    </ul>
+    <ul class="navbar-nav">
+      <li class="nav-item">
         <a class="nav-link text-white" href="{{ route('hobbies') }}">Hobbies</a>
       </li>
     </ul>
