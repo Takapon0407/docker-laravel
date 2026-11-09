@@ -1,0 +1,512 @@
+// 作品の一覧（/works）と作品のページ（/works/*）
+// カードの見た目は便利ツール（_tools.scss）とそろえる
+
+$works-dark: color-mix(in srgb, #{$main-color} 80%, #000);
+// アルバムの上の帯の色（雨の夜の古民家に合わせた藍色）
+$album-night: #1d2836;
+
+.works-container {
+    max-width: 760px;
+    padding: 1.5rem 1rem 3rem;
+}
+
+.works-title {
+    font-size: 2rem;
+    text-align: center;
+    color: $main-color;
+    margin-bottom: 1rem;
+}
+
+.works-lead {
+    color: #555;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.works-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 1rem;
+}
+
+// カード全体をリンクにする。広い画面ではジャケットを左に置く
+.works-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    color: inherit;
+    text-decoration: none;
+    transition: box-shadow 0.15s, transform 0.15s;
+
+    &:hover,
+    &:focus-visible {
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+        transform: translateY(-2px);
+    }
+
+    @media (min-width: 576px) {
+        grid-template-columns: 200px 1fr;
+    }
+}
+
+.works-card-image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+
+    // 横に並べたときは、右の文章のほうが高くてもカードの下端まで画像を伸ばす（正方形のままだと下に隙間ができる）
+    @media (min-width: 576px) {
+        height: 100%;
+        min-height: 200px;
+        aspect-ratio: auto;
+    }
+}
+
+.works-card-body {
+    padding: 1.25rem;
+}
+
+.works-card-title {
+    font-size: 1.3rem;
+    color: $works-dark;
+    margin-bottom: 0.25rem;
+}
+
+.works-card-subtitle {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.works-card-text {
+    color: #333;
+    margin-bottom: 0.75rem;
+}
+
+.works-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.works-tag {
+    // base/_common.scss の li { width: 100% } を打ち消して、文字の幅にする
+    width: auto;
+    font-size: 0.75rem;
+    border-radius: 999px;
+    padding: 0.1rem 0.6rem;
+    background: color-mix(in srgb, #{$main-color} 12%, #fff);
+    color: color-mix(in srgb, #{$main-color} 60%, #000);
+}
+
+.works-breadcrumb {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+
+    a {
+        color: $works-dark;
+    }
+
+    a::before {
+        content: "‹ ";
+    }
+}
+
+.works-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.works-heading {
+    font-size: 1.25rem;
+    color: $works-dark;
+    margin-bottom: 0.75rem;
+}
+
+.works-help {
+    font-size: 0.85rem;
+    color: #777;
+}
+
+// 作り方の手順（番号付き）
+.works-steps {
+    counter-reset: works-step;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    > li {
+        counter-increment: works-step;
+        position: relative;
+        padding-left: 2.25rem;
+        margin-bottom: 1rem;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        &::before {
+            content: counter(works-step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1.6rem;
+            height: 1.6rem;
+            border-radius: 50%;
+            background: $main-color;
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: bold;
+            line-height: 1.6rem;
+            text-align: center;
+        }
+
+        p {
+            margin-bottom: 0;
+        }
+    }
+}
+
+.works-step-title {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.works-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+        width: auto;
+    }
+}
+
+// アルバムの上の帯：ジャケットとアルバム名
+.album-hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    align-items: center;
+    background: $album-night;
+    color: #fff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+
+    @media (min-width: 576px) {
+        grid-template-columns: 220px 1fr;
+        gap: 1.5rem;
+    }
+}
+
+.album-cover {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    margin: 0 auto;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.album-artist {
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    color: #b8c4d4;
+    margin-bottom: 0.25rem;
+}
+
+.album-title {
+    font-size: 1.6rem;
+    font-weight: bold;
+    line-height: 1.3;
+    margin-bottom: 0.25rem;
+}
+
+.album-subtitle {
+    color: #dfe6ef;
+    margin-bottom: 0.75rem;
+}
+
+.album-meta {
+    font-size: 0.85rem;
+    color: #b8c4d4;
+    margin-bottom: 0;
+}
+
+// 押したら YouTube を読み込む枠（16:9）
+.video-embed {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+}
+
+.video-embed-button {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &:hover .video-embed-play,
+    &:focus-visible .video-embed-play {
+        background: #e00;
+    }
+
+    &:focus-visible {
+        outline: 3px solid $main-color;
+        outline-offset: -3px;
+    }
+}
+
+.video-embed-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    width: 68px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(33, 33, 33, 0.85);
+    color: #fff;
+    transition: background 0.15s;
+}
+
+// アルバムのプレーヤー
+.album-now {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7ea;
+
+    // 狭い画面では再生位置のバーが短くなりすぎるため、曲名とバーを上の行に、ボタンを下の行の中央に置く
+    @media (max-width: 575.98px) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+
+        .album-controls {
+            order: 1;
+            justify-content: center;
+        }
+    }
+}
+
+.album-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.album-control {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: #333;
+
+    &:hover:not(:disabled) {
+        background: #f0f1f3;
+    }
+
+    &:disabled {
+        color: #bbb;
+    }
+
+    &.is-main {
+        width: 52px;
+        height: 52px;
+        background: $main-color;
+        color: #fff;
+
+        &:hover {
+            background: $works-dark;
+        }
+    }
+
+    &:focus-visible {
+        outline: 3px solid color-mix(in srgb, #{$main-color} 50%, #fff);
+        outline-offset: 2px;
+    }
+}
+
+// 再生中は一時停止のアイコンを出す
+.album-icon-pause,
+.album-player.is-playing .album-icon-play {
+    display: none;
+}
+
+.album-player.is-playing .album-icon-pause {
+    display: block;
+}
+
+.album-now-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.album-now-title {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.album-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.album-seek {
+    flex: 1;
+    min-width: 0;
+    // つまみをサイトの緑にする
+    accent-color: $main-color;
+    --bs-form-range-thumb-bg: #{$main-color};
+    --bs-form-range-thumb-active-bg: #{$works-dark};
+}
+
+.album-time {
+    font-size: 0.8rem;
+    color: #777;
+    font-variant-numeric: tabular-nums;
+    min-width: 2.5rem;
+    text-align: center;
+}
+
+.album-unavailable {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background: #fff1e0;
+    color: #7a3b00;
+    font-size: 0.9rem;
+
+    a {
+        color: inherit;
+        font-weight: bold;
+    }
+}
+
+.album-tracks {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+}
+
+.album-track {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.6rem 0.5rem;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: inherit;
+    text-align: left;
+
+    &:hover {
+        background: #f5f6f6;
+    }
+
+    &:focus-visible {
+        outline: 3px solid color-mix(in srgb, #{$main-color} 50%, #fff);
+        outline-offset: -3px;
+    }
+
+    // 選んでいる曲
+    &[aria-current="true"] {
+        background: color-mix(in srgb, #{$main-color} 12%, #fff);
+
+        .album-track-no,
+        .album-track-ja {
+            color: $works-dark;
+            font-weight: bold;
+        }
+    }
+}
+
+.album-track-no {
+    width: 1.75rem;
+    flex-shrink: 0;
+    text-align: right;
+    color: #888;
+    font-variant-numeric: tabular-nums;
+}
+
+.album-track-titles {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.album-track-ja {
+    color: #222;
+}
+
+.album-track-en {
+    font-size: 0.8rem;
+    color: #777;
+}
+
+.album-track-duration {
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    color: #777;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .works-card {
+        transition: none;
+
+        &:hover,
+        &:focus-visible {
+            transform: none;
+        }
+    }
+}
