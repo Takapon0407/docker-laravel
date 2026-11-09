@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (i === active) {
                     slot.setAttribute("aria-current", "step");
                 }
-                slot.setAttribute("aria-label", `${i + 1} 番目：${names[i] ?? "まだ選んでいません"}${i > 0 && i <= built.length ? "（押すと選び直せます）" : ""}`);
+                slot.setAttribute("aria-label", `${i + 1} 番目：${names[i] ?? "まだ選んでいません"}${i > 0 && i < built.length ? "（押すと選び直せます）" : ""}`);
                 // 先頭は「始まりのコード」で選ぶ。まだ前が決まっていないところは選べない
                 slot.disabled = i > built.length;
                 slot.addEventListener("click", () => {
