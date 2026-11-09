@@ -3,6 +3,7 @@
 use App\Http\Controllers\BoardController;
 use App\Http\Controllers\HobbiesController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WorksController;
 use Illuminate\Support\Facades\Route;
 
 // スキルスタック・略歴などは、就活用のクエリが付いたときだけ出す（config/profile.php）
@@ -13,6 +14,12 @@ Route::permanentRedirect('/profile', '/');
 Route::get('/hobbies', [HobbiesController::class, 'show'])->name('hobbies');
 
 Route::view('/privacy', 'privacy')->name('privacy');
+
+// 作品（成果物）。一覧は config/works.php
+Route::prefix('works')->name('works.')->group(function () {
+    Route::get('/', [WorksController::class, 'index'])->name('index');
+    Route::get('/rain-and-realms', [WorksController::class, 'rainAndRealms'])->name('rain-and-realms');
+});
 
 Route::prefix('games')->name('games.')->group(function () {
     Route::view('/tetris', 'games.tetris')->name('tetris');

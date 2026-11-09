@@ -16,3 +16,5 @@ yarn-error.log
 /.idea
 /.vscode
 /.phpunit.cache
+# 作品の音源など（本番は S3 から配信する。ローカルで試すときだけここに置く）
+/public/media

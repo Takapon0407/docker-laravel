@@ -21,7 +21,8 @@
     <meta property="og:title" content="{{ $pageTitle }}">
     <meta property="og:description" content="{{ $description }}">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:image" content="{{ asset('tektektech.jpg') }}">
+    {{-- ページごとの画像（作品のジャケットなど）は @section('og_image') で差し替える --}}
+    <meta property="og:image" content="@yield('og_image', asset('tektektech.jpg'))">
     <meta property="og:locale" content="ja_JP">
     <meta name="twitter:card" content="summary">
     {{-- PWA（ホーム画面に別のアプリとして追加できるページは @section('manifest') / @section('apple-touch-icon') で差し替える） --}}
