@@ -17,6 +17,7 @@
 ```
 
 - CloudFront のオリジンは **VPC オリジン `tektektech-ec2`**（EC2 のプライベート DNS 名 `ip-172-31-45-191.ap-northeast-1.compute.internal`）。メンテナンス画面（`/errors/*`）だけ S3 オリジン、**`/tools/board/ws` は API Gateway（`BoardStack-prod` の WebSocket）**。このビヘイビアは CDK の外で手で設定している（`X-Origin-Verify` ヘッダーの値は SSM の `/tektektech/board/prod/origin-secret` と同じ。手順は `infra/board/README.md`）
+- **`/media/*`（作品の音源）は S3（`MediaStack` の `tektektech-media-<アカウント>`、OAC）**。viewer request の CloudFront Function `tektektech-media-gate` が KeyValueStore の `media_enabled` を見て、`false` なら 403。5 分おきの Lambda が、今月（UTC）の CloudFront 全体の転送量が上限（700GB）を超えたら `false` にし、月が変わったら戻す。このビヘイビアも CDK の外で手で設定している（手順は `infra/media/README.md`）
 - EC2 の SG の受信は **80 番・`CloudFront-VPCOrigins-Service-SG` からのみ**（インターネットから EC2 には直接届かない）。ALB はない
 - EC2 はパブリックサブネットに置いたまま、**Elastic IP は送信専用**（Docker イメージの取得・SSM・S3・Parameter Store・OS の更新に使う。解放するとデプロイできなくなる）
 - 閲覧者 → CloudFront は全ビヘイビア `Redirect HTTP to HTTPS`
@@ -49,6 +50,7 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 ## デプロイとロールバック
 
 - `infra/board` は `.github/workflows/board.yml` が別にデプロイする（PR で diff、`develop` → dev、`main` → Environment `production` の承認 → prod）
+- `infra/media` は CI（`.github/workflows/media.yml`）でテスト・synth だけを行い、デプロイは管理者が手で `cdk deploy MediaStack` する
 - `main` への push で `.github/workflows/deploy.yml` が動く：`test` と `lint`（PHPStan / Pint）が通ったら、ビルド（npm / composer `--no-dev`）→ tarball を S3 へ → SSM Run Command で `deploy/remote-deploy.sh` を実行
 - `remote-deploy.sh`：コードを含むイメージ `tektektech-app` / `tektektech-nginx` を **コミットの SHA をタグにして**作り、`deploy/switch-release.sh` でコンテナごと入れ替える。トップページが 200 を返さなければ**直前のリリース（`.current-release`）に自動で戻す**。イメージは直近 3 世代を残す
 - 手動で戻すときは Actions の `Rollback` を実行する。**sha を空欄にすると 1 つ前に動いていたリリース（`.previous-release`）に戻る**（もう一度空欄で実行すると元に戻る）。特定のリリースに戻すときは SHA（40 桁）を渡す。戻せる SHA はデプロイのログ末尾の `Images kept for rollback` に出る
