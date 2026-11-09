@@ -1,0 +1,497 @@
+// 見た目はドット絵メーカー（_pixel-art.scss）とそろえ、タイトルのまわりだけ雨の窓にする
+$chord-rain-color: #6f8ea3;
+
+.chord-container {
+    max-width: 760px;
+    padding: 1.5rem 1rem 3rem;
+}
+
+// 雨の窓：斜めの細い線を雨筋に見立てる
+.chord-window {
+    border-radius: 12px;
+    padding: 1.5rem 1.25rem 1.25rem;
+    margin-bottom: 1.25rem;
+    background:
+        repeating-linear-gradient(103deg, transparent 0 22px, color-mix(in srgb, #{$chord-rain-color} 20%, transparent) 22px 23px, transparent 23px 47px),
+        linear-gradient(180deg, color-mix(in srgb, #{$chord-rain-color} 22%, #fff), #fff);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.chord-title {
+    font-size: 2rem;
+    text-align: center;
+    color: $main-color;
+    margin-bottom: 0.75rem;
+}
+
+.chord-lead {
+    color: #444;
+    margin-bottom: 0.5rem;
+}
+
+.chord-lead-sub {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0;
+}
+
+.chord-card-panel {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    // ボタンの緑を Bootstrap の success ではなくサイトの緑にする（割り勘と同じ）
+    .btn-outline-success {
+        --bs-btn-color: color-mix(in srgb, #{$main-color} 80%, #000);
+        --bs-btn-border-color: #{$main-color};
+        --bs-btn-hover-bg: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-border-color: color-mix(in srgb, #{$main-color} 90%, #000);
+        --bs-btn-hover-color: #fff;
+    }
+
+    .btn[aria-pressed="true"].btn-outline-success,
+    .btn-check:checked + .btn-outline-success {
+        background-color: $main-color;
+        border-color: $main-color;
+        color: #fff;
+    }
+
+    .form-check-input:checked {
+        background-color: $main-color;
+        border-color: $main-color;
+    }
+}
+
+.chord-heading {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.chord-subheading {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #444;
+    margin-bottom: 0.5rem;
+}
+
+.chord-help {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.chord-input {
+    font-family: var(--bs-font-monospace);
+    font-size: 1.1rem;
+}
+
+.chord-error {
+    color: #b02a37;
+    font-size: 0.9rem;
+    margin: 0.5rem 0 0;
+}
+
+// 定番の進行（ジャンルごとに 1 行）
+.chord-preset-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    margin-bottom: 0.6rem;
+
+    @media (min-width: 576px) {
+        grid-template-columns: 8rem 1fr;
+        align-items: baseline;
+    }
+}
+
+.chord-preset-label {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.chord-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+// 1 つずつ組み立てる
+.chord-builder-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+
+    .form-label {
+        margin-bottom: 0.25rem;
+    }
+}
+
+.chord-start {
+    display: flex;
+    gap: 0.5rem;
+
+    .form-select {
+        width: auto;
+    }
+}
+
+// 選んだコードの並び（くり返す数だけ枠を出し、次に選ぶ枠を光らせる）
+.chord-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(4rem, 1fr));
+    gap: 0.5rem;
+}
+
+.chord-slot {
+    position: relative;
+    min-width: 0;
+    padding: 0.7rem 0.25rem;
+    font-family: var(--bs-font-monospace);
+    font-size: 1rem;
+
+    @media (min-width: 576px) {
+        font-size: 1.15rem;
+    }
+
+    font-weight: bold;
+    color: inherit;
+    overflow-wrap: anywhere;
+    background: #fff;
+    border: 1px solid #d5dadd;
+    border-radius: 8px;
+
+    &.is-empty {
+        color: #9aa5ad;
+        border-style: dashed;
+    }
+
+    &.is-active {
+        border: 2px solid $main-color;
+        background: color-mix(in srgb, #{$main-color} 8%, #fff);
+    }
+
+    &:hover:not(:disabled) {
+        border-color: $main-color;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+    }
+
+    &:focus-visible {
+        outline: 3px solid color-mix(in srgb, #{$main-color} 60%, #fff);
+        outline-offset: 2px;
+    }
+
+    // 最後の枠には、先頭へ戻る印を出す（くり返すことがわかるように）
+    &:last-child::after {
+        content: "↺";
+        position: absolute;
+        top: 0.15rem;
+        right: 0.35rem;
+        font-size: 0.75rem;
+        color: #9aa5ad;
+    }
+}
+
+.chord-suggestions {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+    gap: 0.5rem;
+}
+
+.chord-suggestion {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
+    min-width: 0;
+    padding: 0.55rem 0.75rem;
+    text-align: left;
+    color: inherit;
+    background: #fff;
+    border: 1px solid color-mix(in srgb, #{$main-color} 55%, #fff);
+    border-radius: 8px;
+
+    &:hover {
+        background: color-mix(in srgb, #{$main-color} 10%, #fff);
+        border-color: $main-color;
+    }
+
+    &[aria-pressed="true"] {
+        background: color-mix(in srgb, #{$main-color} 18%, #fff);
+        border: 2px solid $main-color;
+    }
+
+    &:focus-visible {
+        outline: 3px solid color-mix(in srgb, #{$main-color} 60%, #fff);
+        outline-offset: 2px;
+    }
+}
+
+.chord-suggestion-name {
+    font-family: var(--bs-font-monospace);
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.chord-suggestion-note {
+    font-size: 0.8rem;
+    color: #555;
+}
+
+.chord-suggestion-loop {
+    font-size: 0.7rem;
+    padding: 0 0.4rem;
+    color: #fff;
+    background: $chord-rain-color;
+    border-radius: 999px;
+}
+
+.chord-builder-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+// 鳴らすボタンとテンポを 1 行に（狭い画面では縦に）
+.chord-controls {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    align-items: center;
+
+    @media (min-width: 576px) {
+        grid-template-columns: auto 1fr;
+        gap: 1.5rem;
+    }
+}
+
+.chord-play {
+    --bs-btn-bg: #{$main-color};
+    --bs-btn-border-color: #{$main-color};
+    --bs-btn-color: #fff;
+    --bs-btn-hover-bg: color-mix(in srgb, #{$main-color} 85%, #000);
+    --bs-btn-hover-border-color: color-mix(in srgb, #{$main-color} 85%, #000);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-active-bg: color-mix(in srgb, #{$main-color} 75%, #000);
+    --bs-btn-active-border-color: color-mix(in srgb, #{$main-color} 75%, #000);
+    --bs-btn-active-color: #fff;
+    border-radius: 999px;
+    font-weight: bold;
+    padding: 0.6rem 1.75rem;
+    min-width: 9rem;
+}
+
+// スライダー（名前と値を 1 行に並べ、その下にスライダー。つまみはサイトの緑）
+.chord-slider {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+
+    .form-label {
+        margin-bottom: 0.25rem;
+    }
+
+    .form-range {
+        grid-column: 1 / -1;
+
+        &::-webkit-slider-thumb {
+            background-color: $main-color;
+        }
+
+        &::-moz-range-thumb {
+            background-color: $main-color;
+        }
+
+        &:focus::-webkit-slider-thumb {
+            box-shadow: 0 0 0 1px #fff, 0 0 0 0.25rem color-mix(in srgb, #{$main-color} 35%, transparent);
+        }
+
+        &:focus::-moz-range-thumb {
+            box-shadow: 0 0 0 1px #fff, 0 0 0 0.25rem color-mix(in srgb, #{$main-color} 35%, transparent);
+        }
+    }
+}
+
+.chord-slider-value {
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+    color: color-mix(in srgb, #{$main-color} 75%, #000);
+}
+
+.chord-settings {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+
+    @media (min-width: 576px) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .form-label {
+        margin-bottom: 0.25rem;
+    }
+}
+
+.chord-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+}
+
+// コードのカード（再生中のものを光らせる）
+.chord-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+    gap: 0.6rem;
+}
+
+.chord-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+    padding: 0.65rem 0.8rem;
+    text-align: left;
+    color: inherit;
+    background: #fff;
+    border: 1px solid #d5dadd;
+    border-radius: 8px;
+    transition: border-color 0.15s, background-color 0.15s;
+
+    &:hover:not(:disabled) {
+        border-color: $main-color;
+    }
+
+    &:focus-visible {
+        outline: 3px solid color-mix(in srgb, #{$main-color} 60%, #fff);
+        outline-offset: 2px;
+    }
+
+    &.is-now {
+        border-color: $main-color;
+        background: color-mix(in srgb, #{$main-color} 14%, #fff);
+    }
+
+    &.is-bad {
+        border-style: dashed;
+        opacity: 0.6;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+}
+
+.chord-card-index {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.chord-card-name {
+    font-family: var(--bs-font-monospace);
+    font-size: 1.25rem;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+}
+
+.chord-card-notes {
+    font-family: var(--bs-font-monospace);
+    font-size: 0.75rem;
+    color: #666;
+}
+
+// 鍵盤（狭い画面では横にスクロールする）
+.chord-keyboard-scroll {
+    overflow-x: auto;
+}
+
+.chord-keyboard {
+    position: relative;
+    display: flex;
+    min-width: 520px;
+    height: 96px;
+}
+
+.chord-key-white {
+    position: relative;
+    flex: 1;
+    margin-right: -1px;
+    background: #fbfcfc;
+    border: 1px solid #c9d2d8;
+    border-radius: 0 0 4px 4px;
+}
+
+.chord-key-black {
+    position: absolute;
+    top: 0;
+    z-index: 1;
+    height: 58%;
+    background: #27323a;
+    border-radius: 0 0 3px 3px;
+}
+
+.chord-key-white,
+.chord-key-black {
+    &.is-on {
+        background: $main-color;
+    }
+
+    &.is-bass {
+        background: $chord-rain-color;
+    }
+}
+
+.chord-key-label {
+    position: absolute;
+    right: 0;
+    bottom: 4px;
+    left: 0;
+    font-family: var(--bs-font-monospace);
+    font-size: 9px;
+    text-align: center;
+    color: #7d8a93;
+}
+
+// 説明文の「緑」「青」に、鍵盤と同じ色の印を付ける
+.chord-legend::before {
+    content: "";
+    display: inline-block;
+    width: 0.7em;
+    height: 0.7em;
+    margin: 0 0.2em 0 0.1em;
+    border-radius: 2px;
+    vertical-align: baseline;
+}
+
+.chord-legend.is-on::before {
+    background: $main-color;
+}
+
+.chord-legend.is-bass::before {
+    background: $chord-rain-color;
+}
+
+.chord-copy {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chord-copy-text {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0.65rem;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    color: #1d2830;
+    white-space: nowrap;
+    background: #f4f6f7;
+    border: 1px solid #d5dadd;
+    border-radius: 4px;
+}

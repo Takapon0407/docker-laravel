@@ -28,6 +28,7 @@ Route::prefix('tools')->name('tools.')->group(function () {
     Route::view('/lifespan', 'tools.lifespan')->name('lifespan');
     Route::view('/countdown', 'tools.countdown')->name('countdown');
     Route::view('/pixel-art', 'tools.pixel-art')->name('pixel-art');
+    Route::view('/chord-player', 'tools.chord-player')->name('chord-player');
     Route::get('/board', [BoardController::class, 'create'])->name('board');
     Route::get('/board/room', [BoardController::class, 'room'])->name('board.room');
 });

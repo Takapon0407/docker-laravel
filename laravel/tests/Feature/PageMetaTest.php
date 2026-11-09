@@ -104,6 +104,17 @@ class PageMetaTest extends TestCase
         $pixelArt->assertSee('<title>ドット絵メーカー | てくてくテック</title>', false);
         $pixelArt->assertSee('画像はサーバーに送らず、お使いのブラウザの中だけで変換します。', false);
 
+        // 雨音コードプレイヤー：一般向け・端末内で完結。入力を送らないことをページに書く
+        $this->assertToolCard($tools, 'data-purpose="general" data-storage="local"', route('tools.chord-player'));
+        $chordPlayer = $this->get(route('tools.chord-player'));
+        $chordPlayer->assertOk();
+        $chordPlayer->assertSee('<title>雨音コードプレイヤー | てくてくテック</title>', false);
+        $chordPlayer->assertSee('<link rel="canonical" href="'.route('tools.chord-player').'">', false);
+        $chordPlayer->assertSee('音はお使いのブラウザの中で作って鳴らし、入力した内容はサーバーに送りません。', false);
+        // 始まりのコードから 1 つずつ組み立てる欄がある
+        $chordPlayer->assertSee('id="chord-start-root"', false);
+        $chordPlayer->assertSee('id="chord-suggestions"', false);
+
         // 開発向けのツール：一覧から「端末内で完結」としてたどれ、ページごとのタイトルを出す
         foreach ([
             'tools.json' => 'JSON 整形',
