@@ -29,7 +29,7 @@ interface Degree {
 const DEGREES: Readonly<Record<Id, Degree>> = {
     I: { offset: 0, kinds: ["maj"], names: { triad: "", seventh: "maj7", ninth: "maj9" } },
     ii: { offset: 2, kinds: ["min"], names: { triad: "m", seventh: "m7", ninth: "m9" } },
-    iii: { offset: 4, kinds: ["min"], names: { triad: "m", seventh: "m7", ninth: "m7" } },
+    iii: { offset: 4, kinds: ["min"], names: { triad: "m", seventh: "m7", ninth: "m9" } },
     IV: { offset: 5, kinds: ["maj"], names: { triad: "", seventh: "maj7", ninth: "maj9" } },
     V: { offset: 7, kinds: ["maj", "dom"], names: { triad: "", seventh: "7", ninth: "13" } },
     vi: { offset: 9, kinds: ["min"], names: { triad: "m", seventh: "m7", ninth: "m9" } },
