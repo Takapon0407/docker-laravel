@@ -2,7 +2,7 @@
 
 // /works/rain-and-realms に載せる、Rain & Realms のアルバム
 // リンクはこのサイト → Rain & Realms の一方向だけにする（Rain & Realms 側にはこのサイトの名前を出さない）
-// 音源は Rain & Realms の利用条件（BGM としての利用は自由・再配布は不可）の範囲で再生だけを置き、ダウンロードは付けない
+// 音源は再生（.m4a）に加えて、MP3・WAV でダウンロードできる。クレジット（Rain & Realms）を書けば動画や配信の BGM に使えるが、音源そのものの再配布・販売は不可
 
 return [
     'youtube_id' => 's1191DgMU5U',
@@ -21,7 +21,7 @@ return [
         'artist' => 'Rain & Realms',
         'released' => '2026-11-09',
         'cover' => 'images/works/rain-and-realms/cover.jpg',
-        // 音源の場所（config('works.media_url') からの相対パス）。
+        // 音源の場所（config('works.media_url') からの相対パス）。再生用の file と同じ名前の .mp3・.wav も置く。
         // ブラウザに長くキャッシュさせるため、中身を差し替えるときはファイル名かフォルダを変える
         'media_path' => 'rain-and-realms/kominka-rain',
         // 曲名は英語と、古語調の日本語。duration は「分:秒」
