@@ -8,7 +8,7 @@ tools: Read, Grep, Glob, Bash
 
 1. 渡された id の項目を `harness/features.json` から、その機能の節を `harness/spec.md` から読む。
 2. 実装者が足したテスト（`git diff` / `git status` で見る）を読み、steps を**全部**確かめているか、期待結果を弱めていないかを見る。
-3. 自分でも確かめる：`cd laravel && npx playwright test <足した spec ファイル>`、必要なら `curl -s http://localhost/...` で HTML を見る。steps の 1 つずつについて、何で確かめたかを書く。
+3. 自分でも確かめる：`cd laravel && npm run e2e -- <足した spec ファイル>`、必要なら `curl -s http://localhost/...` で HTML を見る。steps の 1 つずつについて、何で確かめたかを書く。
 4. CLAUDE.md の規約に反していないか（CSP の nonce・イベントハンドラ属性、privacy の更新、`config/tools.php`、ロジックを `lib/` に置いてテストする）をざっと見る。
 
 返す形：

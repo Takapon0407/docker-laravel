@@ -36,7 +36,7 @@ docker compose exec -T app sh -c 'chown -R www-data:www-data /tmp/views' >/dev/n
 step ts-test sh -c 'cd laravel && npm test'
 step build sh -c 'cd laravel && npm run build'
 if [ "$QUICK" != "--quick" ]; then
-    step e2e sh -c 'cd laravel && npx playwright test'
+    step e2e sh -c 'cd laravel && npm run e2e'
 fi
 
 rm -rf "$LOG_DIR"
