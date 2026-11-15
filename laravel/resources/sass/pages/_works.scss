@@ -436,11 +436,18 @@ $album-night: #1d2836;
     margin: 0.5rem 0 0;
 }
 
-.album-track {
+.album-track-row {
     display: flex;
     align-items: center;
+    gap: 0.25rem;
+}
+
+.album-track {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
     gap: 0.75rem;
-    width: 100%;
     padding: 0.6rem 0.5rem;
     border: 0;
     border-radius: 8px;
@@ -498,6 +505,55 @@ $album-night: #1d2836;
     font-size: 0.85rem;
     color: #777;
     font-variant-numeric: tabular-nums;
+}
+
+.album-downloads {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.25rem;
+}
+
+// スマホ幅では、曲名の幅を取るために曲名の下に並べる（左は曲名の書き出しにそろえる）
+@media (max-width: 575.98px) {
+    .album-track-row {
+        flex-wrap: wrap;
+        row-gap: 0;
+    }
+
+    .album-downloads {
+        width: 100%;
+        margin-top: -0.5rem;
+        padding-left: 2.5rem;
+
+        .album-download {
+            min-height: 2.25rem;
+        }
+    }
+}
+
+// 曲ごとのダウンロード（MP3・WAV）。押しやすさのため 44px 四方より小さくしない
+.album-download {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0 0.4rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: $works-dark;
+    text-decoration: none;
+
+    &:hover {
+        background: #f5f6f6;
+        text-decoration: underline;
+    }
+
+    &:focus-visible {
+        outline: 3px solid color-mix(in srgb, #{$main-color} 50%, #fff);
+        outline-offset: -3px;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

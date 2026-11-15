@@ -83,7 +83,7 @@
 
             <ol class="album-tracks">
                 @foreach ($tracks as $track)
-                    <li>
+                    <li class="album-track-row">
                         <button type="button" class="album-track" data-album-track="{{ $loop->index }}" data-src="{{ $track['src'] }}" data-title="{{ $track['title_en'] }}">
                             <span class="album-track-no">{{ $track['no'] }}</span>
                             <span class="album-track-titles">
@@ -92,13 +92,22 @@
                             </span>
                             <span class="album-track-duration">{{ $track['duration'] }}</span>
                         </button>
+                        <span class="album-downloads">
+                            @foreach ($track['downloads'] as $download)
+                                <a class="album-download" href="{{ $download['href'] }}" download="{{ $download['filename'] }}" aria-label="「{{ $track['title_en'] }}」を {{ $download['label'] }} でダウンロード">{{ $download['label'] }}</a>
+                            @endforeach
+                        </span>
                     </li>
                 @endforeach
             </ol>
             {{-- 押すまで読み込まない（ページを開いただけでは音源を取りに行かない） --}}
             <audio id="album-audio" preload="none"></audio>
         </div>
-        <p class="works-help mt-2 mb-0">1 曲終わると次の曲を再生します。曲は聴くだけで、ダウンロードはできません。</p>
+        <p class="works-help mt-2 mb-0">1 曲終わると次の曲を再生します。</p>
+        <p class="works-help mt-1 mb-0" id="album-download-terms">
+            MP3・WAV のボタンから曲を保存できます（WAV は 1 曲 約 40MB）。
+            「Rain &amp; Realms」のクレジットを書いていただければ、動画や配信の BGM などに自由に使えます。音源そのものの再配布・販売はご遠慮ください。
+        </p>
     </section>
 
     <section class="works-section">
