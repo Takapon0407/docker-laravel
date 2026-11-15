@@ -18,3 +18,7 @@ yarn-error.log
 /.phpunit.cache
 # 作品の音源など（本番は S3 から配信する。ローカルで試すときだけここに置く）
 /public/media
+
+# Playwright の結果（失敗したときのトレースなど）
+/test-results
+/playwright-report

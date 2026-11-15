@@ -5,7 +5,7 @@
 ## 概要
 
 - ポートフォリオサイト（https://tektektech-portfolio.com/）。Laravel 13 / PHP 8.5、フロントは Blade ＋ TypeScript ＋ Sass（Vite でビルド）
-- **閲覧専用のサイト**：DB・ログイン・フォームはない。ページは `/`（プロフィール）・`/works`（作品の一覧）・`/works/rain-and-realms`（AI で作る作業用 BGM のアルバム。全曲を再生できる）・`/hobbies`・`/games/{tetris,puyo}`・`/tools`（便利ツールの一覧）・`/tools/warikan`・`/tools/board`（匿名質問ボード）・`/tools/lifespan`（寿命の計算）・`/tools/countdown`（今年の残り・祝日・マイ記念日まで）・`/tools/pixel-art`（画像をドット絵にする）・`/tools/chord-player`（雨音コードプレイヤー：コード進行を組み立てて、エレピで鳴らす）・`/tools/{json,datetime,regex}`（開発向け）・`/privacy`（プライバシーポリシー・免責事項。全ページのフッターからリンク）だけ
+- **閲覧専用のサイト**：DB・ログイン・フォームはない。ページは `/`（プロフィール）・`/works`（作品の一覧）・`/works/rain-and-realms`（AI で作る作業用 BGM のアルバム。全曲を再生できる）・`/hobbies`・`/games/{tetris,puyo}`・`/tools`（便利ツールの一覧）・`/tools/warikan`・`/tools/board`（匿名質問ボード）・`/tools/lifespan`（寿命の計算）・`/tools/countdown`（今年の残り・祝日・マイ記念日まで）・`/tools/pixel-art`（画像をドット絵にする）・`/tools/chord-player`（雨音コードプレイヤー：コード進行を組み立てて、エレピで鳴らす）・`/tools/char-count`（文字数カウント）・`/tools/qr`（QR コード作成）・`/tools/{json,datetime,regex,diff}`（開発向け）・`/privacy`（プライバシーポリシー・免責事項。全ページのフッターからリンク）だけ
 - 匿名質問ボードだけはサーバー側の処理があるが、Laravel とは別の **`infra/board`（CDK：API Gateway の WebSocket ＋ Lambda ＋ DynamoDB）**。Laravel はページを返すだけで、ブラウザが WebSocket で直接やり取りする。詳細は `infra/board/README.md`
 - `/hobbies` の写真は S3 から取得する。S3 への PUT 時に Lambda が幅・高さをメタデータとして付け、`HobbiesController` が `headObject` で読んで縦横を判定する
 
@@ -47,6 +47,12 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 - 見た目に関わる変更は、変更前後で主要な要素の位置・大きさ・色を測って比べる（PC 幅とスマホ幅）。CSS / JS を変えたら `npm run build` し直す
 - ブランチは `develop` から `feature/` `refactor/` `fix/` などを切り、PR は `develop` 向けに出す。`develop` → `main` のマージ（＝本番デプロイ）と Rollback の実行はユーザーが行う
 
+## 仕様駆動 ＋ 実装ループ（harness/）
+
+- 機能を足すときは `harness/README.md` の流れで試している：`/spec-interview`（`harness/spec.md` を書く）→ `/spec-to-features`（`harness/features.json`）→ `bash harness/loop.sh start` → `/implement-loop` を 1 項目ずつ
+- 検証コマンドは `bash harness/check.sh`（exit 0 で完了。最後に Playwright の E2E：`cd laravel && npm run e2e`。ローカルの http://localhost/ を開く）。ページを増やしたら `laravel/e2e/pages.ts` に足す
+- ループ中（`harness/.loop/active` があるとき）だけ、`.claude/settings.json` の hooks が features.json・既存のテスト・検証のしくみの書き換えを止め、止まる前に check.sh を流す
+
 ## デプロイとロールバック
 
 - `infra/board` は `.github/workflows/board.yml` が別にデプロイする（PR で diff、`develop` → dev、`main` → Environment `production` の承認 → prod）
@@ -70,7 +76,10 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 - カウントダウンの祝日は `lib/holidays.ts` で祝日法の今の決まり（2022〜2099 年）から計算する。祝日法が変わったら直す。春分・秋分は近似式なので、官報の発表と違ったら直す。マイ記念日は localStorage（`countdown:v1`）。今の季節は気象庁の決まり（春 3〜5 月・夏 6〜8 月・秋 9〜11 月・冬 12〜2 月）
 - ドット絵メーカーは、縮小（画素の平均）と減色（メディアンカット）を `lib/pixel-art.ts` で行う。画像はブラウザの中だけで扱い、どこにも保存しない。表示は CSP の `img-src` に `blob:` を足さずに済むよう `<canvas>` に描く
 - 雨音コードプレイヤーは、コードの読み取り・ボイシング・8 分ごとに鳴らすもの（`planStep`）・定番の進行（`PRESET_GROUPS`）を `lib/chord-player.ts`、次のコードの候補を `lib/chord-suggest.ts`（よく行く先の表 `TRANSITIONS` と、考えられるキーを絞っていく仕組み）、音の合成（Web Audio API。音のファイルは使わない）を `lib/chord-audio.ts` で行う。鳴らすのは 25ms ごとのタイマーで少し先まで予約する方式（タブが裏にあるときは長めに予約）。入力と設定は localStorage（`chord-player:v1`。組み立て中の状態は残さない）
-- 開発向けのツールは見た目を `pages/_devtools.scss`（`.devtool-*`）で共通にする。正規表現は時間のかかるパターンで固まらないよう Web Worker（`lib/regex-worker.ts`）で動かし、1 秒で止める。コピーのボタンは `util/copy.ts` の `data-copy-target`、結果が変わったことを知らせる光らせ方は `util/flash.ts`
+- 文字数カウントは `lib/char-count.ts`。文字は見た目の 1 文字（`Intl.Segmenter` の書記素）で数える。X の数え方は twitter-text の v3 の設定（範囲の文字は 1・ほかは 2・URL は 23・上限 280）で、X が変えたら直す。原稿用紙は改行ごとに 20 マスで折り返す目安
+- QR コードは `lib/qr.ts`（`uqr`。匿名質問ボードの共有用 URL と共通）。保存は PNG（1 マスを整数のピクセルで `<canvas>` に描く）と SVG。Wi-Fi は `WIFI:T:;S:;P:;H:;;` の書き方（ZXing の決まり。`\ ; , " :` は `\` でエスケープ）
+- テキスト差分は `lib/text-diff.ts`。行の差分を Myers のアルゴリズムで出し、対になった行は文字単位でもう一度比べる。違い（D）が `MAX_EDIT_DISTANCE` を超えたら探すのをやめ、まとめて入れ替えにする（メモリが D の 2 乗で増えるため）
+- 開発向けのツールと、文字数カウント・QR コード作成は見た目を `pages/_devtools.scss`（`.devtool-*`）で共通にし、ツールごとの部分は `pages/_text-tools.scss`。正規表現は時間のかかるパターンで固まらないよう Web Worker（`lib/regex-worker.ts`）で動かし、1 秒で止める。コピーのボタンは `util/copy.ts` の `data-copy-target`、結果が変わったことを知らせる光らせ方は `util/flash.ts`
 - `/tools/*` の便利ツールは計算をブラウザ内だけで行う（サーバーに入力を送らない。匿名質問ボードの投稿だけは例外で、`infra/board` の WebSocket に送る）。DOM に依存しないロジックは `resources/ts/lib/` に置いてテストし、ページの TS（`resources/ts/laravel/tools/`）から使う（`resources/ts/laravel/` 以下は全部 Vite のエントリーになるため）
 - 作品はヘッダーの「Works」→ `/works`（`config/works.php` の一覧）からたどる。Rain & Realms のページは `config/rain-and-realms.php`。**リンクはこのサイト → Rain & Realms の一方向だけ**（外部リンクは `rel="noopener noreferrer"`）、曲は AI で生成しているので**「作曲した」とは書かない**。曲ごとに MP3・WAV をダウンロードでき（ファイルは再生用の `.m4a` と同じ名前で `/media/*` に置く）、クレジットを書けば BGM として使える・再配布と販売は不可、とページに書いている
 - 作品の音源は `config('works.media_url')`（既定は同じドメインの `/media`。本番は CloudFront の `/media/*` → S3）から `preload="none"` で再生する。ローカルは `laravel/public/media` に置く（git には入れない）。音源が返ってこない（転送量の上限を超えた月は 403）ときは、YouTube・配信サービスへ案内する。YouTube は押したときだけ youtube-nocookie.com を読み込む。`works.media_url` を別のドメイン（R2 など）に変えたら、CSP は自動で許可されるが、プライバシーポリシーの音源の配信元の記述は手で直す
