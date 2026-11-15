@@ -12,7 +12,7 @@ import {
     type SortOrder,
 } from "@/lib/board-posts";
 import { detectPersonalInfo, PERSONAL_INFO_LABELS } from "@/lib/board-personal-info";
-import { qrPath } from "@/lib/board-qr";
+import { qrPath } from "@/lib/qr";
 import { length, LIMITS, type PostKind, type PostView, type RoomView, type ServerMessage, type TopicView } from "../../../../../../infra/board/shared/protocol.ts";
 import { showPopupNotification } from "../../util/notification";
 

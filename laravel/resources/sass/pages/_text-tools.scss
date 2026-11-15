@@ -1,0 +1,247 @@
+// 文字数カウント・QR コード作成・テキスト差分。枠や見出しは _devtools.scss の .devtool-* を使う
+$diff-delete: #ffebe9;
+$diff-delete-mark: #ffc1bb;
+$diff-insert: #e6f6e6;
+$diff-insert-mark: #b5e3b5;
+
+// ---- 文字数カウント ----
+
+.count-input {
+    min-height: 14rem;
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.count-target {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.count-target-value {
+    width: 7rem;
+}
+
+// 目標までの残り。超えたら赤、ちょうどなら緑
+.count-target-status {
+    min-height: 1.5rem;
+    margin: 0.5rem 0;
+    font-weight: bold;
+    color: #555;
+
+    &.is-done {
+        color: color-mix(in srgb, #{$main-color} 80%, #000);
+    }
+
+    &.is-over {
+        color: #b02a37;
+    }
+}
+
+.count-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.count-stat {
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: #f8f9fa;
+
+    dt {
+        font-weight: normal;
+        font-size: 0.85rem;
+        color: #555;
+    }
+
+    dd {
+        margin: 0.25rem 0 0;
+        font-size: 1.1rem;
+        font-variant-numeric: tabular-nums;
+
+        span {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+    }
+
+    // いちばんよく使う数（改行を除く文字数）は大きく、横いっぱいに
+    &.is-main {
+        grid-column: 1 / -1;
+        background: color-mix(in srgb, #{$main-color} 10%, #fff);
+
+        dd span {
+            font-size: 2rem;
+            color: color-mix(in srgb, #{$main-color} 80%, #000);
+        }
+    }
+
+    .is-over {
+        color: #b02a37;
+    }
+}
+
+// ---- QR コード作成 ----
+
+.qr-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 16rem;
+    border-radius: 8px;
+    background: #f8f9fa;
+}
+
+.qr-image {
+    width: min(100%, 18rem);
+    height: auto;
+    aspect-ratio: 1;
+    shape-rendering: crispEdges;
+}
+
+.qr-empty {
+    margin: 0;
+    padding: 1rem;
+    text-align: center;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.qr-save {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+// ---- テキスト差分 ----
+
+.diff-container {
+    max-width: 1100px;
+}
+
+textarea.diff-input {
+    min-height: 14rem;
+}
+
+.diff-summary {
+    font-weight: bold;
+    color: #555;
+    font-variant-numeric: tabular-nums;
+
+    &.is-same {
+        color: color-mix(in srgb, #{$main-color} 80%, #000);
+    }
+}
+
+.diff-result {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: auto;
+    max-height: 36rem;
+}
+
+.diff-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+
+    td {
+        padding: 0 0.5rem;
+        vertical-align: top;
+    }
+}
+
+.diff-number {
+    width: 1%;
+    min-width: 2.5rem;
+    text-align: right;
+    color: #888;
+    user-select: none;
+    font-variant-numeric: tabular-nums;
+    border-right: 1px solid #eee;
+}
+
+.diff-marker {
+    width: 1%;
+    user-select: none;
+    color: #888;
+}
+
+// 長い行は折り返す（横スクロールしないと読めないのを避ける）
+.diff-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    tab-size: 4;
+
+    mark {
+        padding: 0;
+        border-radius: 2px;
+        color: inherit;
+    }
+}
+
+.diff-line {
+    &.is-delete {
+        background: $diff-delete;
+
+        .diff-marker {
+            color: #b02a37;
+        }
+
+        mark {
+            background: $diff-delete-mark;
+        }
+    }
+
+    &.is-insert {
+        background: $diff-insert;
+
+        .diff-marker {
+            color: color-mix(in srgb, #{$main-color} 80%, #000);
+        }
+
+        mark {
+            background: $diff-insert-mark;
+        }
+    }
+}
+
+.diff-skip td {
+    padding: 0.25rem 0.5rem;
+    background: #f1f3f5;
+    color: #666;
+    text-align: center;
+    font-family: inherit;
+}
+
+.diff-empty {
+    margin: 0;
+    padding: 2rem 1rem;
+    text-align: center;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+// X の上限を超えたときの案内（文字数カウント）
+.count-x-over {
+    color: #b02a37;
+    margin: -0.25rem 0 0.5rem;
+}
+
+// QR コード作成の Wi-Fi の入力欄
+.qr-wifi {
+    display: grid;
+    gap: 0.75rem;
+
+    // hidden 属性（URL・文章のときは隠す）を display: grid で打ち消さない
+    &[hidden] {
+        display: none;
+    }
+}

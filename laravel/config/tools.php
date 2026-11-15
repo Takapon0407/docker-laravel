@@ -56,6 +56,22 @@ return [
         'storage_note' => '音はブラウザの中で鳴らします。コード進行と設定は、ブラウザの中にだけ残します',
     ],
     [
+        'route' => 'tools.char-count',
+        'title' => '文字数カウント',
+        'description' => '文章の文字数を、改行・空白を含む／除く、全角・半角、原稿用紙の枚数、X（旧 Twitter）の数え方などでまとめて数えます。目標の文字数まで、あと何文字かも出し、そのまま X に投稿することもできます。',
+        'purpose' => 'general',
+        'storage' => 'local',
+        'storage_note' => '文章はブラウザの中だけで数え、どこにも保存しません（「X に投稿する」を押したときだけ X に渡します）',
+    ],
+    [
+        'route' => 'tools.qr',
+        'title' => 'QR コード作成',
+        'description' => 'URL や文章、Wi-Fi の設定（読み取るとそのままつながる）から QR コードを作ります。読み取りやすさ（誤り訂正）を選んで、PNG か SVG で保存できます。',
+        'purpose' => 'general',
+        'storage' => 'local',
+        'storage_note' => 'QR コードはブラウザの中だけで作り、Wi-Fi のパスワードも含めてどこにも保存しません',
+    ],
+    [
         'route' => 'tools.json',
         'title' => 'JSON 整形',
         'description' => '1 行の JSON をインデント付きで見やすく整形したり、1 行に圧縮したりします。形が正しくないときは、何行目の何文字目かを表示します。',
@@ -78,5 +94,13 @@ return [
         'purpose' => 'dev',
         'storage' => 'local',
         'storage_note' => '正規表現はブラウザの中だけで動かします',
+    ],
+    [
+        'route' => 'tools.diff',
+        'title' => 'テキスト差分',
+        'description' => '2 つの文章を比べて、追加・削除した行を色分けし、変わった行の中は文字単位で印を付けます。空白の違いを無視したり、変わったところの前後だけを表示したりできます。',
+        'purpose' => 'dev',
+        'storage' => 'local',
+        'storage_note' => '比較はブラウザの中だけで行います',
     ],
 ];
