@@ -115,11 +115,33 @@ class PageMetaTest extends TestCase
         $chordPlayer->assertSee('id="chord-start-root"', false);
         $chordPlayer->assertSee('id="chord-suggestions"', false);
 
+        // 文字数カウント・QR コード作成：一般向け・端末内で完結。入力を送らないことをページに書く
+        foreach ([
+            'tools.char-count' => ['文字数カウント', '文章はサーバーに送らず、お使いのブラウザの中だけで数えます。', 'id="count-post-x"'],
+            'tools.qr' => ['QR コード作成', '入力した内容（Wi-Fi のパスワードも）はサーバーに送らず、お使いのブラウザの中だけで QR コードにします。', 'id="qr-mode-wifi"'],
+        ] as $route => [$title, $note, $input]) {
+            $this->assertToolCard($tools, 'data-purpose="general" data-storage="local"', route($route));
+            $page = $this->get(route($route));
+            $page->assertOk();
+            $page->assertSee('<title>'.$title.' | てくてくテック</title>', false);
+            $page->assertSee('<link rel="canonical" href="'.route($route).'">', false);
+            $page->assertSee($note, false);
+            $page->assertSee($input, false);
+        }
+        // テキスト差分：使っているアルゴリズム（Myers）と論文へのリンクを載せる
+        $diff = $this->get(route('tools.diff'));
+        $diff->assertSee('Myers のアルゴリズム');
+        $diff->assertSee('<a href="https://doi.org/10.1007/BF01840446" target="_blank" rel="noopener noreferrer" lang="en">', false);
+
+        // 「QR コード」はデンソーウェーブの登録商標なので、そのことを書く
+        $this->get(route('tools.qr'))->assertSee('QR コードは株式会社デンソーウェーブの登録商標です。');
+
         // 開発向けのツール：一覧から「端末内で完結」としてたどれ、ページごとのタイトルを出す
         foreach ([
             'tools.json' => 'JSON 整形',
             'tools.datetime' => '日時の変換（UTC / JST）',
             'tools.regex' => '正規表現チェック',
+            'tools.diff' => 'テキスト差分',
         ] as $route => $title) {
             $this->assertToolCard($tools, 'data-purpose="dev" data-storage="local"', route($route));
             $page = $this->get(route($route));
