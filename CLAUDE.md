@@ -84,6 +84,7 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 - 作品はヘッダーの「Works」→ `/works`（`config/works.php` の一覧）からたどる。Rain & Realms のページは `config/rain-and-realms.php`。**リンクはこのサイト → Rain & Realms の一方向だけ**（外部リンクは `rel="noopener noreferrer"`）、曲は AI で生成しているので**「作曲した」とは書かない**。曲ごとに MP3・WAV をダウンロードでき（ファイルは再生用の `.m4a` と同じ名前で `/media/*` に置く）、クレジットを書けば BGM として使える・再配布と販売は不可、とページに書いている
 - 作品の音源は `config('works.media_url')`（既定は同じドメインの `/media`。本番は CloudFront の `/media/*` → S3）から `preload="none"` で再生する。ローカルは `laravel/public/media` に置く（git には入れない）。音源が返ってこない（転送量の上限を超えた月は 403）ときは、YouTube・配信サービスへ案内する。YouTube は押したときだけ youtube-nocookie.com を読み込む。`works.media_url` を別のドメイン（R2 など）に変えたら、CSP は自動で許可されるが、プライバシーポリシーの音源の配信元の記述は手で直す
 - `config/` は変更したものだけを置き、ほかは Laravel の既定値を使う。`/hobbies` のゲーム一覧は `config/hobbies.php` のデータ
+- **見た目の決まりは `DESIGN.md`**（明るいゲームのメニュー画面から世界を選ぶ構成。下書き）。新しく作る・作り直す画面はこれに従い、色や大きさを足すときは DESIGN.md と `_variables.scss` を両方直す。まだ移していないページは今の見た目のまま
 - Sass は `components/`・`base/`・`pages/` に分け、サイトの緑は `_variables.scss` の `$main-color`。見出しのフォントは `.font-heading`（Google Fonts の Mochiy Pop One。漢字も含む）。Bootstrap 5 のクラスを使う（Bootstrap 4 のクラスは効かない）
 - `/` のスキルスタック・略歴・資格は、就活用のクエリ（`config/profile.php`。今は `/?for=recruit`）が付いたときだけ HTML に出す（ツールなどから来た人に見せないため。秘密ではない）。その表示は `noindex`
 - `/` と `/profile` は同じ内容のため `/profile` は `/` へ 301。ページのタイトル・説明は `@section('title')` / `@section('description')`
