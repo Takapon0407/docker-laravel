@@ -27,3 +27,13 @@ updates:
     groups:
       npm:
         update-types: [minor, patch]
+
+  # CDK（匿名質問ボード・作品の音源）。aws-cdk と aws-cdk-lib はほぼ毎週出るので、まとめて 1 つの PR にする
+  - package-ecosystem: npm
+    directories: [/infra/board, /infra/media]
+    target-branch: develop
+    schedule:
+      interval: weekly
+    groups:
+      infra:
+        update-types: [minor, patch]
