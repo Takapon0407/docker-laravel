@@ -4,4 +4,11 @@
 # macOS のフォルダ表示設定
 .DS_Store
 # Claude Code の個人設定・個人用エージェント（リポジトリでは共有しない）
-/.claude/
+# 実装ループのハーネス（harness/）で使う hooks・スキル・エージェントだけは共有する
+/.claude/*
+!/.claude/settings.json
+!/.claude/skills/
+/.claude/agents/*
+!/.claude/agents/
+!/.claude/agents/spec-reviewer.md
+!/.claude/agents/feature-verifier.md

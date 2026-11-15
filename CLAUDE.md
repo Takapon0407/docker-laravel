@@ -47,6 +47,12 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 - 見た目に関わる変更は、変更前後で主要な要素の位置・大きさ・色を測って比べる（PC 幅とスマホ幅）。CSS / JS を変えたら `npm run build` し直す
 - ブランチは `develop` から `feature/` `refactor/` `fix/` などを切り、PR は `develop` 向けに出す。`develop` → `main` のマージ（＝本番デプロイ）と Rollback の実行はユーザーが行う
 
+## 仕様駆動 ＋ 実装ループ（harness/）
+
+- 機能を足すときは `harness/README.md` の流れで試している：`/spec-interview`（`harness/spec.md` を書く）→ `/spec-to-features`（`harness/features.json`）→ `bash harness/loop.sh start` → `/implement-loop` を 1 項目ずつ
+- 検証コマンドは `bash harness/check.sh`（exit 0 で完了。最後に Playwright の E2E：`cd laravel && npm run e2e`。ローカルの http://localhost/ を開く）。ページを増やしたら `laravel/e2e/pages.ts` に足す
+- ループ中（`harness/.loop/active` があるとき）だけ、`.claude/settings.json` の hooks が features.json・既存のテスト・検証のしくみの書き換えを止め、止まる前に check.sh を流す
+
 ## デプロイとロールバック
 
 - `infra/board` は `.github/workflows/board.yml` が別にデプロイする（PR で diff、`develop` → dev、`main` → Environment `production` の承認 → prod）
