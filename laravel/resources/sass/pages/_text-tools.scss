@@ -239,4 +239,9 @@ textarea.diff-input {
 .qr-wifi {
     display: grid;
     gap: 0.75rem;
+
+    // hidden 属性（URL・文章のときは隠す）を display: grid で打ち消さない
+    &[hidden] {
+        display: none;
+    }
 }
