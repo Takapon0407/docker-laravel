@@ -66,6 +66,20 @@ npm run synth        # cdk synth --strict（AWS の認証情報は不要）
      --profile <管理者のプロファイル>
    ```
 
+   ダウンロード用の MP3・WAV も、再生用と同じ名前（拡張子だけ違う）で同じフォルダに置く。開かずに保存させるため `Content-Disposition: attachment` を付ける（保存するときの名前は、ページの `download` 属性で曲名にしている）。
+   WAV は DistroKid に出した元のファイルにタグを付けたもの、MP3 はそこから作った 320kbps（ジャケット付き）。手元では `laravel/public/media/`（Git には入れない）に作ってある
+
+   ```bash
+   for ext in mp3:audio/mpeg wav:audio/wav; do
+     aws s3 sync laravel/public/media/rain-and-realms/kominka-rain/ \
+       s3://<BucketName>/media/rain-and-realms/kominka-rain/ \
+       --exclude "*" --include "*.${ext%%:*}" \
+       --content-type "${ext#*:}" --content-disposition attachment \
+       --cache-control "public, max-age=31536000, immutable" \
+       --profile <管理者のプロファイル>
+   done
+   ```
+
 4. CloudFront（ポートフォリオのディストリビューション）にオリジンを足す
    - Origin domain：`BucketRegionalDomainName`（`tektektech-media-….s3.ap-northeast-1.amazonaws.com`）。Origin path は空
    - Origin access：Origin access control settings で `tektektech-media`（`OriginAccessControlId`）を選ぶ
@@ -102,7 +116,7 @@ Lambda は前回の判定から変わったときだけ書き換えるため、�
 
 ## 費用の目安
 
-- S3（73MB）：月 1 円未満
+- S3（再生用 73MB・ダウンロード用 約 840MB）：月 3 円ほど
 - Lambda・EventBridge：無料枠の中
 - CloudWatch の GetMetricData：5 分おき（月 約 8,600 回）で月 0.1 ドルほど
 - KeyValueStore：CloudFront Function からの読み取りは 100 万回で 0.03 ドル。API での書き込みは、切り替えたときだけ

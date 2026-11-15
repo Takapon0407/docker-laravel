@@ -45,6 +45,20 @@ class WorksPageTest extends TestCase
     }
 
     /**
+     * 曲ごとに MP3・WAV をダウンロードでき、保存するときの名前は曲名になること。使ってよい範囲もそばに書く
+     */
+    public function test_each_track_can_be_downloaded_as_mp3_and_wav(): void
+    {
+        $response = $this->get('/works/rain-and-realms');
+
+        $response->assertSee('href="/media/rain-and-realms/kominka-rain/01-first-drops-on-the-engawa.mp3" download="Rain &amp; Realms - 01 First Drops on the Engawa.mp3"', false);
+        $response->assertSee('href="/media/rain-and-realms/kominka-rain/19-when-the-rain-stops.wav" download="Rain &amp; Realms - 19 When the Rain Stops.wav"', false);
+        $this->assertSame(19 * 2, substr_count((string) $response->getContent(), 'class="album-download"'));
+        $response->assertSee('id="album-download-terms"', false);
+        $response->assertSee('クレジット');
+    }
+
+    /**
      * 音源の置き場所を設定で変えられること（R2 などに移すとき）。CSP もその配信元を許可する
      */
     public function test_media_url_can_be_moved_to_another_origin(): void
