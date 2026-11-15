@@ -15,11 +15,12 @@ class ProfilePageTest extends TestCase
             $response = $this->get($url);
 
             $response->assertOk();
-            $response->assertSee('だれ？');
+            $response->assertSee('たかぽん');
             $response->assertDontSee('すきるすたっく');
             $response->assertDontSee('りゃくれき');
             $response->assertDontSee('AWS SAP');
             $response->assertDontSee('スキルスタック');
+            $response->assertDontSee('略歴');
             $response->assertDontSee('<meta name="robots"', false);
         }
     }
@@ -32,9 +33,9 @@ class ProfilePageTest extends TestCase
         $response = $this->get('/?for=recruit');
 
         $response->assertOk();
-        $response->assertSee('すきるすたっく');
-        $response->assertSee('りゃくれき');
+        // 見出しの文言はトップの作り直し（harness/spec.md）で変わるので、中身で確かめる
         $response->assertSee('AWS SAP');
+        $response->assertSee('千株式会社');
         $response->assertSee('<meta name="description" content="Laravel・React・AWSを中心にWebサービスを開発しているエンジニア、たかぽんのポートフォリオです。スキルスタック・略歴・資格', false);
         $response->assertSee('<meta name="robots" content="noindex">', false);
         $response->assertSee('<link rel="canonical" href="'.url('/').'">', false);

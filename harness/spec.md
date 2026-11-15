@@ -16,3 +16,126 @@
 - 承認済みの節を書き換えるときは、もう一度要件定義ループを回す（状態を「レビュー中」に戻す）。
 
 <!-- ここから下に機能の節を足す -->
+
+## トップで世界を選ぶ（トップの作り直し）
+
+- **状態**：承認済み（2026-11-16。spec-reviewer のレビュー 2 回を反映）
+- **目的**：トップを開いた人（勉強会で URL を知った人・採用担当者）が、キャラクター作成に見立てた自己紹介でたかぽんを知り、4 つの世界から行き先を選べる。見た目は `DESIGN.md`（C 案）の最初の実装
+- **範囲**：`/` だけ。ほかのページは今の見た目のまま。「旅の記録」のページと隠しステージは別の機能
+- **出し方**：まとめブランチ `feature/world-redesign` に入れる。全部のページ（旅の記録・工房・宝物庫・道具屋）がそろったら、まとめて develop → 本番に出す（ユーザーの判断。2026-11-16）。この機能のブランチは `feature/top-redesign` で、PR はまとめブランチ向け（CI の test・lint はどのブランチ向けの PR でも動く）
+
+### 決まった値
+
+- **世界**（並び順。最初に選んでいるのは旅の記録）
+
+| 名前 | 英字 | 説明 | 行き先 |
+|---|---|---|---|
+| 旅の記録 | Chronicle | 生まれてから今までの道のりを、地図の上で一歩ずつたどる。 | なし（「地図を描いています（準備中）」と出す） |
+| 工房 | Atelier | 作ったものを飾っている、ファンタジーの部屋。 | `/works` |
+| 宝物庫 | Treasury | ガラクタに見えて、ぜんぶ宝物。好きなものを詰めこんだ部屋。 | `/hobbies` |
+| 道具屋 | Item Shop | すぐ使える便利ツールを、探して選べるお店。 | `/tools` |
+
+- **キャラクター作成の欄**（`<dl>`。`<dt>`・`<dd>` の文字は完全一致）
+
+| dt | dd |
+|---|---|
+| 名前 | たかぽん |
+| レベル | `Lv. <年齢>`。**JS が「名前」の次に dt と dd を一緒に足す**（JS なしでは出さない）。1994-04-07 生まれ、日本時間の日付で、誕生日の当日から 1 つ上がる |
+| 職業 | Web エンジニア |
+| 好きなもの | ゲーム・音楽・写真 |
+| ひとこと | 作るのも、遊ぶのも好き。 |
+| リンク | 「BLOG」（https://tektektech.com/）と「X」（https://x.com/TakaponEng、`aria-label="X（@TakaponEng）"`）。どちらも `target="_blank" rel="noopener noreferrer"` |
+
+- **立ち絵**：今のプロフィール写真（`assets/laravel/profile.jpg`、alt「たかぽんのプロフィール写真」、`width`・`height` 付き）。画像生成の絵ができたら差し替える
+- **世界の絵**：世界ごとの色の CSS の模様（画像なし）。画像生成の絵ができたら差し替える
+- **ヘッダー**：`<header>` の中に、サイト名のリンク（`Tektektech`＋`てくてくテック` → `/`）と、`<nav aria-label="世界">`（工房 → `/works`、宝物庫 → `/hobbies`、道具屋 → `/tools`。リンクの文字は日本語の名前だけ）。旅の記録はページができるまで載せない
+- **「この世界へ行く」**：リンクの文字は「この世界へ行く」、`aria-label="この世界へ行く：工房"` のように世界の名前を足す
+- **就活用（`/?for=recruit`）の欄**：世界を選ぶ部分の下。見出し（h2）は英字＋日本語の 2 段：`Skills` / `スキル`・`Career` / `略歴`・`Certifications` / `資格と経験`。中身（言語・フレームワーク・略歴・資格・経験）は今と同じ
+- **フォント**：`https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap` の 1 本（DESIGN.md 節 3）
+- **やめるもの**：年齢の「○歳○ヶ月○日」、趣味の一覧（カメラ・将棋…）、MetaMask のアドレスのコピー、トップの `#notification`
+
+### できること（受け入れ条件）
+
+確かめ方：［H］＝ HTTP の応答（PHPUnit）、［B］＝ ブラウザ（Playwright。JS あり）、［N］＝ ブラウザ（`javaScriptEnabled: false`）
+
+**必須**
+1. ［H］`/` が 200。［B］h1「どの世界へ出かける？」が見え（`toBeVisible`）、英字ラベル「Choose Your World」の下端が h1 の上端以下
+2. ［H］キャラクター作成の欄の `<dt>` が「名前・職業・好きなもの・ひとこと・リンク」の順で、それぞれの次の `<dd>` が上の表と完全一致（リンクは文字・`href`・`target`・`rel`・X の `aria-label`）。応答にレベルの dt・dd はない。［N］レベルはない。［B］`timezoneId: "America/Los_Angeles"` と `page.clock.setFixedTime` で時刻を固め、「名前」の次の dt が「レベル」、その dd が次のとおり：`2026-04-06T14:59:59Z`（日本時間 4/6）→ `Lv. 31`、`2026-04-06T15:00:00Z`（日本時間 4/7）→ `Lv. 32`
+3. ［B］`role="tab"` が 4 つ、上の表の順に並び、旅の記録だけ `aria-selected="true"`・`tabindex="0"`、ほかは `"false"`・`"-1"`
+4. ［B］「次の世界」ボタンを押すと、並び順で次の世界が選ばれる：選んでいるタブの `aria-selected`、見えている tabpanel の h3 の文字、行き先（「この世界へ行く」の `href`。旅の記録は準備中の文）の 3 つが変わる。見えている tabpanel（`hidden` でないもの）はいつも 1 つだけ。道具屋で押すと旅の記録に戻る。「前の世界」はその逆。押したあとも `document.activeElement` はそのボタン
+5. ［B］タブにフォーカスがあるとき、→ で次・← で前の世界を選び、`document.activeElement` が選んだタブになる（端では反対の端へ）。Home で最初・End で最後。前後のボタンにフォーカスがあるときに ← → を押しても、選んでいる世界は変わらない
+6. ［B］タブをクリック、またはフォーカスして Enter・Space を押すと、その世界を選ぶ
+7. ［B］見えているパネルのリンク（`getByRole('link', { name: 'この世界へ行く：工房' })` など）の `href` が上の表の行き先。旅の記録のパネルにはこのリンクがなく、「地図を描いています（準備中）」が見える
+8. ［N］4 つの世界の h3 と説明がすべて見え、行き先のリンクが 3 つ（`/works`・`/hobbies`・`/tools`）あり、「地図を描いています（準備中）」が見える。`role="tab"` の要素はない。前後のボタンと「◀ ▶ のボタンか、キーボードの ← → で選べます」はない（または `hidden`）
+9. ［H］ヘッダーが上の「ヘッダー」のとおり（`<nav aria-label="世界">` の中に `<a href="…/works">工房</a>`・`<a href="…/hobbies">宝物庫</a>`・`<a href="…/tools">道具屋</a>`、`/` へのサイト名のリンクは nav の外）。フッターは今と同じ `<a href="…/privacy">プライバシーポリシー・免責事項</a>`。［B］375px でヘッダーが横にはみ出さない
+10. ［B］PC 幅（1280px）：キャラクター作成が左・世界を選ぶ部分が右で、上端の差が 1px 以内。スマホ幅（375px）：世界を選ぶ部分の上端 ≥ キャラクター作成の下端、4 つのタブの左端の x が 2 種類・上端の y が 2 種類（2×2）。どちらの幅でも横にはみ出さない。タブの高さ 56px 以上、前後のボタンは 44×44px 以上、「この世界へ行く」は高さ 44px 以上
+11. ［H］`/?for=recruit` でだけ、上の 3 つの見出し（英字と日本語）と中身（例：`AWS SAP`・`千株式会社`）が出て、`<meta name="robots" content="noindex">` と、クエリなしの canonical が付く。クエリなし（`/`・`/?for=other`・`/?for[]=recruit`）では、`Skills`・`Career`・`Certifications`・`AWS SAP`・「スキルスタック」・「略歴」を出さず、robots も付けない（世界の説明やキャラクター作成の欄にもこれらの言葉を入れない）
+12. ［H］今と同じ値：title「てくてくテック」、description（クエリなし「Webエンジニア・たかぽんのポートフォリオサイトです。趣味の写真やゲーム、ブラウザですぐに使える便利ツールを公開しています。」・クエリあり「Laravel・React・AWSを中心にWebサービスを開発しているエンジニア、たかぽんのポートフォリオです。スキルスタック・略歴・資格（AWS認定5種など）を紹介しています。」）、canonical `url('/')`、`og:type`＝`website`・`og:site_name`＝てくてくテック・`og:title`／`og:description` は title／description と同じ・`og:url`・`og:image`＝`asset('tektektech.jpg')`・`og:locale`＝`ja_JP`・`twitter:card`＝`summary`、manifest `asset('manifest.json')`、apple-touch-icon `asset('icons/apple-touch-icon.png')`、`<html lang="ja">`。`theme-color` は `/` だけ `#2f6f96`（`/works` などは `#55c501` のまま）
+13. ［B］ページを開いてから、次の世界 ×4・前の世界 ×4・タブを 1 つずつクリック・→ ×4 のあいだ、`pageerror` と `console.error`（CSP の違反を含む）が 0 件
+14. ［H］`/` に nonce 付きの `<script>`（Vite）があり、インラインの `<script>` と `on*=` 属性はない
+15. ［H］`/` の HTML に、上の「フォント」の URL（HTML の中では `&` が `&amp;`）がちょうど 1 つあり、`Mochiy+Pop+One` がない。`build/assets/app-`・`build/assets/header-` を含む `href`・`src` がない
+
+**できれば**
+16. ［B］各タブの `aria-controls` が tabpanel の id を指し、各 tabpanel の `aria-labelledby` がタブの id を指す
+
+### 実装の項目の分け方（features.json にする案）
+
+1. `top-01`：新しいレイアウト・`<head>` の部分テンプレート・ヘッダーとフッター・フォント・CSS のエントリー（条件 1・9・12・14・15。privacy の文と改定日、`_variables.scss`、CLAUDE.md のレイアウトとフォントの記述も）
+2. `top-02`：キャラクター作成の欄とレベル（条件 2。lib の年齢計算とテスト）
+3. `top-03`：世界のパネル 4 つをサーバーで出す・`config/worlds.php`・JS なしの動き（条件 8、条件 11 の言葉の決まり）
+4. `top-04`：タブにする・押して選ぶ・前後のボタン・行き先（条件 3・4・6・7。lib の番号の送りとテスト。DESIGN.md 節 4・CLAUDE.md の選び方の記述も）
+5. `top-05`：キーボード（条件 5）
+6. `top-06`：就活用の欄（条件 11）
+7. `top-07`：レイアウトとエラー（条件 10・13）
+8. `top-08`（nice）：`aria-controls`・`aria-labelledby`（条件 16）
+
+### 影響範囲
+
+- `resources/views/profile.blade.php`：作り直す
+- `resources/views/layouts/`：DESIGN.md の枠のレイアウト（`world`）を足す。`<head>` の共通の部分（canonical・robots・OGP・manifest・apple-touch-icon）は部分テンプレートに切り出して `common` と共有し、`theme-color`・フォント・CSS/JS だけを変える
+- `config/worlds.php`（新規）：世界のデータ（名前・英字・説明・行き先の route）。トップとヘッダーで使う
+- `resources/ts/laravel/profile.ts`：作り直す（世界を選ぶ・レベル）。MetaMask の処理を消す
+- `resources/ts/lib/`：世界の番号の送り（端で戻る・Home/End）と、日本時間の年月日を受け取ってレベル（年齢）を出す関数。`*.test.ts` で誕生日の前日・当日・うるう日をまたぐ場合を確かめる
+- `resources/sass/`：DESIGN.md のトークンを `_variables.scss` に足す（DESIGN.md の冒頭・節 9 のとおり）。トップ用の新しいエントリー（例 `world.scss`）が `_variables.scss` を読み、`app.scss` は読まない
+- `vite.config.ts`：新しい Sass のエントリーを input に足す
+- `#notification`・`util/notification.ts`：トップからだけ外す（割り勘・寿命・ボード・`util/copy.ts`・開発向けツールで使っているので消さない）
+- `tests/Feature/ProfilePageTest.php`：実装ループの前に、今のページでも新しいページでも通る形に直す（下の「AI が決めたこと」）
+- `laravel/e2e/`：新しいファイルで足す
+- `privacy.blade.php`：「見出しのフォントは Google Fonts から」を「文字のフォント（見出し・本文）は…」に直し、改定日を変える
+- `CLAUDE.md`：トップの説明（世界・レベル・就活用の欄の出し方）、新しいレイアウト、`.font-heading` はトップでは使わないこと、まとめブランチの決まり
+- `DESIGN.md`：節 4 の「← → はタブ・ボタンにフォーカスがあるとき」を「タブにフォーカスがあるとき」に直す
+- 変わらないもの：ルート（404 も今のまま）、`e2e/pages.ts`、`ExampleTest`、OGP の画像、`manifest.json` の色、`util/notification.ts`
+
+### AI が決めたこと
+
+- **ヘッダーはトップだけ新しくする**：DESIGN.md の「移し終えたページから順に置き換える」に従う。まとめブランチの中では、しばらくトップとほかのページでヘッダーが違う
+- **タブは WAI-ARIA の Tabs の作り**（roving tabindex。矢印キーでフォーカスと選択が一緒に動く・Home/End）。← → をページ全体で拾うとスクロールなどを奪うため。前後のボタンの上で ← → を拾わないのも、ボタンとしての普通の動きを保つため
+- **JS なしでも使える**：サーバーは見出しとパネル 4 つを並べた HTML を出し、`role`・`aria-selected`・`tabindex`・パネルの `hidden`・前後のボタン・操作の説明文・レベルは JS が付ける
+- **「この世界へ行く」の名前**：見えている文字を含めて `この世界へ行く：工房` にする（音声入力で見えている文字を言えば押せるように。WCAG 2.5.3）
+- **英字のラベル**には `lang="en"`。飾りの線・矢印の SVG は `aria-hidden="true" focusable="false"`
+- **見出しの順**：h1（どの世界へ出かける？）→ h2（キャラクター作成・世界を選ぶ・就活用の 3 つ）→ h3（パネルの世界の名前）
+- **選んだ世界は覚えない**（URL にも localStorage にも残さない）。プライバシーポリシーの「扱うデータ」が変わらないため
+- **フォント**：本文まで Web フォントにするので、fallback（`"Hiragino Kaku Gothic ProN", Meiryo, sans-serif`）を必ず書く
+- **画像**には `width`・`height`。切り替えの動きを付けるなら `prefers-reduced-motion: reduce` で止める
+- **レベル**：ブラウザで、`Intl.DateTimeFormat` の `timeZone: "Asia/Tokyo"` で今日の年月日を出して計算する（サーバーで出すと、ページのキャッシュで日付がずれるため）
+- **既存のテストの直し（ループの前）**：`ProfilePageTest` を、**今のページでも新しいページでも通る形**にする。クエリなし：`たかぽん` が出る・`AWS SAP`・「スキルスタック」・「略歴」・`りゃくれき`・`すきるすたっく` が出ない。クエリあり：`AWS SAP`・`千株式会社`・noindex・canonical が出る。`だれ？`・`すきるすたっく`・`りゃくれき` を「出す」確かめは消す。新しい見出しはループの中で新しいテストのファイルで確かめる（ループを緑から始め、既存のテストを書き換えられない hooks とも食い違わないため）
+- **`theme-color`**：トップだけ `#2f6f96`。`manifest.json`（サイト全体の PWA）の色は `#55c501` のまま。ずれは意図したもの
+- **まとめブランチの決まり**：CLAUDE.md の「PR は develop 向け」に、まとめブランチ（`feature/world-redesign`）の例外を書く（ユーザーの判断を記録するため）
+
+### 質問リスト
+
+- Q1：旅の記録の「この世界へ行く」→ **準備中にする**（「地図を描いています（準備中）」）
+- Q2：絵 → **立ち絵は今の写真、世界の絵は CSS の模様**
+- Q3：今のトップの項目 → **年齢は「Lv.」にする・BLOG と X は残す**。趣味の一覧・MetaMask はやめる
+- Q4：ひとこと → **「作るのも、遊ぶのも好き。」**
+- Q5：最初に選んでいる世界 → **旅の記録**（まとめブランチで全部のページがそろってから出すため）
+- Q6：就活用の欄の見出し → **英字＋日本語の 2 段**、置き場所は世界を選ぶ部分の下
+
+未解決の質問：なし
+
+### 最終レビューで見ること
+
+- C 案の雰囲気（上品さ・遊び心）が出ているか
+- 就活用の欄が、普通の表・一覧として読みやすいか
+- 写真の立ち絵・世界の模様とのなじみ
+- スマホで見たときの詰まり具合

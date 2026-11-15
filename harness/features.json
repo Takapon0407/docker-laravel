@@ -1,3 +1,110 @@
 {
-    "features": []
+    "features": [
+        {
+            "id": "top-01",
+            "description": "トップが DESIGN.md の新しい枠（ヘッダー・フォント・CSS）で表示され、meta・ヘッダー・フッターが仕様どおりになる",
+            "steps": [
+                "[H] GET / が 200",
+                "[B] / を開くと h1「どの世界へ出かける？」が見え、英字ラベル「Choose Your World」の下端が h1 の上端以下",
+                "[H] <header> の中に / へのリンク（Tektektech・てくてくテック）があり、<nav aria-label=\"世界\"> の中に <a href=\"…/works\">工房</a>・<a href=\"…/hobbies\">宝物庫</a>・<a href=\"…/tools\">道具屋</a> がある（サイト名のリンクは nav の外）",
+                "[H] フッターに <a href=\"…/privacy\">プライバシーポリシー・免責事項</a> がある",
+                "[B] 幅 375px でヘッダーが横にはみ出さない",
+                "[H] title「てくてくテック」、description・canonical・og:type=website・og:site_name・og:title・og:description・og:url・og:image=asset('tektektech.jpg')・og:locale=ja_JP・twitter:card=summary・manifest=asset('manifest.json')・apple-touch-icon=asset('icons/apple-touch-icon.png')・<html lang=\"ja\"> が spec.md の条件 12 の値",
+                "[H] / の theme-color が #2f6f96、/works の theme-color は #55c501 のまま",
+                "[H] / に nonce 付きの <script> があり、インラインの <script> と on*= 属性がない",
+                "[H] / の HTML に https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&amp;family=Zen+Kaku+Gothic+New:wght@400;700&amp;display=swap がちょうど 1 つあり、Mochiy+Pop+One がない",
+                "[H] / の HTML に build/assets/app- と build/assets/header- を含む href・src がない",
+                "privacy.blade.php のフォントの記述を「文字のフォント（見出し・本文）」に直し改定日を更新、_variables.scss に DESIGN.md のトークン、CLAUDE.md にレイアウトとフォントの記述とまとめブランチの決まり"
+            ],
+            "priority": "must",
+            "passes": false
+        },
+        {
+            "id": "top-02",
+            "description": "キャラクター作成の欄で、名前・レベル・職業・好きなもの・ひとこと・リンクを見られる",
+            "steps": [
+                "[H] / のキャラクター作成の欄の <dt> が「名前・職業・好きなもの・ひとこと・リンク」の順で、次の <dd> がそれぞれ「たかぽん」「Web エンジニア」「ゲーム・音楽・写真」「作るのも、遊ぶのも好き。」",
+                "[H] リンクの dd に「BLOG」（href https://tektektech.com/）と「X」（href https://x.com/TakaponEng、aria-label=\"X（@TakaponEng）\"）があり、どちらも target=\"_blank\" rel=\"noopener noreferrer\"",
+                "[H] 応答にレベルの dt・dd がない。[N] JS なしでレベルが見えない",
+                "[H] 立ち絵に profile.jpg（alt「たかぽんのプロフィール写真」、width・height 付き）",
+                "[B] timezoneId America/Los_Angeles・page.clock.setFixedTime('2026-04-06T14:59:59Z') で / を開くと、「名前」の次の dt が「レベル」、その dd が「Lv. 31」",
+                "[B] 同じく setFixedTime('2026-04-06T15:00:00Z') では「Lv. 32」",
+                "resources/ts/lib に日本時間の年月日からレベルを出す関数と *.test.ts（誕生日の前日・当日・うるう日をまたぐ場合）"
+            ],
+            "priority": "must",
+            "passes": false
+        },
+        {
+            "id": "top-03",
+            "description": "JS が動かなくても、4 つの世界の名前・説明・行き先をすべて見てたどれる",
+            "steps": [
+                "[N] / を開くと h3「旅の記録」「工房」「宝物庫」「道具屋」と spec.md の表の説明がすべて見える",
+                "[N] 行き先のリンクが 3 つ（/works・/hobbies・/tools）あり、「地図を描いています（準備中）」が見える",
+                "[N] role=\"tab\" の要素がなく、前後のボタンと「◀ ▶ のボタンか、キーボードの ← → で選べます」がない（または hidden）",
+                "[H] / と /?for=other と /?for[]=recruit の HTML に Skills・Career・Certifications・AWS SAP・スキルスタック・略歴 がなく、<meta name=\"robots\" がない",
+                "世界のデータは config/worlds.php"
+            ],
+            "priority": "must",
+            "passes": false
+        },
+        {
+            "id": "top-04",
+            "description": "タブ・前後のボタンで世界を選ぶと、パネルと行き先が切り替わる",
+            "steps": [
+                "[B] / を開くと role=\"tab\" が 4 つ（旅の記録・工房・宝物庫・道具屋の順）、旅の記録だけ aria-selected=\"true\"・tabindex=\"0\"、ほかは \"false\"・\"-1\"",
+                "[B] 「次の世界」ボタンを押すと工房が選ばれ、見えている tabpanel の h3 が「工房」、getByRole('link', { name: 'この世界へ行く：工房' }) の href が /works。見えている tabpanel はいつも 1 つだけ",
+                "[B] 道具屋で「次の世界」を押すと旅の記録に戻り、パネルにリンクがなく「地図を描いています（準備中）」が見える。「前の世界」はその逆",
+                "[B] 前後のボタンを押したあとも document.activeElement はそのボタン",
+                "[B] 宝物庫のタブをクリックすると宝物庫が選ばれ、リンク「この世界へ行く：宝物庫」の href が /hobbies。タブにフォーカスして Enter・Space でも選べる",
+                "resources/ts/lib に番号の送り（端で戻る・最初・最後）の関数と *.test.ts。DESIGN.md 節 4 の ← → の記述をタブだけに直し、CLAUDE.md にトップの選び方を書く"
+            ],
+            "priority": "must",
+            "passes": false
+        },
+        {
+            "id": "top-05",
+            "description": "タブの上でキーボードの ← → ・Home・End を使って世界を選べる",
+            "steps": [
+                "[B] 旅の記録のタブにフォーカスして → を押すと工房が選ばれ、document.activeElement が工房のタブ",
+                "[B] 旅の記録のタブで ← を押すと道具屋が選ばれる（端では反対の端へ）",
+                "[B] End で道具屋、Home で旅の記録が選ばれ、フォーカスも移る",
+                "[B] 「次の世界」ボタンにフォーカスして ← → を押しても、選んでいる世界は変わらない"
+            ],
+            "priority": "must",
+            "passes": false
+        },
+        {
+            "id": "top-06",
+            "description": "/?for=recruit で開いたときだけ、スキル・略歴・資格と経験を見られる",
+            "steps": [
+                "[H] /?for=recruit で、見出し Skills / スキル・Career / 略歴・Certifications / 資格と経験 と、AWS SAP・千株式会社 が出る",
+                "[H] /?for=recruit に <meta name=\"robots\" content=\"noindex\"> と <link rel=\"canonical\" href=\"<url('/')>\"> があり、description がクエリありの文",
+                "[B] /?for=recruit では就活用の欄が世界を選ぶ部分より下にある",
+                "[H] /・/?for=other・/?for[]=recruit では、これらの見出しと AWS SAP が出ない"
+            ],
+            "priority": "must",
+            "passes": false
+        },
+        {
+            "id": "top-07",
+            "description": "PC 幅とスマホ幅で崩れずに表示され、操作してもエラーが出ない",
+            "steps": [
+                "[B] 幅 1280px：キャラクター作成が左・世界を選ぶ部分が右で、上端の差が 1px 以内",
+                "[B] 幅 375px：世界を選ぶ部分の上端 ≥ キャラクター作成の下端、4 つのタブの左端の x が 2 種類・上端の y が 2 種類",
+                "[B] どちらの幅でも横にはみ出さない。タブの高さ 56px 以上、前後のボタンは 44×44px 以上、「この世界へ行く」は高さ 44px 以上",
+                "[B] / を開いてから、次の世界 ×4・前の世界 ×4・タブを 1 つずつクリック・→ ×4 のあいだ、pageerror と console.error が 0 件"
+            ],
+            "priority": "must",
+            "passes": false
+        },
+        {
+            "id": "top-08",
+            "description": "読み上げソフトで、タブと世界のパネルの対応がわかる",
+            "steps": [
+                "[B] 各タブの aria-controls が tabpanel の id を指し、各 tabpanel の aria-labelledby がタブの id を指す"
+            ],
+            "priority": "nice",
+            "passes": false
+        }
+    ]
 }

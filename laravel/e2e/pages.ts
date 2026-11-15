@@ -21,8 +21,11 @@ export const PAGES: readonly SitePage[] = [
     withFooter("/tools/countdown"),
     withFooter("/tools/pixel-art"),
     withFooter("/tools/chord-player"),
+    withFooter("/tools/char-count"),
+    withFooter("/tools/qr"),
     withFooter("/tools/json"),
     withFooter("/tools/datetime"),
     withFooter("/tools/regex"),
+    withFooter("/tools/diff"),
     withFooter("/privacy"),
 ];
