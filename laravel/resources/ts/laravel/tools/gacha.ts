@@ -1,4 +1,176 @@
-// ガチャ天井計算機のページ：入力の読み取り・出し入れ・Worker とのやり取り・結果の表とグラフの描画
+// ガチャ天井計算機のページ：入力の読み取り・出し入れ・Worker とのやり取り・結果の表の描画
+import type { GachaResult } from "@/lib/gacha";
+import { readForm, type FieldId, type FormState, type MoneyInput, type RawInput } from "@/lib/gacha-input";
+import { resultRows } from "@/lib/gacha-format";
+import type { GachaRequest, GachaResponse } from "@/lib/gacha-worker";
+
+const DEBOUNCE_MS = 150;
+const MESSAGES = {
+    invalid: "赤い欄を直すと、結果が出ます",
+    missing: "確率・石の数・値段を入れると、結果が出ます",
+    tooMany: "回数が多すぎて計算できません。すり抜けの確定か、狙いが確定するまでの回数を入れてください。",
+    failed: "計算できませんでした。ページを読み込み直してください。",
+} as const;
+
 document.addEventListener("DOMContentLoaded", () => {
-    // 入力欄と結果は次の項目で足す
+    const fields = new Map<FieldId, HTMLInputElement>(
+        [...document.querySelectorAll<HTMLInputElement>("[data-gacha-field]")].map((input) => [input.dataset["gachaField"] as FieldId, input]),
+    );
+    const streakLimit = document.getElementById("gacha-k") as HTMLSelectElement;
+    const streakNow = document.getElementById("gacha-s0") as HTMLSelectElement;
+    const streakNowField = document.getElementById("gacha-s0-field") as HTMLElement;
+    const ceilingFields = (["c0", "softStart", "softStep"] as const).map((id) => document.getElementById(`gacha-${id}-field`) as HTMLElement);
+    const message = document.getElementById("gacha-message") as HTMLElement;
+    const resultArea = document.getElementById("gacha-result") as HTMLElement;
+    const rows = [...(document.getElementById("gacha-rows") as HTMLElement).querySelectorAll("tr")];
+
+    let worker: Worker | null = null;
+    let busy = false;
+    let requestId = 0;
+    let pendingMoney: MoneyInput | null = null;
+    let debounce: number | undefined;
+
+    function createWorker(): Worker | null {
+        try {
+            const created = new Worker(new URL("../../lib/gacha-worker.ts", import.meta.url), { type: "module" });
+            created.addEventListener("message", (event: MessageEvent<GachaResponse>) => {
+                // 入力を変えたあとに届いた、古い結果は使わない
+                if (event.data.id !== requestId || pendingMoney === null) {
+                    return;
+                }
+                busy = false;
+                showResult(event.data.result, pendingMoney);
+            });
+            created.addEventListener("error", () => {
+                busy = false;
+                worker = null;
+                showMessage(MESSAGES.failed);
+            });
+            return created;
+        } catch {
+            return null;
+        }
+    }
+
+    function rawInput(): RawInput {
+        const value = (id: FieldId): string => fields.get(id)?.value ?? "";
+        return {
+            p: value("p"),
+            q: value("q"),
+            k: streakLimit.value === "" ? null : Number(streakLimit.value),
+            s0: Number(streakNow.value),
+            n: value("n"),
+            c0: value("c0"),
+            softStart: value("softStart"),
+            softStep: value("softStep"),
+            m: value("m"),
+            stones: value("stones"),
+            price: value("price"),
+            owned: value("owned"),
+            budget: value("budget"),
+        };
+    }
+
+    /** 「いま続いているすり抜け」の選択肢を 0〜k 回にする（k を下げて超えたら k に） */
+    function syncStreakOptions(): void {
+        const limit = streakLimit.value === "" ? null : Number(streakLimit.value);
+        streakNowField.hidden = limit === null;
+        if (limit === null || streakNow.options.length === limit + 1) {
+            return;
+        }
+        const current = Math.min(Number(streakNow.value), limit);
+        streakNow.replaceChildren(
+            ...Array.from({ length: limit + 1 }, (_, times) => {
+                const option = document.createElement("option");
+                option.value = String(times);
+                option.textContent = times === limit ? `${times} 回（次は確定）` : `${times} 回`;
+                option.selected = times === current;
+                return option;
+            }),
+        );
+    }
+
+    function showErrors(state: FormState): void {
+        for (const [id, input] of fields) {
+            const text = state.errors[id];
+            const error = document.getElementById(`gacha-${id}-error`) as HTMLElement;
+            error.hidden = text === undefined;
+            error.textContent = text ?? "";
+            input.classList.toggle("is-invalid", text !== undefined);
+            if (text === undefined) {
+                input.removeAttribute("aria-invalid");
+            } else {
+                input.setAttribute("aria-invalid", "true");
+            }
+        }
+        for (const field of ceilingFields) {
+            field.hidden = !state.ceilingShown;
+        }
+    }
+
+    function showMessage(text: string): void {
+        message.textContent = text;
+        message.hidden = false;
+        resultArea.hidden = true;
+    }
+
+    function showResult(result: GachaResult, money: MoneyInput): void {
+        if (result.kind === "too-many") {
+            showMessage(MESSAGES.tooMany);
+            return;
+        }
+        resultRows(result, money).forEach((row, index) => {
+            const cells = rows[index]!.querySelectorAll("td");
+            cells[0]!.textContent = row.draws;
+            cells[1]!.textContent = row.stones;
+            cells[2]!.textContent = row.money;
+        });
+        message.hidden = true;
+        resultArea.hidden = false;
+    }
+
+    function update(immediate: boolean): void {
+        syncStreakOptions();
+        const state = readForm(rawInput());
+        showErrors(state);
+        window.clearTimeout(debounce);
+        // 計算中に入力が変わったら、古い計算は捨てる
+        const id = ++requestId;
+        if (state.kind !== "ok") {
+            pendingMoney = null;
+            showMessage(state.kind === "invalid" ? MESSAGES.invalid : MESSAGES.missing);
+            return;
+        }
+        const start = (): void => {
+            if (id !== requestId) {
+                return;
+            }
+            if (busy && worker !== null) {
+                // 重い計算の途中なら、Worker ごと止めて作り直す
+                worker.terminate();
+                worker = null;
+            }
+            worker ??= createWorker();
+            if (worker === null) {
+                showMessage(MESSAGES.failed);
+                return;
+            }
+            busy = true;
+            pendingMoney = state.money;
+            const request: GachaRequest = { id, input: state.gacha };
+            worker.postMessage(request);
+        };
+        if (immediate) {
+            start();
+        } else {
+            debounce = window.setTimeout(start, DEBOUNCE_MS);
+        }
+    }
+
+    for (const input of fields.values()) {
+        input.addEventListener("input", () => update(false));
+    }
+    streakLimit.addEventListener("change", () => update(false));
+    streakNow.addEventListener("change", () => update(false));
+    update(true);
 });

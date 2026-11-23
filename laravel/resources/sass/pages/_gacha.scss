@@ -1,5 +1,84 @@
 // ガチャ天井計算機（共通の見た目は _devtools.scss の .devtool-*）
+.gacha-container {
+    // 出し入れする欄（hidden）を、display の指定で打ち消さない
+    [hidden] {
+        display: none !important;
+    }
+}
+
 .gacha-noscript {
     color: #b02a37;
     font-weight: bold;
+}
+
+.gacha-field + .gacha-field,
+.gacha-form > .gacha-field + .gacha-fieldset {
+    margin-top: 1rem;
+}
+
+.gacha-fieldset {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e3e6e6;
+}
+
+.gacha-legend {
+    font-size: 1.05rem;
+    font-weight: bold;
+    color: color-mix(in srgb, #{$main-color} 80%, #000);
+    margin-bottom: 0.5rem;
+}
+
+.gacha-error {
+    color: #b02a37;
+    font-size: 0.9rem;
+    margin: 0.25rem 0 0;
+}
+
+.gacha-message {
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+.gacha-table {
+    caption-side: top;
+    margin-bottom: 0.75rem;
+
+    caption {
+        color: #333;
+        font-weight: bold;
+        padding-top: 0;
+    }
+
+    th,
+    td {
+        padding: 0.5rem 0.4rem;
+        vertical-align: middle;
+    }
+
+    td,
+    thead th {
+        text-align: right;
+        // 桁の多い金額でも、スマホ幅で横にはみ出さず折り返す
+        overflow-wrap: anywhere;
+    }
+
+    tbody th {
+        white-space: nowrap;
+    }
+}
+
+.gacha-notes p {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+@media (max-width: 575.98px) {
+    .gacha-container .devtool-card {
+        padding: 1rem 0.75rem;
+    }
+
+    .gacha-table {
+        font-size: 0.875rem;
+    }
 }

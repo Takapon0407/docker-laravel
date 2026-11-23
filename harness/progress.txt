@@ -27,3 +27,9 @@
 - 再発を防ぐ：これからの E2E はスクラッチパッドで下書きして通るのを確かめてから e2e/ に置く
 - 検証：check.sh すべて ok。feature-verifier は OK（6 steps とも）
 - 次の候補：gacha-04（入力欄・出し入れ・入力の確かめ）
+
+## 2026-11-23 gacha-04（完了）
+- やったこと：入力欄 13 こ（_gacha-field.blade.php で共通化。fieldset 3 つ）、lib/gacha-input.ts（全角・空白・小数第 3 位・範囲・エラーの文・S と d の片方・N がないときは c₀・S・d を確かめない）、ページの TS（出し入れ・aria-invalid・aria-describedby・結果の場所の文）。steps の「結果の表が出る」に要るため、Worker（lib/gacha-worker.ts）・結果の表・表示用の lib/gacha-format.ts・注意書きもこの変更に入れた（値の確かめは gacha-05 以降）
+- テスト：lib/gacha-input.test.ts、e2e/gacha-inputs.spec.ts（スクラッチパッドで下書きして通してから置いた）
+- 検証：check.sh すべて ok。feature-verifier は OK（7 steps とも）
+- 次の候補：gacha-05（Worker・表の値・too-many・保存しない・注意書き）
