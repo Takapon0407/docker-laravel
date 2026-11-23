@@ -7,7 +7,7 @@
 @section('content')
 
 {{-- 計算はブラウザ内だけで行う（入力はサーバーに送らず、どこにも保存しない） --}}
-<div class="container devtool-container gacha-container">
+<main class="container devtool-container gacha-container">
     <h1 class="devtool-title font-heading">ガチャ天井計算機</h1>
     <p class="devtool-lead">確率・すり抜け・天井を入れると、狙いの 1 体が手に入るまでの回数と金額、予算で手に入る確率を計算します。</p>
 
@@ -98,5 +98,5 @@
         <p>狙い 1 体が手に入るまでを計算します。2 体以上ほしいときの平均は、おおよそ体数倍です。ただし 90% などの回数は体数倍にはなりません。交換型の天井（当たっても交換のポイントが減らないもの）では、2 体目以降はこの計算より少なく済むことがあります。</p>
         <p class="mb-0">確率や天井は、ゲームのお知らせ（提供割合）で確かめてください。結果は目安です。</p>
     </section>
-</div>
+</main>
 @endsection

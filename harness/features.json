@@ -93,7 +93,7 @@
                 "ページを開いて、例 A・例 E・「最高レアの確率」に abc・例 K・予算 16000 の入力を順に行うあいだ、pageerror と console.error（CSP の違反を含む）が 0 件"
             ],
             "priority": "must",
-            "passes": false
+            "passes": true
         },
         {
             "id": "gacha-08",

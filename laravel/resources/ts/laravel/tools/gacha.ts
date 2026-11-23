@@ -126,9 +126,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         resultRows(result, money).forEach((row, index) => {
             const cells = rows[index]!.querySelectorAll("td");
-            cells[0]!.textContent = row.draws;
-            cells[1]!.textContent = row.stones;
-            cells[2]!.textContent = row.money;
+            fillCell(cells[0]!, row.draws);
+            fillCell(cells[1]!, row.stones);
+            fillCell(cells[2]!, row.money);
         });
         const sentence = budgetText(result, money);
         budget.hidden = sentence === null;
@@ -136,6 +136,19 @@ document.addEventListener("DOMContentLoaded", () => {
         drawChart(result);
         message.hidden = true;
         resultArea.hidden = false;
+    }
+
+    /** 「600,000,000,000 円」の数字の部分は折り返さず、狭いときは数字と単位のあいだで折り返す */
+    function fillCell(cell: HTMLElement, text: string): void {
+        const parts = /^(.+) (\S+)$/.exec(text);
+        if (parts === null) {
+            cell.textContent = text;
+            return;
+        }
+        const number = document.createElement("span");
+        number.className = "gacha-number";
+        number.textContent = parts[1]!;
+        cell.replaceChildren(number, ` ${parts[2]!}`);
     }
 
     function svg<K extends keyof SVGElementTagNameMap>(name: K, attributes: Record<string, string | number>, text?: string): SVGElementTagNameMap[K] {

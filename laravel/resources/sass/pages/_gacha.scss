@@ -59,8 +59,11 @@
     td,
     thead th {
         text-align: right;
-        // 桁の多い金額でも、スマホ幅で横にはみ出さず折り返す
-        overflow-wrap: anywhere;
+    }
+
+    // 数字の途中では折り返さない（桁の多い金額は、数字と単位のあいだで折り返す）
+    .gacha-number {
+        white-space: nowrap;
     }
 
     tbody th {
@@ -79,7 +82,12 @@
     }
 
     .gacha-table {
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
+
+        th,
+        td {
+            padding: 0.4rem 0.2rem;
+        }
     }
 }
 
@@ -90,8 +98,10 @@
 .gacha-chart {
     display: block;
     width: 100%;
+    // PC 幅で伸びすぎて軸の文字が大きくならないよう、幅に上限を付ける
+    max-width: 560px;
     height: auto;
-    margin-top: 0.5rem;
+    margin: 0.5rem auto 0;
 }
 
 .gacha-chart-grid {
