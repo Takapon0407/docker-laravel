@@ -33,3 +33,8 @@
 - テスト：lib/gacha-input.test.ts、e2e/gacha-inputs.spec.ts（スクラッチパッドで下書きして通してから置いた）
 - 検証：check.sh すべて ok。feature-verifier は OK（7 steps とも）
 - 次の候補：gacha-05（Worker・表の値・too-many・保存しない・注意書き）
+
+## 2026-11-23 gacha-05（完了）
+- やったこと：実装は gacha-04 で入っていたため、表示用の関数の単体テスト（lib/gacha-format.test.ts）と E2E（e2e/gacha-results.spec.ts：最初の値・例 A・持っている石・例 E/G・K/L/L2 と固まらないこと・保存しない・注意書き）を足した
+- 検証：check.sh すべて ok。feature-verifier は OK（7 steps とも）。Worker を作れない・落ちたときの文は E2E では試していない（コードで確認）
+- 次の候補：gacha-06（予算の文とグラフ）
