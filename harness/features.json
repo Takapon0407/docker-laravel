@@ -25,7 +25,7 @@
                 "予算：A で予算 100（石 160・値段 1）→ n=0"
             ],
             "priority": "must",
-            "passes": false
+            "passes": true
         },
         {
             "id": "gacha-03",

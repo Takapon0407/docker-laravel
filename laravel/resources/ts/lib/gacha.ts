@@ -196,3 +196,73 @@ export function computeGacha(input: GachaInput): GachaResult {
         cdf,
     };
 }
+
+type GachaOk = Extract<GachaResult, { kind: "ok" }>;
+
+/** t 回までに手に入る確率（cdf の外は最後の値。最大があり t ≥ 最大なら 1） */
+export function chanceAt(result: GachaOk, t: number): number {
+    if (result.max !== null && t >= result.max) {
+        return 1;
+    }
+    if (t >= result.cdf.length) {
+        return result.cdf.at(-1)!;
+    }
+    return result.cdf[t]!;
+}
+
+const PERCENT_FORMAT = new Intl.NumberFormat("ja-JP", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+/** t 回までに手に入る確率を「63.3%」の形にする（小数第 1 位で切り捨て。100% は最大に届くときだけ、ほかは 99.9% まで） */
+export function formatChance(result: GachaOk, t: number): string {
+    if (result.max !== null && t >= result.max) {
+        return "100%";
+    }
+    // 1000 倍して切り捨て（掛け算の誤差で 1 つ下にならないよう、ごく小さい値を足す）
+    const permille = Math.min(999, Math.floor(chanceAt(result, t) * 1000 + 1e-9));
+    return `${PERCENT_FORMAT.format(permille / 10)}%`;
+}
+
+export interface ChartPoint {
+    x: number;
+    y: number;
+}
+
+/** グラフの右端の回数（最大があればそれ、なければ 99% の回数） */
+export function chartEnd(result: GachaOk): number {
+    return result.max ?? result.p99;
+}
+
+/** グラフの点：0〜右端を ⌈右端 ÷ 200⌉ 回ごとに取り、(0, 0) と右端を必ず入れる（201 個以下） */
+export function chartPoints(result: GachaOk): ChartPoint[] {
+    const end = chartEnd(result);
+    const step = Math.max(1, Math.ceil(end / 200));
+    const points: ChartPoint[] = [];
+    for (let x = 0; x < end; x += step) {
+        points.push({ x, y: x === 0 ? 0 : chanceAt(result, x) });
+    }
+    points.push({ x: end, y: end === 0 ? 0 : chanceAt(result, end) });
+    return points;
+}
+
+export interface BudgetInput {
+    /** 予算（円・整数） */
+    budget: number;
+    /** 石 1 個の値段（円の 1000 倍） */
+    price: number;
+    /** 1 回に使う石の数（個の 1000 倍） */
+    stonesPerDraw: number;
+    /** 持っている石（個・整数） */
+    ownedStones: number;
+}
+
+/** 予算で引ける回数：⌊(⌊予算 ÷ 値段⌋ + 持っている石) ÷ 1 回の石の数⌋（1000 倍の整数で計算する） */
+export function budgetDraws(input: BudgetInput): number {
+    const bought = Math.floor((input.budget * 1000) / input.price);
+    return Math.floor(((bought + input.ownedStones) * 1000) / input.stonesPerDraw);
+}
+
+/** 予算で引ける回数と、そこまでに手に入る確率（「63.3%」の形） */
+export function budgetChance(result: GachaOk, input: BudgetInput): { draws: number; chance: string } {
+    const draws = budgetDraws(input);
+    return { draws, chance: formatChance(result, draws) };
+}

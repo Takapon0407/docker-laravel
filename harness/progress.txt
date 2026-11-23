@@ -13,3 +13,9 @@
 - 検証：check.sh すべて ok（ts-test 148 件）。feature-verifier は OK（6 steps とも。仕様の計算・最大・打ち切り・too-many・戻り値の形も確認）
 - 気になる点：L の計算は 300〜500ms で、1 秒の上限まで余裕が 2 倍ほど。CI で遅くなるようなら内側のループを詰める
 - 次の候補：gacha-02（グラフの点・予算の関数。テストは resources/ts/lib/gacha-chart.test.ts に新しく書く）
+
+## 2026-11-23 gacha-02（完了）
+- やったこと：gacha.ts に chanceAt（cdf の外の回数）・formatChance（小数第 1 位で切り捨て、100% は最大に届くときだけ・ほかは 99.9% まで）・chartEnd・chartPoints（⌈x_end÷200⌉ ごと＋x_end、201 個以下）・budgetDraws（1000 倍の整数）・budgetChance を足した。テストはユーザーの判断で新しいファイル gacha-chart.test.ts
+- 検証：check.sh すべて ok（ts-test 155 件）。feature-verifier は OK（5 steps とも。J の 19900 円は 199 回・93.1%）
+- 詰まったこと：なし。メモ：formatChance は掛け算の誤差対策で切り捨て前に 1e-9 を足している
+- 次の候補：gacha-03（ルート・ページの枠・meta・config/tools.php・privacy・e2e/pages.ts・CLAUDE.md・noscript）
