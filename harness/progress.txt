@@ -1,1 +1,57 @@
 # 実装ループの作業記録（新しいものを下に足す。1 回の作業ごとに：日時・項目の id・やったこと・検証の結果・次にやること・詰まったこと）
+
+## 2026-11-22 gacha-01（escalate で中断・passes は false のまま）
+- やったこと：resources/ts/lib/gacha.ts（状態 c×s の確率の表を 1 回ずつ進める。最大は入力の形から・too-many の判定・cdf/平均/50・90・99%）と gacha.test.ts を書いた
+- 検証：仕様由来の確認（A〜J の平均・分位・最大、B・C の式、A の cdf、K・L・L2・O、K/L/L2 が 1 秒未満：L 約 290ms）はすべて通る
+- 詰まったこと：gacha.test.ts に、仕様の外で自分が足した確認「最大があれば cdf の長さ = 最大 + 1・最後が 1」が誤り（仕様は残りが 10⁻¹² 未満なら止める。E は 179 回で止まり、長さ 180 ≠ 181）。hook は作ったばかりのテストも「既存」として書き換えを止めるため、直せない
+- 直し方の案：その test を「cdf は減らず、最後は 1 − 10⁻¹² 以上、長さは最大 + 1 以下、最大 + 1 に着いたときだけ cdf[最大] = 1」に変える（または test ごと消す）
+- 次の候補への注意：gacha-02 の steps は「gacha.test.ts に足し」だが、hook により追記できない。gacha-chart.test.ts など新しいファイルにするか、柵の扱いを決めてほしい
+
+## 2026-11-23 gacha-01（完了）
+- ユーザーの判断：誤った確認は緩める案で直す・gacha-02 のテストは新しいファイルでよい。ユーザーが loop.sh stop → テストを直す → start
+- テストの直し：「cdf は減らない・最後は 1 − 10⁻¹² 以上・長さは最大 + 1 以下・最大まで進んだときだけ cdf[最大] = 1」
+- 検証：check.sh すべて ok（ts-test 148 件）。feature-verifier は OK（6 steps とも。仕様の計算・最大・打ち切り・too-many・戻り値の形も確認）
+- 気になる点：L の計算は 300〜500ms で、1 秒の上限まで余裕が 2 倍ほど。CI で遅くなるようなら内側のループを詰める
+- 次の候補：gacha-02（グラフの点・予算の関数。テストは resources/ts/lib/gacha-chart.test.ts に新しく書く）
+
+## 2026-11-23 gacha-02（完了）
+- やったこと：gacha.ts に chanceAt（cdf の外の回数）・formatChance（小数第 1 位で切り捨て、100% は最大に届くときだけ・ほかは 99.9% まで）・chartEnd・chartPoints（⌈x_end÷200⌉ ごと＋x_end、201 個以下）・budgetDraws（1000 倍の整数）・budgetChance を足した。テストはユーザーの判断で新しいファイル gacha-chart.test.ts
+- 検証：check.sh すべて ok（ts-test 155 件）。feature-verifier は OK（5 steps とも。J の 19900 円は 199 回・93.1%）
+- 詰まったこと：なし。メモ：formatChance は掛け算の誤差対策で切り捨て前に 1e-9 を足している
+- 次の候補：gacha-03（ルート・ページの枠・meta・config/tools.php・privacy・e2e/pages.ts・CLAUDE.md・noscript）
+
+## 2026-11-23 gacha-03（完了）
+- ユーザーの指示：gacha-03〜08 は項目ごとに止まらず続けて回し、最後にまとめて確認する
+- やったこと：/tools/gacha のルートとページの枠（title・description・h1・noscript）、config/tools.php（QR の次）、privacy の一覧と改定日（2026-11-23）、e2e/pages.ts、CLAUDE.md、空のページの TS と _gacha.scss。テストは tests/Feature/GachaPageTest.php・e2e/gacha-page.spec.ts
+- 詰まったこと：Playwright の getByText は <noscript> の中の文を探さず、自分で書いた E2E が落ちた。ユーザーの了承を得て loop.sh stop → locator("noscript p", { hasText }) に直す → start
+- 再発を防ぐ：これからの E2E はスクラッチパッドで下書きして通るのを確かめてから e2e/ に置く
+- 検証：check.sh すべて ok。feature-verifier は OK（6 steps とも）
+- 次の候補：gacha-04（入力欄・出し入れ・入力の確かめ）
+
+## 2026-11-23 gacha-04（完了）
+- やったこと：入力欄 13 こ（_gacha-field.blade.php で共通化。fieldset 3 つ）、lib/gacha-input.ts（全角・空白・小数第 3 位・範囲・エラーの文・S と d の片方・N がないときは c₀・S・d を確かめない）、ページの TS（出し入れ・aria-invalid・aria-describedby・結果の場所の文）。steps の「結果の表が出る」に要るため、Worker（lib/gacha-worker.ts）・結果の表・表示用の lib/gacha-format.ts・注意書きもこの変更に入れた（値の確かめは gacha-05 以降）
+- テスト：lib/gacha-input.test.ts、e2e/gacha-inputs.spec.ts（スクラッチパッドで下書きして通してから置いた）
+- 検証：check.sh すべて ok。feature-verifier は OK（7 steps とも）
+- 次の候補：gacha-05（Worker・表の値・too-many・保存しない・注意書き）
+
+## 2026-11-23 gacha-05（完了）
+- やったこと：実装は gacha-04 で入っていたため、表示用の関数の単体テスト（lib/gacha-format.test.ts）と E2E（e2e/gacha-results.spec.ts：最初の値・例 A・持っている石・例 E/G・K/L/L2 と固まらないこと・保存しない・注意書き）を足した
+- 検証：check.sh すべて ok。feature-verifier は OK（7 steps とも）。Worker を作れない・落ちたときの文は E2E では試していない（コードで確認）
+- 次の候補：gacha-06（予算の文とグラフ）
+
+## 2026-11-23 gacha-06（完了）
+- やったこと：予算の文（#gacha-budget-text）と、回数ごとの確率のグラフ（SVG を createElementNS で描く。色は _gacha.scss のクラス。目盛り 0%・50%・100%、横軸 0 回・右端の回数）
+- 詰まったこと：予算の文の <p> に予算の欄と同じ id（gacha-budget）を付けてしまい、getByLabel が文のほうを指した。下書きの E2E で見つけ、id を gacha-budget-text にした
+- 検証：check.sh すべて ok。feature-verifier は OK（5 steps とも）。見た目の指摘：PC 幅でグラフが 808px まで伸びて軸の文字が大きい・スマホ幅では文字が小さめ（gacha-07 で幅に上限を付ける）
+- 次の候補：gacha-07（レイアウトとエラー）。サイトのレイアウトに <main> がないため、このページだけ外枠を <main> にする
+
+## 2026-11-23 gacha-07（完了）
+- やったこと：外枠を <main> に（サイトのレイアウトには main がない。ほかのページは変えていない）、グラフの幅の上限 560px。E2E は e2e/gacha-layout.spec.ts（main の中に入力欄がないと落ちるようにして、空振りで通らないようにした）
+- 検証：check.sh すべて ok。feature-verifier は OK（3 steps とも）。見た目の指摘：スマホ幅・桁の多い入力（L2＋石 1 万・値段 1 万）で、金額が数字の途中で折り返していた → 数字を span（nowrap）にして、数字と単位のあいだでだけ折り返すように直し、スクリーンショットで確認。直したあとも check.sh すべて ok
+- 最終レビューで見てほしいこと：スマホ幅で桁がとても多いとき、単位（回・個・円）が次の行に回る
+- 次の候補：gacha-08（nice：平均の一文を role=status で）
+
+## 2026-11-23 gacha-08（完了）
+- やったこと：結果の表のすぐ上に #gacha-summary（role="status"）で「平均 〜 回（〜 円）で手に入ります。」。E2E は e2e/gacha-summary.spec.ts
+- 検証：check.sh すべて ok。feature-verifier は OK（3 steps とも）
+- 状態：must 7/7・nice 1/1。次はユーザーの loop.sh stop と最終レビュー（spec.md「最終レビューで見ること」）

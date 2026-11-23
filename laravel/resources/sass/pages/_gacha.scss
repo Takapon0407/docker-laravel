@@ -1,0 +1,138 @@
+// ガチャ天井計算機（共通の見た目は _devtools.scss の .devtool-*）
+.gacha-container {
+    // 出し入れする欄（hidden）を、display の指定で打ち消さない
+    [hidden] {
+        display: none !important;
+    }
+}
+
+.gacha-noscript {
+    color: #b02a37;
+    font-weight: bold;
+}
+
+.gacha-field + .gacha-field,
+.gacha-form > .gacha-field + .gacha-fieldset {
+    margin-top: 1rem;
+}
+
+.gacha-fieldset {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e3e6e6;
+}
+
+.gacha-legend {
+    font-size: 1.05rem;
+    font-weight: bold;
+    color: color-mix(in srgb, #{$main-color} 80%, #000);
+    margin-bottom: 0.5rem;
+}
+
+.gacha-error {
+    color: #b02a37;
+    font-size: 0.9rem;
+    margin: 0.25rem 0 0;
+}
+
+.gacha-message {
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+.gacha-table {
+    caption-side: top;
+    margin-bottom: 0.75rem;
+
+    caption {
+        color: #333;
+        font-weight: bold;
+        padding-top: 0;
+    }
+
+    th,
+    td {
+        padding: 0.5rem 0.4rem;
+        vertical-align: middle;
+    }
+
+    td,
+    thead th {
+        text-align: right;
+    }
+
+    // 数字の途中では折り返さない（桁の多い金額は、数字と単位のあいだで折り返す）
+    .gacha-number {
+        white-space: nowrap;
+    }
+
+    tbody th {
+        white-space: nowrap;
+    }
+}
+
+.gacha-notes p {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+@media (max-width: 575.98px) {
+    .gacha-container .devtool-card {
+        padding: 1rem 0.75rem;
+    }
+
+    .gacha-table {
+        font-size: 0.8125rem;
+
+        th,
+        td {
+            padding: 0.4rem 0.2rem;
+        }
+    }
+}
+
+.gacha-summary {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 0.75rem;
+}
+
+.gacha-budget {
+    font-weight: bold;
+}
+
+.gacha-chart {
+    display: block;
+    width: 100%;
+    // PC 幅で伸びすぎて軸の文字が大きくならないよう、幅に上限を付ける
+    max-width: 560px;
+    height: auto;
+    margin: 0.5rem auto 0;
+}
+
+.gacha-chart-grid {
+    stroke: #e3e6e6;
+    stroke-width: 1;
+}
+
+.gacha-chart-axis {
+    stroke: #888;
+    stroke-width: 1;
+}
+
+.gacha-chart-area {
+    fill: rgba($main-color, 0.15);
+    stroke: none;
+}
+
+.gacha-chart-line {
+    fill: none;
+    stroke: $main-color;
+    stroke-width: 2;
+    stroke-linejoin: round;
+}
+
+.gacha-chart-label {
+    fill: #555;
+    font-size: 12px;
+}
