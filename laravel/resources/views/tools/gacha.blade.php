@@ -87,7 +87,10 @@
                     </tbody>
                 </table>
             </div>
-            <p class="devtool-help mb-0">50%・90%・99% は「この回数までに、その確率で手に入る」回数です（運が悪いときの目安）。最大は、天井や確定の仕組みで必ず手に入る回数です。</p>
+            <p class="devtool-help">50%・90%・99% は「この回数までに、その確率で手に入る」回数です（運が悪いときの目安）。最大は、天井や確定の仕組みで必ず手に入る回数です。</p>
+            <p class="gacha-budget" id="gacha-budget-text" hidden></p>
+            {{-- 回数ごとの、狙いが手に入る確率（中身は TS で描く。style 属性は使わずクラスで色を付ける） --}}
+            <svg class="gacha-chart" id="gacha-chart" role="img" viewBox="0 0 400 220" aria-label="回数ごとの、狙いが手に入る確率のグラフ"></svg>
         </div>
     </section>
 

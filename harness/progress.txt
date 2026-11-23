@@ -38,3 +38,9 @@
 - やったこと：実装は gacha-04 で入っていたため、表示用の関数の単体テスト（lib/gacha-format.test.ts）と E2E（e2e/gacha-results.spec.ts：最初の値・例 A・持っている石・例 E/G・K/L/L2 と固まらないこと・保存しない・注意書き）を足した
 - 検証：check.sh すべて ok。feature-verifier は OK（7 steps とも）。Worker を作れない・落ちたときの文は E2E では試していない（コードで確認）
 - 次の候補：gacha-06（予算の文とグラフ）
+
+## 2026-11-23 gacha-06（完了）
+- やったこと：予算の文（#gacha-budget-text）と、回数ごとの確率のグラフ（SVG を createElementNS で描く。色は _gacha.scss のクラス。目盛り 0%・50%・100%、横軸 0 回・右端の回数）
+- 詰まったこと：予算の文の <p> に予算の欄と同じ id（gacha-budget）を付けてしまい、getByLabel が文のほうを指した。下書きの E2E で見つけ、id を gacha-budget-text にした
+- 検証：check.sh すべて ok。feature-verifier は OK（5 steps とも）。見た目の指摘：PC 幅でグラフが 808px まで伸びて軸の文字が大きい・スマホ幅では文字が小さめ（gacha-07 で幅に上限を付ける）
+- 次の候補：gacha-07（レイアウトとエラー）。サイトのレイアウトに <main> がないため、このページだけ外枠を <main> にする

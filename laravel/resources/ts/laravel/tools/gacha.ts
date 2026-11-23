@@ -1,10 +1,13 @@
 // ガチャ天井計算機のページ：入力の読み取り・出し入れ・Worker とのやり取り・結果の表の描画
-import type { GachaResult } from "@/lib/gacha";
+import { chartEnd, chartPoints, type GachaResult } from "@/lib/gacha";
 import { readForm, type FieldId, type FormState, type MoneyInput, type RawInput } from "@/lib/gacha-input";
-import { resultRows } from "@/lib/gacha-format";
+import { budgetText, chartLabel, formatInteger, resultRows } from "@/lib/gacha-format";
 import type { GachaRequest, GachaResponse } from "@/lib/gacha-worker";
 
 const DEBOUNCE_MS = 150;
+const SVG_NS = "http://www.w3.org/2000/svg";
+// グラフの大きさ（viewBox の中の座標）と、軸の文字のための余白
+const CHART = { width: 400, height: 220, left: 40, right: 14, top: 12, bottom: 28 } as const;
 const MESSAGES = {
     invalid: "赤い欄を直すと、結果が出ます",
     missing: "確率・石の数・値段を入れると、結果が出ます",
@@ -23,6 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const message = document.getElementById("gacha-message") as HTMLElement;
     const resultArea = document.getElementById("gacha-result") as HTMLElement;
     const rows = [...(document.getElementById("gacha-rows") as HTMLElement).querySelectorAll("tr")];
+    const budget = document.getElementById("gacha-budget-text") as HTMLElement;
+    const chart = document.getElementById("gacha-chart") as unknown as SVGSVGElement;
 
     let worker: Worker | null = null;
     let busy = false;
@@ -125,8 +130,52 @@ document.addEventListener("DOMContentLoaded", () => {
             cells[1]!.textContent = row.stones;
             cells[2]!.textContent = row.money;
         });
+        const sentence = budgetText(result, money);
+        budget.hidden = sentence === null;
+        budget.textContent = sentence ?? "";
+        drawChart(result);
         message.hidden = true;
         resultArea.hidden = false;
+    }
+
+    function svg<K extends keyof SVGElementTagNameMap>(name: K, attributes: Record<string, string | number>, text?: string): SVGElementTagNameMap[K] {
+        const element = document.createElementNS(SVG_NS, name);
+        for (const [key, value] of Object.entries(attributes)) {
+            element.setAttribute(key, String(value));
+        }
+        if (text !== undefined) {
+            element.textContent = text;
+        }
+        return element;
+    }
+
+    /** 回数ごとの、狙いが手に入る確率の折れ線（横は 0〜右端の回数、縦は 0〜100%） */
+    function drawChart(result: Extract<GachaResult, { kind: "ok" }>): void {
+        const end = chartEnd(result);
+        const plotWidth = CHART.width - CHART.left - CHART.right;
+        const plotHeight = CHART.height - CHART.top - CHART.bottom;
+        const x = (draws: number): number => CHART.left + (end === 0 ? 0 : (draws / end) * plotWidth);
+        const y = (chance: number): number => CHART.top + (1 - chance) * plotHeight;
+        const round = (value: number): string => String(Math.round(value * 100) / 100);
+
+        const points = chartPoints(result).map((point) => `${round(x(point.x))},${round(y(point.y))}`);
+        const bottom = round(y(0));
+        const children: SVGElement[] = [];
+        for (const [chance, label] of [
+            [0, "0%"],
+            [0.5, "50%"],
+            [1, "100%"],
+        ] as const) {
+            children.push(svg("line", { class: chance === 0 ? "gacha-chart-axis" : "gacha-chart-grid", x1: CHART.left, x2: CHART.width - CHART.right, y1: y(chance), y2: y(chance) }));
+            children.push(svg("text", { class: "gacha-chart-label", x: CHART.left - 6, y: y(chance), "text-anchor": "end", "dominant-baseline": "middle" }, label));
+        }
+        children.push(svg("line", { class: "gacha-chart-axis", x1: CHART.left, x2: CHART.left, y1: CHART.top, y2: y(0) }));
+        children.push(svg("path", { class: "gacha-chart-area", d: `M ${round(x(0))},${bottom} L ${points.join(" L ")} L ${round(x(end))},${bottom} Z` }));
+        children.push(svg("polyline", { class: "gacha-chart-line", points: points.join(" ") }));
+        children.push(svg("text", { class: "gacha-chart-label", x: CHART.left, y: CHART.height - 8, "text-anchor": "start" }, "0 回"));
+        children.push(svg("text", { class: "gacha-chart-label", x: CHART.width - CHART.right, y: CHART.height - 8, "text-anchor": "end" }, `${formatInteger(end)} 回`));
+        chart.replaceChildren(...children);
+        chart.setAttribute("aria-label", chartLabel(result));
     }
 
     function update(immediate: boolean): void {

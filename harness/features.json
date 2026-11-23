@@ -82,7 +82,7 @@
                 "svg とその中の要素に style 属性がなく、CSP の違反が console に出ない"
             ],
             "priority": "must",
-            "passes": false
+            "passes": true
         },
         {
             "id": "gacha-07",

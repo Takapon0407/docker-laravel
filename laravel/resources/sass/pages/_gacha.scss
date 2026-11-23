@@ -82,3 +82,41 @@
         font-size: 0.875rem;
     }
 }
+
+.gacha-budget {
+    font-weight: bold;
+}
+
+.gacha-chart {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: 0.5rem;
+}
+
+.gacha-chart-grid {
+    stroke: #e3e6e6;
+    stroke-width: 1;
+}
+
+.gacha-chart-axis {
+    stroke: #888;
+    stroke-width: 1;
+}
+
+.gacha-chart-area {
+    fill: rgba($main-color, 0.15);
+    stroke: none;
+}
+
+.gacha-chart-line {
+    fill: none;
+    stroke: $main-color;
+    stroke-width: 2;
+    stroke-linejoin: round;
+}
+
+.gacha-chart-label {
+    fill: #555;
+    font-size: 12px;
+}
