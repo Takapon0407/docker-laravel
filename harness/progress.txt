@@ -19,3 +19,11 @@
 - 検証：check.sh すべて ok（ts-test 155 件）。feature-verifier は OK（5 steps とも。J の 19900 円は 199 回・93.1%）
 - 詰まったこと：なし。メモ：formatChance は掛け算の誤差対策で切り捨て前に 1e-9 を足している
 - 次の候補：gacha-03（ルート・ページの枠・meta・config/tools.php・privacy・e2e/pages.ts・CLAUDE.md・noscript）
+
+## 2026-11-23 gacha-03（完了）
+- ユーザーの指示：gacha-03〜08 は項目ごとに止まらず続けて回し、最後にまとめて確認する
+- やったこと：/tools/gacha のルートとページの枠（title・description・h1・noscript）、config/tools.php（QR の次）、privacy の一覧と改定日（2026-11-23）、e2e/pages.ts、CLAUDE.md、空のページの TS と _gacha.scss。テストは tests/Feature/GachaPageTest.php・e2e/gacha-page.spec.ts
+- 詰まったこと：Playwright の getByText は <noscript> の中の文を探さず、自分で書いた E2E が落ちた。ユーザーの了承を得て loop.sh stop → locator("noscript p", { hasText }) に直す → start
+- 再発を防ぐ：これからの E2E はスクラッチパッドで下書きして通るのを確かめてから e2e/ に置く
+- 検証：check.sh すべて ok。feature-verifier は OK（6 steps とも）
+- 次の候補：gacha-04（入力欄・出し入れ・入力の確かめ）

@@ -5,7 +5,7 @@
 ## 概要
 
 - ポートフォリオサイト（https://tektektech-portfolio.com/）。Laravel 13 / PHP 8.5、フロントは Blade ＋ TypeScript ＋ Sass（Vite でビルド）
-- **閲覧専用のサイト**：DB・ログイン・フォームはない。ページは `/`（プロフィール）・`/works`（作品の一覧）・`/works/rain-and-realms`（AI で作る作業用 BGM のアルバム。全曲を再生できる）・`/hobbies`・`/games/{tetris,puyo}`・`/tools`（便利ツールの一覧）・`/tools/warikan`・`/tools/board`（匿名質問ボード）・`/tools/lifespan`（寿命の計算）・`/tools/countdown`（今年の残り・祝日・マイ記念日まで）・`/tools/pixel-art`（画像をドット絵にする）・`/tools/chord-player`（雨音コードプレイヤー：コード進行を組み立てて、エレピで鳴らす）・`/tools/char-count`（文字数カウント）・`/tools/qr`（QR コード作成）・`/tools/{json,datetime,regex,diff}`（開発向け）・`/privacy`（プライバシーポリシー・免責事項。全ページのフッターからリンク）だけ
+- **閲覧専用のサイト**：DB・ログイン・フォームはない。ページは `/`（プロフィール）・`/works`（作品の一覧）・`/works/rain-and-realms`（AI で作る作業用 BGM のアルバム。全曲を再生できる）・`/hobbies`・`/games/{tetris,puyo}`・`/tools`（便利ツールの一覧）・`/tools/warikan`・`/tools/board`（匿名質問ボード）・`/tools/lifespan`（寿命の計算）・`/tools/countdown`（今年の残り・祝日・マイ記念日まで）・`/tools/pixel-art`（画像をドット絵にする）・`/tools/chord-player`（雨音コードプレイヤー：コード進行を組み立てて、エレピで鳴らす）・`/tools/char-count`（文字数カウント）・`/tools/qr`（QR コード作成）・`/tools/gacha`（ガチャ天井計算機：狙いが手に入るまでの回数と金額）・`/tools/{json,datetime,regex,diff}`（開発向け）・`/privacy`（プライバシーポリシー・免責事項。全ページのフッターからリンク）だけ
 - 匿名質問ボードだけはサーバー側の処理があるが、Laravel とは別の **`infra/board`（CDK：API Gateway の WebSocket ＋ Lambda ＋ DynamoDB）**。Laravel はページを返すだけで、ブラウザが WebSocket で直接やり取りする。詳細は `infra/board/README.md`
 - `/hobbies` の写真は S3 から取得する。S3 への PUT 時に Lambda が幅・高さをメタデータとして付け、`HobbiesController` が `headObject` で読んで縦横を判定する
 
@@ -78,6 +78,7 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 - 雨音コードプレイヤーは、コードの読み取り・ボイシング・8 分ごとに鳴らすもの（`planStep`）・定番の進行（`PRESET_GROUPS`）を `lib/chord-player.ts`、次のコードの候補を `lib/chord-suggest.ts`（よく行く先の表 `TRANSITIONS` と、考えられるキーを絞っていく仕組み）、音の合成（Web Audio API。音のファイルは使わない）を `lib/chord-audio.ts` で行う。鳴らすのは 25ms ごとのタイマーで少し先まで予約する方式（タブが裏にあるときは長めに予約）。入力と設定は localStorage（`chord-player:v1`。組み立て中の状態は残さない）
 - 文字数カウントは `lib/char-count.ts`。文字は見た目の 1 文字（`Intl.Segmenter` の書記素）で数える。X の数え方は twitter-text の v3 の設定（範囲の文字は 1・ほかは 2・URL は 23・上限 280）で、X が変えたら直す。原稿用紙は改行ごとに 20 マスで折り返す目安
 - QR コードは `lib/qr.ts`（`uqr`。匿名質問ボードの共有用 URL と共通）。保存は PNG（1 マスを整数のピクセルで `<canvas>` に描く）と SVG。Wi-Fi は `WIFI:T:;S:;P:;H:;;` の書き方（ZXing の決まり。`\ ; , " :` は `\` でエスケープ）
+- ガチャ天井計算機は `lib/gacha.ts`。モンテカルロではなく、状態（前の最高レアから引いた回数 c ×いま続いているすり抜け s。最大 N ×（k+1））の確率の表を 1 回ずつ進めて分布を正確に出す。確率は「% の 1000 倍の整数」で持ち、100% に届くかは整数で決める。最大の回数は分布ではなく入力の形から出す。残りが 10⁻¹² 未満か最大に着いたら止め、100 万回か「回数 × 状態の数」が 5,000 万を超えたら `too-many`。計算は Web Worker（`lib/gacha-worker.ts`）で行い、入力が変わったら止めて計算し直す。入力は保存しない
 - テキスト差分は `lib/text-diff.ts`。行の差分を Myers のアルゴリズムで出し、対になった行は文字単位でもう一度比べる。違い（D）が `MAX_EDIT_DISTANCE` を超えたら探すのをやめ、まとめて入れ替えにする（メモリが D の 2 乗で増えるため）
 - 開発向けのツールと、文字数カウント・QR コード作成は見た目を `pages/_devtools.scss`（`.devtool-*`）で共通にし、ツールごとの部分は `pages/_text-tools.scss`。正規表現は時間のかかるパターンで固まらないよう Web Worker（`lib/regex-worker.ts`）で動かし、1 秒で止める。コピーのボタンは `util/copy.ts` の `data-copy-target`、結果が変わったことを知らせる光らせ方は `util/flash.ts`
 - `/tools/*` の便利ツールは計算をブラウザ内だけで行う（サーバーに入力を送らない。匿名質問ボードの投稿だけは例外で、`infra/board` の WebSocket に送る）。DOM に依存しないロジックは `resources/ts/lib/` に置いてテストし、ページの TS（`resources/ts/laravel/tools/`）から使う（`resources/ts/laravel/` 以下は全部 Vite のエントリーになるため）

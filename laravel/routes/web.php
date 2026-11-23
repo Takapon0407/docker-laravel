@@ -38,6 +38,7 @@ Route::prefix('tools')->name('tools.')->group(function () {
     Route::view('/chord-player', 'tools.chord-player')->name('chord-player');
     Route::view('/char-count', 'tools.char-count')->name('char-count');
     Route::view('/qr', 'tools.qr')->name('qr');
+    Route::view('/gacha', 'tools.gacha')->name('gacha');
     Route::view('/diff', 'tools.diff')->name('diff');
     Route::get('/board', [BoardController::class, 'create'])->name('board');
     Route::get('/board/room', [BoardController::class, 'room'])->name('board.room');

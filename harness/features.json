@@ -39,7 +39,7 @@
                 "laravel/e2e/pages.ts に withFooter(\"/tools/gacha\") があり、回帰テスト（全ページ・PC 幅とスマホ幅）が通る。CLAUDE.md のページの一覧と /tools の説明に lib/gacha.ts の項目がある"
             ],
             "priority": "must",
-            "passes": false
+            "passes": true
         },
         {
             "id": "gacha-04",
