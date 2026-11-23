@@ -12,7 +12,7 @@
                 "K・L・L2 の計算が node でそれぞれ 1 秒未満で終わる（performance.now で測る）"
             ],
             "priority": "must",
-            "passes": false
+            "passes": true
         },
         {
             "id": "gacha-02",
