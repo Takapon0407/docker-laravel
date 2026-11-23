@@ -99,3 +99,5 @@ cd laravel && npm test   # TS の計算ロジック（resources/ts/lib/*.test.ts
 - 編集が反映されないときは、コンパイル済みビュー（`php artisan view:clear`）と opcache（app コンテナの再起動）を疑う
 - `docker compose exec` は root で動くため、`php artisan test` や `view:clear` でコンパイル済みビューの `/tmp/views` が root の持ち物になり、php-fpm（www-data）が書き込めずローカルが 500（ログに `tempnam(): file created in the system's temporary directory`）になることがある。ビューを作る artisan は `-u www-data` を付けて実行する。なったら `docker compose exec -T app sh -c 'rm -rf /tmp/views/* && chown www-data:www-data /tmp/views'` で直る
 - `Storage::disk('s3')->url()` などは URL を作るだけでも AWS SDK が認証情報を取りに行く（EC2 ではメタデータサービスへの通信、CI では失敗して 500）。全ページで通る処理では使わず、必要なら設定から組み立てる。テストは認証情報なし（`docker compose exec -e AWS_ACCESS_KEY_ID= -e AWS_SECRET_ACCESS_KEY= -e AWS_EC2_METADATA_DISABLED=true ...`）でも通ることを確かめる
+
+@.claude/pstack-models.md

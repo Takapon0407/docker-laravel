@@ -7,8 +7,13 @@
 # 実装ループのハーネス（harness/）で使う hooks・スキル・エージェントだけは共有する
 /.claude/*
 !/.claude/settings.json
+# pstack のモデルの割り当て（/setup-pstack のプロジェクト用の設定）
+!/.claude/pstack-models.md
 !/.claude/skills/
 /.claude/agents/*
 !/.claude/agents/
 !/.claude/agents/spec-reviewer.md
 !/.claude/agents/feature-verifier.md
+
+# verify スキル（.claude/skills/verify）の証拠と作業場所
+/.verify/
