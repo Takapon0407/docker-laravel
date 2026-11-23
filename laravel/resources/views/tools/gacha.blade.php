@@ -64,6 +64,8 @@
         <h2 class="devtool-heading" id="gacha-result-heading">結果</h2>
         <p class="gacha-message" id="gacha-message" hidden></p>
         <div id="gacha-result" hidden>
+            {{-- 読み上げソフトには、入力のたびに表全体ではなくこの一文だけを読ませる（表とグラフは aria-live にしない） --}}
+            <p class="gacha-summary" id="gacha-summary" role="status"></p>
             <div class="gacha-table-wrap">
                 <table class="table gacha-table">
                     <caption>狙いが手に入るまでの回数と金額</caption>

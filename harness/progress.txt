@@ -50,3 +50,8 @@
 - 検証：check.sh すべて ok。feature-verifier は OK（3 steps とも）。見た目の指摘：スマホ幅・桁の多い入力（L2＋石 1 万・値段 1 万）で、金額が数字の途中で折り返していた → 数字を span（nowrap）にして、数字と単位のあいだでだけ折り返すように直し、スクリーンショットで確認。直したあとも check.sh すべて ok
 - 最終レビューで見てほしいこと：スマホ幅で桁がとても多いとき、単位（回・個・円）が次の行に回る
 - 次の候補：gacha-08（nice：平均の一文を role=status で）
+
+## 2026-11-23 gacha-08（完了）
+- やったこと：結果の表のすぐ上に #gacha-summary（role="status"）で「平均 〜 回（〜 円）で手に入ります。」。E2E は e2e/gacha-summary.spec.ts
+- 検証：check.sh すべて ok。feature-verifier は OK（3 steps とも）
+- 状態：must 7/7・nice 1/1。次はユーザーの loop.sh stop と最終レビュー（spec.md「最終レビューで見ること」）

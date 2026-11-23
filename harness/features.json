@@ -104,7 +104,7 @@
                 "結果の table と グラフの svg（とその祖先）に aria-live がない"
             ],
             "priority": "nice",
-            "passes": false
+            "passes": true
         }
     ]
 }

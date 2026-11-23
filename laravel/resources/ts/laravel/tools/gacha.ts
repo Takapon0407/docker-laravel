@@ -1,7 +1,7 @@
 // ガチャ天井計算機のページ：入力の読み取り・出し入れ・Worker とのやり取り・結果の表の描画
 import { chartEnd, chartPoints, type GachaResult } from "@/lib/gacha";
 import { readForm, type FieldId, type FormState, type MoneyInput, type RawInput } from "@/lib/gacha-input";
-import { budgetText, chartLabel, formatInteger, resultRows } from "@/lib/gacha-format";
+import { budgetText, chartLabel, formatInteger, resultRows, summaryText } from "@/lib/gacha-format";
 import type { GachaRequest, GachaResponse } from "@/lib/gacha-worker";
 
 const DEBOUNCE_MS = 150;
@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const resultArea = document.getElementById("gacha-result") as HTMLElement;
     const rows = [...(document.getElementById("gacha-rows") as HTMLElement).querySelectorAll("tr")];
     const budget = document.getElementById("gacha-budget-text") as HTMLElement;
+    const summary = document.getElementById("gacha-summary") as HTMLElement;
     const chart = document.getElementById("gacha-chart") as unknown as SVGSVGElement;
 
     let worker: Worker | null = null;
@@ -124,6 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
             showMessage(MESSAGES.tooMany);
             return;
         }
+        summary.textContent = summaryText(result, money);
         resultRows(result, money).forEach((row, index) => {
             const cells = rows[index]!.querySelectorAll("td");
             fillCell(cells[0]!, row.draws);
